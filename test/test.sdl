@@ -1,0 +1,52 @@
+namespace "Service.Network" {
+	websocket "SocketService" {
+		extensions:aspnetcore roles="role" allRoles=false policy="policy"
+		server {
+			Method1 return="TestModel"
+			Method2 return="void"
+		}
+	}
+
+	http "TestService" route="/api/ts/" authenticate=true {
+		extensions:aspnetcore area="test" roles="role" allRoles=false policy="policy"
+		get "Method1" authenticate=true {
+			extensions:aspnetcore roles="role" allRoles=false policy="policy"
+			route "method1" "id" id="uint64"
+		}
+		get "Method2" sync=true {
+			route "method2/id" id="uint64?"
+			body model="TestModel=null"
+			return result="TestModel"
+		}
+		get "Method3" {
+			route "method3" "id" id="uint64"
+			body test="(int32,string)"
+			return result="(string,string)"
+		}
+		get "Method4" {
+			route "method4" "id" id="uint64"
+			return test="string"
+		}
+		get "Method5" authenticate=false {
+			route "method5" "id" id="uint64"
+			body test="[TestModel]=init"
+			return result="[TestModel]"
+		}
+		post "Method6" authenticate=true {
+			route "method6" "id" id="uint64"
+			header test="string=null"
+		}
+		post "Method7" authenticate=true {
+			route "method6" "id" id="uint64"
+			header test="[uint8]"
+		}
+		post "Method8" {
+			route "method8/id/optional" id="uint64" optional="uint64?"
+			header tenantId="string"
+		}
+		get "GetJobs" {
+			header tenantId="string"
+			query plate="bool" vin="[int32]"
+		}
+	}
+}
