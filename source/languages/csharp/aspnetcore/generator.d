@@ -33,7 +33,11 @@ private void generateNamespace(StringBuilder builder, Namespace ns)
 	}
 	builder.appendLine("using System.Linq;");
 	builder.appendLine("using System.IO;");
-	builder.appendLine("using System.Runtime.Serialization;");
+	if(hasOption("useNewtonsoft")) {
+		builder.appendLine("using System.Runtime.Serialization;");
+	} else {
+		builder.appendLine("using System.Text.Json;");
+	}
 	builder.appendLine("using System.Threading.Tasks;");
 	if(clientGen)
 	{
@@ -45,6 +49,7 @@ private void generateNamespace(StringBuilder builder, Namespace ns)
 		if (ns.sockets.length>0) {
 			builder.appendLine("using Microsoft.AspNetCore.SignalR.Client;");
 		}
+		builder.appendLine("using EllipticBit.Hotwire.Request;");
 	}
 	if (serverGen)
 	{

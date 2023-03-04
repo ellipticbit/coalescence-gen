@@ -32,7 +32,7 @@ public void generateHttpClient(StringBuilder builder, HttpService s, ushort tabL
 		builder.appendLine("{0}public {1}Query() {", generateTabs(tabLevel+1), s.name);
 		foreach (smp; m.query) {
 			if (smp.type.mode != TypeMode.Collection) continue;
-			builder.appendLine("{0}{2} = new {1}();", generateTabs(tabLevel+2), smp.name, generateType(smp, false, true));
+			builder.appendLine("{0}{1} = new {2}();", generateTabs(tabLevel+2), smp.name, generateType(smp, false, true));
 		}
 		builder.appendLine("{0}}", generateTabs(tabLevel+1));
 		builder.appendLine();
@@ -308,11 +308,11 @@ private void generateClientMethodParams(StringBuilder builder, HttpServiceMethod
 
 	// These parameters are only required in the abstract signature
 	if (sm.query.length != 0) {
-		builder.append("{0}Query query = null, ", sm.name.capitalize());
+		builder.append("{0}Query query = null, ", sm.name);
 	}
 
 	if (sm.header.length != 0) {
-		builder.append("{0}Header headers = null, ", sm.name.capitalize());
+		builder.append("{0}Header headers = null, ", sm.name);
 	}
 
 	foreach (smp; sm.content) {

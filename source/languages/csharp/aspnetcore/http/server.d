@@ -211,11 +211,11 @@ private void generateServerMethodParams(StringBuilder builder, HttpServiceMethod
 	// These parameters are only required in the abstract signature
 	if (isAbstract) {
 		if (sm.query.length != 0) {
-			builder.append("{0}Query query = null, ", sm.name.capitalize());
+			builder.append("{0}Query query = null, ", sm.name);
 		}
 
 		if (sm.header.length != 0) {
-			builder.append("{0}Header headers = null, ", sm.name.capitalize());
+			builder.append("{0}Header headers = null, ", sm.name);
 		}
 	}
 
