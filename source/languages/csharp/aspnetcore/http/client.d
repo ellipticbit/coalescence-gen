@@ -23,7 +23,7 @@ public void generateHttpClient(StringBuilder builder, HttpService s, ushort tabL
 	builder.appendLine();
 	foreach(m; s.methods) {
 		if (m.query.length == 0) continue;
-		builder.appendLine("{0}public class {1}Query : IHotwireParameters", generateTabs(tabLevel), s.name);
+		builder.appendLine("{0}public class {1}Query : IHotwireParameters", generateTabs(tabLevel), m.name);
 		builder.appendLine("{0}{", generateTabs(tabLevel));
 		foreach(smp; m.query) {
 			builder.appendLine("{0}public {2} {1} { get; }", generateTabs(tabLevel+1), smp.name, generateType(smp, false, true));
@@ -54,7 +54,7 @@ public void generateHttpClient(StringBuilder builder, HttpService s, ushort tabL
 	builder.appendLine();
 	foreach(m; s.methods) {
 		if (m.header.length == 0) continue;
-		builder.appendLine("{0}public class {1}Header : IHotwireParameters", generateTabs(tabLevel), s.name);
+		builder.appendLine("{0}public class {1}Header : IHotwireParameters", generateTabs(tabLevel), m.name);
 		builder.appendLine("{0}{", generateTabs(tabLevel));
 		foreach(smp; m.header) {
 			builder.appendLine("{0}public {2} {1} { get; }", generateTabs(tabLevel+1), smp.name, generateType(smp, false, true));

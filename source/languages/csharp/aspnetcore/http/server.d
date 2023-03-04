@@ -22,7 +22,7 @@ public void generateHttpServer(StringBuilder builder, HttpService s, ushort tabL
 	builder.appendLine();
 	foreach(m; s.methods) {
 		if (m.query.length == 0) continue;
-		builder.appendLine("{0}public class {1}Query", generateTabs(tabLevel), s.name);
+		builder.appendLine("{0}public class {1}Query", generateTabs(tabLevel), m.name);
 		builder.appendLine("{0}{", generateTabs(tabLevel));
 		foreach(q; m.query) {
 			builder.appendLine("{0}public {2} {1} { get; }", generateTabs(tabLevel+1), q.name, generateType(q, false, true));
@@ -44,7 +44,7 @@ public void generateHttpServer(StringBuilder builder, HttpService s, ushort tabL
 	builder.appendLine();
 	foreach(m; s.methods) {
 		if (m.header.length == 0) continue;
-		builder.appendLine("{0}public class {1}Headers", generateTabs(tabLevel), s.name);
+		builder.appendLine("{0}public class {1}Headers", generateTabs(tabLevel), m.name);
 		builder.appendLine("{0}{", generateTabs(tabLevel));
 		foreach(q; m.header) {
 			builder.appendLine("{0}public {2} {1} { get; }", generateTabs(tabLevel+1), q.name, generateType(q, false, true));

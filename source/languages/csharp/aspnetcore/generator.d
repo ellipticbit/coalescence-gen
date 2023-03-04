@@ -36,7 +36,7 @@ private void generateNamespace(StringBuilder builder, Namespace ns)
 	if(hasOption("useNewtonsoft")) {
 		builder.appendLine("using System.Runtime.Serialization;");
 	} else {
-		builder.appendLine("using System.Text.Json;");
+		builder.appendLine("using System.Text.Json.Serialization;");
 	}
 	builder.appendLine("using System.Threading.Tasks;");
 	if(clientGen)
