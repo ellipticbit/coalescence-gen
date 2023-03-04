@@ -28,7 +28,7 @@ public void generateHttpServer(StringBuilder builder, HttpService s, ushort tabL
 			builder.appendLine("{0}public {2} {1} { get; }", generateTabs(tabLevel+1), q.name, generateType(q, false, true));
 		}
 		builder.appendLine();
-		builder.appendLine("{0}internal {1}Query(Microsoft.AspNetCore.Http.IQueryCollection query) {", generateTabs(tabLevel+1), s.name);
+		builder.appendLine("{0}internal {1}Query(Microsoft.AspNetCore.Http.IQueryCollection query) {", generateTabs(tabLevel+1), m.name);
 		foreach (smp; m.query) {
 			if (smp.type.mode == TypeMode.Collection) {
 				builder.appendLine("{0}if (query.TryGetValue(\"{1}\", out StringValues values)) this.{1} = values.Select(a => {2}).ToList();", generateTabs(tabLevel+2), smp.name, getStringConversion(smp, "a"));
@@ -50,7 +50,7 @@ public void generateHttpServer(StringBuilder builder, HttpService s, ushort tabL
 			builder.appendLine("{0}public {2} {1} { get; }", generateTabs(tabLevel+1), q.name, generateType(q, false, true));
 		}
 		builder.appendLine();
-		builder.appendLine("{0}internal {1}Headers(Microsoft.AspNetCore.Http.IHeaderDictionary headers) {", generateTabs(tabLevel+1), s.name);
+		builder.appendLine("{0}internal {1}Headers(Microsoft.AspNetCore.Http.IHeaderDictionary headers) {", generateTabs(tabLevel+1), m.name);
 		foreach (smp; m.header) {
 			if (smp.type.mode == TypeMode.Collection) {
 				builder.appendLine("{0}if (headers.TryGetValue(\"{1}\", out StringValues values)) this.{1} = values.Select(a => {2}).ToList();", generateTabs(tabLevel+2), smp.name, getStringConversion(smp, "a"));

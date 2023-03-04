@@ -29,7 +29,7 @@ public void generateHttpClient(StringBuilder builder, HttpService s, ushort tabL
 			builder.appendLine("{0}public {2} {1} { get; }", generateTabs(tabLevel+1), smp.name, generateType(smp, false, true));
 		}
 		builder.appendLine();
-		builder.appendLine("{0}public {1}Query() {", generateTabs(tabLevel+1), s.name);
+		builder.appendLine("{0}public {1}Query() {", generateTabs(tabLevel+1), m.name);
 		foreach (smp; m.query) {
 			if (smp.type.mode != TypeMode.Collection) continue;
 			builder.appendLine("{0}{1} = new {2}();", generateTabs(tabLevel+2), smp.name, generateType(smp, false, true));
@@ -60,7 +60,7 @@ public void generateHttpClient(StringBuilder builder, HttpService s, ushort tabL
 			builder.appendLine("{0}public {2} {1} { get; }", generateTabs(tabLevel+1), smp.name, generateType(smp, false, true));
 		}
 		builder.appendLine();
-		builder.appendLine("{0}public {1}Header() {", generateTabs(tabLevel+1), s.name);
+		builder.appendLine("{0}public {1}Header() {", generateTabs(tabLevel+1), m.name);
 		foreach (smp; m.header) {
 			if (smp.type.mode != TypeMode.Collection) continue;
 			builder.appendLine("{0}{1} = new {2}();", generateTabs(tabLevel+2), smp.name, generateType(smp, false, true));

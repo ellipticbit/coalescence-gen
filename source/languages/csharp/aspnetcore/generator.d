@@ -33,9 +33,8 @@ private void generateNamespace(StringBuilder builder, Namespace ns)
 	}
 	builder.appendLine("using System.Linq;");
 	builder.appendLine("using System.IO;");
-	if(hasOption("useNewtonsoft")) {
-		builder.appendLine("using System.Runtime.Serialization;");
-	} else {
+	builder.appendLine("using System.Runtime.Serialization;");
+	if(!hasOption("useNewtonsoft")) {
 		builder.appendLine("using System.Text.Json.Serialization;");
 	}
 	builder.appendLine("using System.Threading.Tasks;");
