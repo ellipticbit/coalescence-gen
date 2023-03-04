@@ -85,7 +85,7 @@ public void generateHttpServer(StringBuilder builder, HttpService s, ushort tabL
 	}
 	builder.appendLine("{0}public abstract partial class {1}Base : HotwireControllerBase, I{1}", generateTabs(tabLevel), s.name);
 	builder.appendLine("{0}{", generateTabs(tabLevel));
-	builder.appendLine("{0}protected {1}Base(HotwireControllerOptions options, IEnumerable<IHotwireSerializer> serializers, IEnumerable<IHotwireAuthentication> authenticators) : base(options, serializers, authenticators) {}", generateTabs(tabLevel+1), s.name);
+	builder.appendLine("{0}protected {1}Base(IEnumerable<IHotwireSerializer> serializers, IEnumerable<IHotwireAuthentication> authenticators) : base(serializers) {}", generateTabs(tabLevel+1), s.name);
 	builder.appendLine();
 	foreach(sm; s.methods) {
 		generateMethodServer(builder, sm, cast(ushort)(tabLevel+1));

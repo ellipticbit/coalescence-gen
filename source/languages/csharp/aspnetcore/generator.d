@@ -52,11 +52,13 @@ private void generateNamespace(StringBuilder builder, Namespace ns)
 	}
 	if (serverGen)
 	{
+		builder.appendLine("using Microsoft.Extensions.Primitives;");
 		builder.appendLine("using Microsoft.AspNetCore.Mvc;");
 		builder.appendLine("using Microsoft.AspNetCore.Authorization;");
 		if (ns.sockets.length>0) {
 			builder.appendLine("using Microsoft.AspNetCore.SignalR;");
 		}
+		builder.appendLine("using EllipticBit.Hotwire.Shared;");
 		builder.appendLine("using EllipticBit.Hotwire.AspNetCore;");
 	}
 	builder.appendLine();
