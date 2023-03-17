@@ -15,7 +15,7 @@ import sdlang;
 public final class AspNetCoreHttpExtension : LanguageExtensionBase
 {
     public immutable HttpService parent;
-    public immutable string area;
+    public immutable string area = string.init;
 
     public @property bool hasArea() { return area != null && area != string.init; }
     public @property immutable(AspNetCoreAuthorizationExtension) getAuthorization() { return cast(immutable(AspNetCoreAuthorizationExtension))super.authorization; }
@@ -25,9 +25,15 @@ public final class AspNetCoreHttpExtension : LanguageExtensionBase
         this.area = root.getAttribute!string("area", string.init).strip().strip("/");
 
         auto authTag = root.getTag("authorization", null);
-        auto auth = authTag !is null ? new AspNetCoreAuthorizationExtension(this, authTag) : null;
+        auto auth = authTag !is null ? new AspNetCoreAuthorizationExtension(this, authTag) : new AspNetCoreAuthorizationExtension(this);
 
         super("csharp", "aspnetcore", auth);
+    }
+
+    public this(HttpService parent) {
+        this.parent = cast(immutable(HttpService))parent;
+
+        super("csharp", "aspnetcore", new AspNetCoreAuthorizationExtension(this));
     }
 }
 
@@ -38,14 +44,14 @@ public AspNetCoreHttpExtension getAspNetCoreHttpExtension(HttpService service) {
         }
     }
 
-    return null;
+    return new AspNetCoreHttpExtension(service);
 }
 
 public final class AspNetCoreHttpMethodExtension : LanguageExtensionBase
 {
     public immutable HttpServiceMethod parent;
-    public immutable string area;
-    public immutable bool sync;
+    public immutable string area = string.init;
+    public immutable bool sync = false;
 
     public @property bool hasArea() { return area != null && area != string.init; }
     public @property immutable(AspNetCoreAuthorizationExtension) getAuthorization() { return cast(immutable(AspNetCoreAuthorizationExtension))super.authorization; }
@@ -57,9 +63,15 @@ public final class AspNetCoreHttpMethodExtension : LanguageExtensionBase
         this.sync = root.getAttribute!bool("sync", false);
 
         auto authTag = root.getTag("authorization", null);
-        auto auth = authTag !is null ? new AspNetCoreAuthorizationExtension(this, authTag) : null;
+        auto auth = authTag !is null ? new AspNetCoreAuthorizationExtension(this, authTag) : new AspNetCoreAuthorizationExtension(this);
 
         super("csharp", "aspnetcore", auth);
+    }
+
+    public this(HttpServiceMethod parent) {
+        this.parent = cast(immutable(HttpServiceMethod))parent;
+
+        super("csharp", "aspnetcore", new AspNetCoreAuthorizationExtension(this));
     }
 }
 
@@ -70,23 +82,34 @@ public AspNetCoreHttpMethodExtension getAspNetCoreHttpExtension(HttpServiceMetho
         }
     }
 
-    return null;
+    return new AspNetCoreHttpMethodExtension(method);
 }
 
 public final class AspNetCoreWebsocketExtension : LanguageExtensionBase
 {
     public immutable WebsocketService parent;
 
+	public string clientConnection = string.init;
+	public bool namespaceMethods = false;
+
     public @property immutable(AspNetCoreAuthorizationExtension) getAuthorization() { return cast(immutable(AspNetCoreAuthorizationExtension))super.authorization; }
 
     public this(WebsocketService parent, Tag root) {
         this.parent = cast(immutable(WebsocketService))parent;
+		this.clientConnection = root.getAttribute!string("clientConnection", string.init);
+		this.namespaceMethods = root.getAttribute!bool("namespaceMethods", false);
 
-        auto authTag = root.getTag("authorization", null); 
-        auto auth = authTag !is null ? new AspNetCoreAuthorizationExtension(this, authTag) : null;
+        auto authTag = root.getTag("authorization", null);
+        auto auth = authTag !is null ? new AspNetCoreAuthorizationExtension(this, authTag) : new AspNetCoreAuthorizationExtension(this);
 
         super("csharp", "aspnetcore", auth);
     }
+
+	public this(WebsocketService parent) {
+        this.parent = cast(immutable(WebsocketService))parent;
+
+        super("csharp", "aspnetcore", new AspNetCoreAuthorizationExtension(this));
+	}
 }
 
 public AspNetCoreWebsocketExtension getAspNetCoreWebsocketExtension(WebsocketService service) {
@@ -96,25 +119,28 @@ public AspNetCoreWebsocketExtension getAspNetCoreWebsocketExtension(WebsocketSer
         }
     }
 
-    return null;
+    return new AspNetCoreWebsocketExtension(service);
 }
 
 public final class AspNetCoreWebsocketMethodExtension : LanguageExtensionBase
 {
     public immutable WebsocketServiceMethod parent;
 
-    public immutable bool sync;
-
     public @property immutable(AspNetCoreAuthorizationExtension) getAuthorization() { return cast(immutable(AspNetCoreAuthorizationExtension))super.authorization; }
 
     public this(WebsocketServiceMethod parent, Tag root) {
         this.parent = cast(immutable(WebsocketServiceMethod))parent;
-        this.sync = root.getAttribute!bool("sync", false);
 
-        auto authTag = root.getTag("authorization", null); 
-        auto auth = authTag !is null ? new AspNetCoreAuthorizationExtension(this, authTag) : null;
+        auto authTag = root.getTag("authorization", null);
+        auto auth = authTag !is null ? new AspNetCoreAuthorizationExtension(this, authTag) : new AspNetCoreAuthorizationExtension(this);
 
         super("csharp", "aspnetcore", auth);
+    }
+
+    public this(WebsocketServiceMethod parent) {
+        this.parent = cast(immutable(WebsocketServiceMethod))parent;
+
+        super("csharp", "aspnetcore", new AspNetCoreAuthorizationExtension(this));
     }
 }
 
@@ -125,17 +151,19 @@ public AspNetCoreWebsocketMethodExtension getAspNetCoreWebsocketMethodExtension(
         }
     }
 
-    return null;
+    return new AspNetCoreWebsocketMethodExtension(service);
 }
 
 public final class AspNetCoreAuthorizationExtension : AuthorizationExtensionBase
 {
-    public string policy;
+	public LanguageExtensionBase parent;
+    public string policy = string.init;
     public string[] schemes;
     public string[] roles;
-    public bool requireAllRoles;
+    public bool requireAllRoles = false;
 
     public this(LanguageExtensionBase parent, Tag root) {
+		this.parent = parent;
 		requireAllRoles = root.getAttribute!bool("allRoles", false);
         policy = root.getAttribute!string("policy", null);
 
@@ -153,4 +181,8 @@ public final class AspNetCoreAuthorizationExtension : AuthorizationExtensionBase
             }
         }
     }
+
+    public this(LanguageExtensionBase parent) {
+		this.parent = parent;
+	}
 }

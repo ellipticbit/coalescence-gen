@@ -9,7 +9,8 @@ import restforge.languages.csharp.aspnetcore.enums;
 import restforge.languages.csharp.aspnetcore.model;
 import restforge.languages.csharp.aspnetcore.http.client;
 import restforge.languages.csharp.aspnetcore.http.server;
-import restforge.languages.csharp.aspnetcore.signalr.service;
+import restforge.languages.csharp.aspnetcore.signalr.server;
+import restforge.languages.csharp.aspnetcore.signalr.client;
 
 import std.stdio;
 import std.uni;
@@ -47,6 +48,8 @@ private void generateNamespace(StringBuilder builder, Namespace ns)
 		builder.appendLine("using System.Windows;");
 		if (ns.sockets.length>0) {
 			builder.appendLine("using Microsoft.AspNetCore.SignalR.Client;");
+			builder.appendLine("using Microsoft.Extensions.DependencyInjection;");
+			builder.appendLine("using Microsoft.Extensions.DependencyInjection.Extensions;");
 		}
 		builder.appendLine("using EllipticBit.Hotwire.Request;");
 	}
@@ -71,18 +74,21 @@ private void generateNamespace(StringBuilder builder, Namespace ns)
 	foreach(m; ns.models)
 		generateModel(builder, m, 1);
 
-	if(serverGen)
-	{
+	if(serverGen) {
 		foreach(s; ns.services)
 			generateHttpServer(builder, s, 1);
-	}
-	else if (clientGen)
-	{
+	} else {
 		foreach(s; ns.services)
 			generateHttpClient(builder, s, 1);
 	}
-	foreach(m; ns.sockets)
-		generateWebsocket(builder, m, 1);
+
+	if(serverGen) {
+		foreach(s; ns.sockets)
+			generateWebsocketServer(builder, s, 1);
+	} else {
+		foreach(s; ns.sockets)
+			generateWebsocketClient(builder, s, 1);
+	}
 
 	builder.appendLine("}");
 }

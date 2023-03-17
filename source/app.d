@@ -13,7 +13,7 @@ import std.string;
 
 int main(string[] args)
 {
-    writeln("Lexicon Web Service Code Generator");
+    writeln("Hotwire Web Service Code Generator");
     writeln("Version: ", appver);
     writeln();
 

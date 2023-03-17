@@ -2,8 +2,19 @@ namespace "Service.Network" {
 	websocket "SocketService" {
 		extensions:aspnetcore roles="role" allRoles=false policy="policy"
 		server {
-			Method1 return="TestModel"
-			Method2 return="void"
+			Method1 {
+				parameters customerId="int32"
+				return result="TestModel"
+			}
+			Method2 sync=true {
+				return result="void"
+			}
+		}
+		client {
+			Client1 {
+				parameters customerId="int32" newCust="TestModel"
+				return result="bool"
+			}
 		}
 	}
 

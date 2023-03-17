@@ -61,7 +61,7 @@ public string cleanName(string name) {
 public void writeFile(ProjectFile file, string ext)
 {
     //Write generated code to disk
-    writeln("Writing File: " ~ setExtension(file.outputPath, ext));
+    writeln("Output File: " ~ setExtension(file.outputPath, ext));
     if(!exists(dirName(file.outputPath)))
         mkdirRecurse(dirName(file.outputPath));
     auto fsfile = File(setExtension(file.outputPath, ext), "w");

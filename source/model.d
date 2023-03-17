@@ -372,6 +372,11 @@ public final class HttpServiceMethod : TypeUser
 	}
 }
 
+public enum WebsocketServiceSystem {
+	Raw,
+	SignalR,
+}
+
 public final class WebsocketService : TypeUser
 {
 	public override @property TypeMode mode() { return TypeMode.Service; }
@@ -381,6 +386,7 @@ public final class WebsocketService : TypeUser
 	public WebsocketServiceMethod[] client;
 	public LanguageExtensionBase[] extensions;
 
+	public WebsocketServiceSystem systemMode;
 	public bool isPublic;
 	public string route;
 	public bool hasRoute() { return route != null && route != string.init; }
@@ -389,6 +395,8 @@ public final class WebsocketService : TypeUser
 	public this(Namespace parent, Tag root) {
 		this.parent = parent;
 		this.name = root.expectValue!string();
+		string mstr = root.getAttribute!string("system", "SignalR").toLower();
+		this.systemMode = (mstr == "Raw".toLower() ? WebsocketServiceSystem.Raw : WebsocketServiceSystem.SignalR);
 		this.isPublic = root.getAttribute!bool("public", true);
 		this.route = root.getAttribute!string("route", string.init).strip().strip("/");
 		this.enableAuth = root.getAttribute!bool("authenticate", true);
@@ -421,12 +429,11 @@ public final class WebsocketServiceMethod : TypeUser
 	public WebsocketService parent;
 	public bool hidden;
 
-	public string route;
-	public bool hasRoute() { return route != null && route != string.init; }
+	public bool sync;
 	public bool enableAuth;
 
 	public TypeComplex[] parameters;
-	public TypeComplex returns;
+	public TypeComplex[] returns;
 
 	public LanguageExtensionBase[] extensions;
 
@@ -434,7 +441,7 @@ public final class WebsocketServiceMethod : TypeUser
 		this.parent = parent;
 		this.name = root.name;
 		this.hidden = root.getAttribute!bool("hidden", false);
-		this.route = root.getAttribute!string("route", string.init);
+		this.sync = root.getAttribute!bool("sync", false);
 		this.enableAuth = root.getAttribute!bool("authenticate", true);
 
 		auto ancext = root.getTag("extensions:aspnetcore", null);
@@ -449,9 +456,9 @@ public final class WebsocketServiceMethod : TypeUser
 
 		auto rt = root.getTag("return", null);
 		if (rt !is null) {
-			returns = new TypeComplex(string.init, rt.expectValue!string(), rt.location);
-		} else {
-			returns = new TypeComplex(string.init, "void", root.location);
+			foreach(smp; rt.maybe.attributes) {
+				returns ~= new TypeComplex(smp.name, smp.value.get!string(), root.location);
+			}
 		}
 
 		super(name, root.location);
