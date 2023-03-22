@@ -50,6 +50,7 @@ private void generateNamespace(StringBuilder builder, Namespace ns)
 			builder.appendLine("using Microsoft.AspNetCore.SignalR.Client;");
 			builder.appendLine("using Microsoft.Extensions.DependencyInjection;");
 			builder.appendLine("using Microsoft.Extensions.DependencyInjection.Extensions;");
+			builder.appendLine("using EllipticBit.Hotwire.SignalR;");
 		}
 		builder.appendLine("using EllipticBit.Hotwire.Request;");
 	}
@@ -60,6 +61,7 @@ private void generateNamespace(StringBuilder builder, Namespace ns)
 		builder.appendLine("using Microsoft.AspNetCore.Authorization;");
 		if (ns.sockets.length>0) {
 			builder.appendLine("using Microsoft.AspNetCore.SignalR;");
+			builder.appendLine("using EllipticBit.Hotwire.SignalR;");
 		}
 		builder.appendLine("using EllipticBit.Hotwire.Shared;");
 		builder.appendLine("using EllipticBit.Hotwire.AspNetCore;");
