@@ -11,6 +11,7 @@ import restforge.languages.csharp.aspnetcore.http.client;
 import restforge.languages.csharp.aspnetcore.http.server;
 import restforge.languages.csharp.aspnetcore.signalr.server;
 import restforge.languages.csharp.aspnetcore.signalr.client;
+import restforge.languages.csharp.aspnetcore.extensions;
 
 import std.stdio;
 import std.uni;
@@ -93,6 +94,28 @@ private void generateNamespace(StringBuilder builder, Namespace ns)
 	}
 
 	builder.appendLine("}");
+}
+
+public void generateAuthorization(StringBuilder builder, immutable(AspNetCoreAuthorizationExtension) auth, bool authenticate, bool hasControllerAuth, int tabLevel) {
+	if (!authenticate) {
+		builder.appendLine("{0}[AllowAnonymous]", generateTabs(tabLevel));
+	} else if (authenticate && !hasControllerAuth && auth is null) {
+		builder.appendLine("{0}[Authorize]", generateTabs(tabLevel));
+	} else if (authenticate && auth !is null) {
+		if (auth.requireAllRoles) {
+			foreach(r; auth.roles) {
+				builder.appendLine("{0}[Authorize(Roles = \"{1}\")]", generateTabs(tabLevel), r);
+			}
+		} else if (auth.roles.length > 0) {
+			builder.appendLine("{0}[Authorize(Roles = \"{1}\")]", generateTabs(tabLevel), auth.roles.join(","));
+		}
+		if (auth.schemes.length > 0) {
+			builder.appendLine("{0}[Authorize(AuthenticationSchemes = \"{1}\")]", generateTabs(tabLevel), auth.schemes.join(","));
+		}
+		if (auth.policy != string.init) {
+			builder.appendLine("{0}[Authorize(Policy = \"{1}\")]", generateTabs(tabLevel), auth.policy);
+		}
+	}
 }
 
 public string generateType(TypeComplex type, bool base64external = false, bool forceOptional = false)

@@ -212,6 +212,7 @@ public final class HttpService : TypeUser
 	public string route;
 	public bool hasRoute() { return route != null && route != string.init; }
 	public bool authenticate;
+	public string scheme;
 	public string requestName;
 	public string requestParameterId;
 
@@ -221,6 +222,7 @@ public final class HttpService : TypeUser
 		this.isPublic = root.getAttribute!bool("public", true);
 		this.route = root.getAttribute!string("route", string.init).strip().strip("/");
 		this.authenticate = root.getAttribute!bool("authenticate", true);
+		this.scheme = root.getAttribute!string("scheme", string.init);
 		this.requestName = root.getAttribute!string("requestName", null);
 		this.requestParameterId = root.getAttribute!string("requestParameterId", null);
 
@@ -264,7 +266,8 @@ public final class HttpServiceMethod : TypeUser
 	public bool hidden;
 
 	public bool hasRoute() { return route != null && route.length > 0; }
-	public string authentication;
+	public bool authenticate;
+	public string scheme;
 	public uint timeout;
 	public bool retry;
 
@@ -292,7 +295,8 @@ public final class HttpServiceMethod : TypeUser
 		this.parent = parent;
 		this.name = root.values[0].get!string();
 		this.hidden = root.getAttribute!bool("hidden", false);
-		this.authentication = root.getAttribute!string("authentication", string.init);
+		this.authenticate = root.getAttribute!bool("authenticate", true);
+		this.scheme = root.getAttribute!string("scheme", string.init);
 		this.timeout = root.getAttribute!int("timeout", 0);
 		this.retry = root.getAttribute!bool("retry", true);
 
@@ -390,7 +394,7 @@ public final class WebsocketService : TypeUser
 	public bool isPublic;
 	public string route;
 	public bool hasRoute() { return route != null && route != string.init; }
-	public bool enableAuth;
+	public bool authenticate;
 
 	public this(Namespace parent, Tag root) {
 		this.parent = parent;
@@ -399,7 +403,7 @@ public final class WebsocketService : TypeUser
 		this.systemMode = (mstr == "Raw".toLower() ? WebsocketServiceSystem.Raw : WebsocketServiceSystem.SignalR);
 		this.isPublic = root.getAttribute!bool("public", true);
 		this.route = root.getAttribute!string("route", string.init).strip().strip("/");
-		this.enableAuth = root.getAttribute!bool("authenticate", true);
+		this.authenticate = root.getAttribute!bool("authenticate", true);
 
 		auto extTag = root.getTag("extensions", null);
 		if (extTag !is null) {
@@ -430,7 +434,7 @@ public final class WebsocketServiceMethod : TypeUser
 	public bool hidden;
 
 	public bool sync;
-	public bool enableAuth;
+	public bool authenticate;
 
 	public TypeComplex[] parameters;
 	public TypeComplex[] returns;
@@ -442,7 +446,7 @@ public final class WebsocketServiceMethod : TypeUser
 		this.name = root.name;
 		this.hidden = root.getAttribute!bool("hidden", false);
 		this.sync = root.getAttribute!bool("sync", false);
-		this.enableAuth = root.getAttribute!bool("authenticate", true);
+		this.authenticate = root.getAttribute!bool("authenticate", true);
 
 		auto ancext = root.getTag("extensions:aspnetcore", null);
 		if(ancext !is null) extensions ~= new AspNetCoreWebsocketMethodExtension(this, ancext);

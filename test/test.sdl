@@ -18,10 +18,14 @@ namespace "Service.Network" {
 		}
 	}
 
-	http "TestService" route="/api/ts/" authenticate=true {
-		extensions:aspnetcore area="test" roles="role" allRoles=false policy="policy"
+	http "TestService" route="/api/ts/" authenticate=true scheme="default" {
+		extensions:aspnetcore {
+			authorization area="test" roles="role" allRoles=false policy="policy"
+		}
 		get "Method1" authenticate=true {
-			extensions:aspnetcore roles="role" allRoles=false policy="policy"
+			extensions:aspnetcore {
+				authorization roles="role" allRoles=false policy="policy"
+			}
 			route "method1" "id" id="uint64"
 		}
 		get "Method2" sync=true {

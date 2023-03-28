@@ -92,6 +92,7 @@ public void generateHttpClient(StringBuilder builder, HttpService s, ushort tabL
 	builder.appendLine("{0}{2} sealed partial class {1} : I{1}", generateTabs(tabLevel), s.name, s.isPublic ? "public" : "internal");
 	builder.appendLine("{0}{", generateTabs(tabLevel));
 	builder.appendLine("{0}private readonly IHotwireRequestFactory requests;", generateTabs(tabLevel+1));
+	if (s.scheme != string.init) builder.appendLine("{0}private readonly string defaultAuthenticationScheme = \"{1}\";", generateTabs(tabLevel+1), s.scheme);
 	builder.appendLine();
 	builder.appendLine("{0}public {1}(IHotwireRequestFactory requests)", generateTabs(tabLevel+1), s.name);
 	builder.appendLine("{0}{", generateTabs(tabLevel+1));
@@ -201,8 +202,10 @@ private void generateClientMethod(StringBuilder builder, HttpService s, HttpServ
 		builder.appendLine("{0}.Header(headers)", generateTabs(tabLevel+1));
 	}
 
-	if (sm.authentication != string.init) {
-		builder.appendLine("{0}.Authentication(\"{1}\")", generateTabs(tabLevel+1), sm.authentication);
+	if (sm.authenticate && sm.scheme != string.init) {
+		builder.appendLine("{0}.Authentication(\"{1}\")", generateTabs(tabLevel+1), sm.scheme);
+	} else if (sm.authenticate && s.scheme != string.init) {
+		builder.appendLine("{0}.Authentication(defaultAuthenticationScheme)", generateTabs(tabLevel+1), sm.scheme);
 	}
 
 	if (sm.timeout > 0) builder.append("{0}.Timeout(TimeSpan.FromSeconds({1}))", generateTabs(tabLevel+1), to!string(sm.timeout));

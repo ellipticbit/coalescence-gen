@@ -17,7 +17,6 @@ import std.string;
 
 public void generateWebsocketServer(StringBuilder builder, WebsocketService s, ushort tabLevel)
 {
-    auto ext = s.getAspNetCoreWebsocketExtension();
 
     builder.appendLine();
     builder.appendLine("{0}{2} interface I{1}Server", generateTabs(tabLevel), s.name, s.isPublic ? "public" : "internal");
@@ -38,13 +37,8 @@ public void generateWebsocketServer(StringBuilder builder, WebsocketService s, u
         builder.appendLine();
     }
 
-    if (ext !is null) {
-        if (s.enableAuth) {
-            generateAuthorization(builder, ext !is null ? ext.getAuthorization() : null, tabLevel);
-        } else {
-            builder.appendLine("{0}[AllowAnonymous]", generateTabs(tabLevel));
-        }
-    }
+    auto ext = s.getAspNetCoreWebsocketExtension();
+	generateAuthorization(builder, ext !is null ? ext.getAuthorization() : null, s.authenticate, false, tabLevel);
 
     if (s.client.length != 0) {
         builder.appendLine("{0}{2} abstract class {1}HubBase : Hub<I{1}{3}>, I{1}{4}", generateTabs(tabLevel), s.name, s.isPublic ? "public" : "internal", serverGen ? "Client" : "Server", serverGen ? "Server" : "Client");
@@ -80,14 +74,8 @@ private void generateInterfaceMethod(StringBuilder builder, WebsocketServiceMeth
 
 private void generateMethod(StringBuilder builder, WebsocketServiceMethod sm, bool namespaceMethods, ushort tabLevel) {
     auto ext = sm.getAspNetCoreWebsocketMethodExtension();
+	generateAuthorization(builder, ext !is null ? ext.getAuthorization() : null, sm.authenticate, sm.parent.authenticate, tabLevel);
 
-    if (ext !is null) {
-        if (sm.enableAuth) {
-            generateAuthorization(builder, ext !is null ? ext.getAuthorization() : null, tabLevel);
-        } else {
-            builder.appendLine("{0}[AllowAnonymous]", generateTabs(tabLevel));
-        }
-    }
 	if (namespaceMethods) {
 		builder.appendLine("{0}[HubMethodName(\"{1}.{2}\")]", cleanName(sm.parent.name), cleanName(sm.name), generateTabs(tabLevel));
 	}
@@ -120,25 +108,4 @@ private void generateMethodParameters(StringBuilder builder, TypeComplex[] smpl)
     }
 
     if (hasParams) builder.removeRight(2);
-}
-
-private void generateAuthorization(StringBuilder builder, immutable(AspNetCoreAuthorizationExtension) auth, int tabLevel) {
-    if (auth is null) {
-        builder.appendLine("{0}[Authorize]", generateTabs(tabLevel));
-    } else {
-		if (auth.roles.length == 0) {
-			builder.appendLine("{0}[Authorize]", generateTabs(tabLevel));
-		} else {
-			if (auth.requireAllRoles) {
-				foreach(r; auth.roles) {
-					builder.appendLine("{0}[Authorize(Roles = \"{1}\")]", generateTabs(tabLevel), r);
-				}
-			} else {
-				builder.appendLine("{0}[Authorize(Roles = \"{1}\")]", generateTabs(tabLevel), auth.roles.join(","));
-			}
-		}
-        if (auth.policy != string.init) {
-            builder.appendLine("{0}[Authorize(Policy = \"{1}\")]", generateTabs(tabLevel), auth.policy);
-        }
-    }
 }

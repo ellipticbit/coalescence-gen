@@ -78,11 +78,7 @@ public void generateHttpServer(StringBuilder builder, HttpService s, ushort tabL
 	if (s.route != string.init) {
 		builder.appendLine("{0}[Route(\"{1}\")]", generateTabs(tabLevel), s.route);
 	}
-	if (s.authenticate) {
-		generateAuthorization(builder, ext !is null ? ext.getAuthorization() : null, tabLevel);
-	} else {
-		builder.appendLine("{0}[AllowAnonymous]", generateTabs(tabLevel));
-	}
+	generateAuthorization(builder, ext !is null ? ext.getAuthorization() : null, s.authenticate, false, tabLevel);
 	builder.appendLine("{0}public abstract partial class {1}Base : HotwireControllerBase, I{1}", generateTabs(tabLevel), s.name);
 	builder.appendLine("{0}{", generateTabs(tabLevel));
 	builder.appendLine("{0}protected {1}Base(IEnumerable<IHotwireSerializer> serializers, IEnumerable<IHotwireAuthentication> authenticators) : base(serializers) {}", generateTabs(tabLevel+1), s.name);
@@ -94,7 +90,6 @@ public void generateHttpServer(StringBuilder builder, HttpService s, ushort tabL
 }
 
 public void generateMethodServer(StringBuilder builder, HttpServiceMethod sm, ushort tabLevel) {
-	auto ext = sm.getAspNetCoreHttpExtension();
 
 	builder.appendLine();
 	auto routeTemplate = generateServerRoute(sm.route);
@@ -107,11 +102,8 @@ public void generateMethodServer(StringBuilder builder, HttpServiceMethod sm, us
 		builder.appendLine("{0}[Http{1}(\"{2}\")]", generateTabs(tabLevel), to!string(sm.verb), routeTemplate);
 	}
 
-	if (sm.authentication != string.init) {
-		generateAuthorization(builder, ext !is null ? ext.getAuthorization() : null, tabLevel);
-	} else {
-		builder.appendLine("{0}[AllowAnonymous]", generateTabs(tabLevel));
-	}
+	auto ext = sm.getAspNetCoreHttpExtension();
+	generateAuthorization(builder, ext !is null ? ext.getAuthorization() : null, sm.authenticate, sm.parent.authenticate, tabLevel);
 
 	if (ext !is null && ext.hasArea) {
 		builder.appendLine("{0}[Area(\"{1}\")]", generateTabs(tabLevel), ext.area);
@@ -168,26 +160,6 @@ public void generateMethodServer(StringBuilder builder, HttpServiceMethod sm, us
 	builder.append("{0}public abstract Task<IActionResult> {1}(", generateTabs(tabLevel), sm.name);
 	generateServerMethodParams(builder, sm, true);
 	builder.appendLine(");");
-}
-
-private void generateAuthorization(StringBuilder builder, immutable(AspNetCoreAuthorizationExtension) auth, int tabLevel) {
-	if (auth is null) {
-		builder.appendLine("{0}[Authorize]", generateTabs(tabLevel));
-	} else {
-		if (auth.requireAllRoles) {
-			foreach(r; auth.roles) {
-				builder.appendLine("{0}[Authorize(Roles = \"{1}\")]", generateTabs(tabLevel), r);
-			}
-		} else if (auth.roles.length > 0) {
-			builder.appendLine("{0}[Authorize(Roles = \"{1}\")]", generateTabs(tabLevel), auth.roles.join(","));
-		}
-		if (auth.schemes.length > 0) {
-			builder.appendLine("{0}[Authorize(AuthenticationSchemes = \"{1}\")]", generateTabs(tabLevel), auth.schemes.join(","));
-		}
-		if (auth.policy != string.init) {
-			builder.appendLine("{0}[Authorize(Policy = \"{1}\")]", generateTabs(tabLevel), auth.policy);
-		}
-	}
 }
 
 private void generateServerMethodParams(StringBuilder builder, HttpServiceMethod sm, bool isAbstract) {
