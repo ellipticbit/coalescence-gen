@@ -77,7 +77,7 @@ private void generateMethod(StringBuilder builder, WebsocketServiceMethod sm, bo
 	generateAuthorization(builder, ext !is null ? ext.getAuthorization() : null, sm.authenticate, sm.parent.authenticate, tabLevel);
 
 	if (namespaceMethods) {
-		builder.appendLine("{0}[HubMethodName(\"{1}.{2}\")]", cleanName(sm.parent.name), cleanName(sm.name), generateTabs(tabLevel));
+		builder.appendLine("{0}[HubMethodName(\"{1}.{2}\")]", generateTabs(tabLevel), cleanName(sm.parent.name), cleanName(sm.name));
 	}
     builder.append("{0}public abstract ", generateTabs(tabLevel));
 	builder.append("Task");
