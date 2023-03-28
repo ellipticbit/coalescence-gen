@@ -405,11 +405,8 @@ public final class WebsocketService : TypeUser
 		this.route = root.getAttribute!string("route", string.init).strip().strip("/");
 		this.authenticate = root.getAttribute!bool("authenticate", true);
 
-		auto extTag = root.getTag("extensions", null);
-		if (extTag !is null) {
-			auto ancext = extTag.getTag("aspnetcore", null);
-			if(ancext !is null) extensions ~= new AspNetCoreWebsocketExtension(this, ancext);
-		}
+		auto ancext = root.getTag("extensions:aspnetcore", null);
+		if(ancext !is null) extensions ~= new AspNetCoreWebsocketExtension(this, ancext);
 
 		foreach(sm; root.expectTag("server").tags) {
 			server ~= new WebsocketServiceMethod(this, sm);
