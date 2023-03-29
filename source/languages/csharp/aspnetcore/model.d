@@ -55,7 +55,7 @@ public void generateModel(StringBuilder builder, Model m, ushort tabLevel)
         builder.appendLine("{0}{", generateTabs(tabLevel+1));
         builder.appendLine("{0}return new {1}()", generateTabs(tabLevel+2), m.name);
         builder.appendLine("{0}{", generateTabs(tabLevel+2));
-        foreach(mm; m.members.filter!(a => a.readonly && (a.type.mode == TypeMode.Primitive || a.type.mode == TypeMode.ByteArray))())
+        foreach(mm; m.members.filter!(a => a.readonly && (a.type.type.mode == TypeMode.Primitive || a.type.type.mode == TypeMode.ByteArray))())
             builder.appendLine("{0}{1} = {1},", generateTabs(tabLevel+3), mm.name);
         builder.appendLine("{0}};", generateTabs(tabLevel+2));
         builder.appendLine("{0}}", generateTabs(tabLevel+1));
@@ -66,13 +66,14 @@ public void generateModel(StringBuilder builder, Model m, ushort tabLevel)
     {
         builder.appendLine("{0}public {2}({1} dbObj)", generateTabs(tabLevel+1), m.database, m.name);
         builder.appendLine("{0}{", generateTabs(tabLevel+1));
-        foreach(mm; m.members.filter!(a => a.hasDatabase && (a.type.mode == TypeMode.Primitive || a.type.mode == TypeMode.ByteArray))())
+
+        foreach(mm; m.members.filter!(a => a.hasDatabase && (a.type.type.mode == TypeMode.Primitive || a.type.type.mode == TypeMode.ByteArray))())
             builder.appendLine("{0}{1} = dbObj.{2};", generateTabs(tabLevel+2), mm.name, mm.database);
-        foreach(mm; m.members.filter!(a => a.hasDatabase && (a.type.mode == TypeMode.Enum))())
+        foreach(mm; m.members.filter!(a => a.hasDatabase && (a.type.type.mode == TypeMode.Enum))())
             builder.appendLine("{0}{1} = ({3})dbObj.{2};", generateTabs(tabLevel+2), mm.name, mm.database, generateType(mm.type, false));
-        foreach(mm; m.members.filter!(a => a.modelbind && a.hasDatabase && (a.type.mode == TypeMode.Model))())
+        foreach(mm; m.members.filter!(a => a.modelbind && a.hasDatabase && (a.type.type.mode == TypeMode.Model))())
             builder.appendLine("{0}{1} = new {3}(dbObj.{2});", generateTabs(tabLevel+2), mm.name, mm.database, generateType(mm.type, false));
-        foreach(mm; m.members.filter!(a => !a.readonly && a.modelbind && a.hasDatabase && (a.type.mode == TypeMode.Collection))()) {
+        foreach(mm; m.members.filter!(a => !a.readonly && a.modelbind && a.hasDatabase && (a.type.type.mode == TypeMode.Collection))()) {
             builder.appendLine("{0}{1} = new {3}(dbObj.{2}.Count);", generateTabs(tabLevel+2), mm.name, mm.database, generateType(mm.type, false));
             builder.appendLine("{0}foreach(var t in dbObj.{1}) {", generateTabs(tabLevel+2), mm.database);
             auto tc = cast(TypeCollection)mm.type;
@@ -89,16 +90,16 @@ public void generateModel(StringBuilder builder, Model m, ushort tabLevel)
         builder.appendLine();
         builder.appendLine("{0}public void Update(Microsoft.EntityFrameworkCore.DbContext context, {1} dbObj, bool cascade = false)", generateTabs(tabLevel+1), m.database);
         builder.appendLine("{0}{", generateTabs(tabLevel+1));
-        foreach(mm; m.members.filter!(a => !a.readonly && a.hasDatabase && (a.type.mode == TypeMode.Primitive || a.type.mode == TypeMode.ByteArray))())
+        foreach(mm; m.members.filter!(a => !a.readonly && a.hasDatabase && (a.type.type.mode == TypeMode.Primitive || a.type.type.mode == TypeMode.ByteArray))())
             builder.appendLine("{0}dbObj.{1} = this.{2};", generateTabs(tabLevel+2), mm.database,  mm.name);
         //Cannot generate updates for Enums.
-        foreach(mm; m.members.filter!(a => !a.readonly && a.modelbind && a.update && a.hasDatabase && (a.type.mode == TypeMode.Model))()) {
+        foreach(mm; m.members.filter!(a => !a.readonly && a.modelbind && a.update && a.hasDatabase && (a.type.type.mode == TypeMode.Model))()) {
             builder.appendLine("{0}if (dbObj.{1} == null) dbObj.{1} = context.Add(new {2}()).Entity;", generateTabs(tabLevel+2), mm.database, m.database);
             builder.appendLine("{0}this.{1}.UpdateEntity(context, dbObj.{2});", generateTabs(tabLevel+2), mm.name, mm.database);
         }
         builder.appendLine("{0}PostUpdate(context, dbObj);", generateTabs(tabLevel+2));
         builder.appendLine("{0}if (!cascade) return;", generateTabs(tabLevel+2));
-        foreach(mm; m.members.filter!(a => !a.readonly && a.modelbind && a.update && a.hasDatabase && (a.type.mode == TypeMode.Collection))()) {
+        foreach(mm; m.members.filter!(a => !a.readonly && a.modelbind && a.update && a.hasDatabase && (a.type.type.mode == TypeMode.Collection))()) {
             auto tc = cast(TypeCollection)mm.type;
             builder.appendLine("{0}foreach(var t in dbObj.{1}.ToArray()) {", generateTabs(tabLevel+2), mm.database);
             if (tc.collectionType.mode == TypeMode.Model) {
@@ -116,7 +117,7 @@ public void generateModel(StringBuilder builder, Model m, ushort tabLevel)
             }
             builder.appendLine("{0}}", generateTabs(tabLevel+2));
         }
-        foreach(mm; m.members.filter!(a => !a.readonly && a.modelbind && a.update && a.hasDatabase && (a.type.mode == TypeMode.Collection))()) {
+        foreach(mm; m.members.filter!(a => !a.readonly && a.modelbind && a.update && a.hasDatabase && (a.type.type.mode == TypeMode.Collection))()) {
             auto tc = cast(TypeCollection)mm.type;
             if (tc.collectionType.mode == TypeMode.Primitive) builder.appendLine("{0}dbObj.{1}.Clear();", generateTabs(tabLevel+2), mm.database);
             builder.appendLine("{0}if (this.{1} != null) {", generateTabs(tabLevel+2), mm.name);
@@ -168,10 +169,10 @@ public void generateModel(StringBuilder builder, Model m, ushort tabLevel)
     if (serverGen && !m.hasDatabase && m.members.any!(a => a.hasDatabase)) {
         builder.appendLine("{0}public {1}(System.Data.DataTableReader reader)", generateTabs(tabLevel+1), m.name);
         builder.appendLine("{0}{", generateTabs(tabLevel+1));
-        foreach(mm; m.members.filter!(a => a.hasDatabase && (a.type.mode == TypeMode.Primitive))()) {
-            builder.appendLine("{0}if (!reader.IsDBNull(reader.GetOrdinal(\"{1}\"))) {1} = reader.Get{2}(reader.GetOrdinal(\"{1}\"));", generateTabs(tabLevel+2), mm.name, GetDataReaderTypeName(cast(TypePrimitive)mm.type));
+        foreach(mm; m.members.filter!(a => a.hasDatabase && (a.type.type.mode == TypeMode.Primitive))()) {
+            builder.appendLine("{0}if (!reader.IsDBNull(reader.GetOrdinal(\"{1}\"))) {1} = reader.Get{2}(reader.GetOrdinal(\"{1}\"));", generateTabs(tabLevel+2), mm.name, GetDataReaderTypeName(cast(TypePrimitive)mm.type.type));
         }
-        foreach(mm; m.members.filter!(a => a.hasDatabase && (a.type.mode == TypeMode.ByteArray))()) {
+        foreach(mm; m.members.filter!(a => a.hasDatabase && (a.type.type.mode == TypeMode.ByteArray))()) {
             builder.appendLine("{0}if (!reader.IsDBNull(reader.GetOrdinal(\"{1}\"))) {{", generateTabs(tabLevel+2), mm.name);
             builder.appendLine("{0}var len = reader.GetBytes(reader.GetOrdinal(\"{1}\"), 0, null, 0, Int32.MaxValue);", generateTabs(tabLevel+3), mm.name);
             builder.appendLine("{0}{1} = new byte[len];", generateTabs(tabLevel+3), mm.name);
