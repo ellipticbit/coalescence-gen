@@ -411,14 +411,14 @@ public final class WebsocketService : TypeUser
 		foreach(ns; root.tags) {
 			if (ns.name == "namespace") {
 				string namespace = ns.expectValue!string();
-				auto nst = root.getTag("server", null);
+				auto nst = ns.getTag("server", null);
 				if (nst !is null) {
 					foreach(sm; nst.maybe.tags) {
 						server ~= new WebsocketServiceMethod(this, sm, namespace);
 					}
 				}
 
-				auto nct = root.getTag("client", null);
+				auto nct = ns.getTag("client", null);
 				if (nct !is null) {
 					foreach(sm; nct.maybe.tags) {
 						client ~= new WebsocketServiceMethod(this, sm, namespace);
