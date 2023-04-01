@@ -90,14 +90,12 @@ public final class AspNetCoreWebsocketExtension : LanguageExtensionBase
     public immutable WebsocketService parent;
 
 	public string clientConnection = string.init;
-	public bool namespaceMethods = false;
 
     public @property immutable(AspNetCoreAuthorizationExtension) getAuthorization() { return cast(immutable(AspNetCoreAuthorizationExtension))super.authorization; }
 
     public this(WebsocketService parent, Tag root) {
         this.parent = cast(immutable(WebsocketService))parent;
 		this.clientConnection = root.getAttribute!string("clientConnection", string.init);
-		this.namespaceMethods = root.getAttribute!bool("namespaceMethods", false);
 
         auto authTag = root.getTag("authorization", null);
         auto auth = authTag !is null ? new AspNetCoreAuthorizationExtension(this, authTag) : new AspNetCoreAuthorizationExtension(this);

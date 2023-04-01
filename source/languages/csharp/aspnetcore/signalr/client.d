@@ -50,7 +50,7 @@ public void generateWebsocketClient(StringBuilder builder, WebsocketService s, u
 	builder.appendLine("{0}}", generateTabs(tabLevel+1));
 	builder.appendLine();
 	foreach(m; s.server) {
-		generateServerMethod(builder, m, ext.namespaceMethods, cast(ushort)(tabLevel+1));
+		generateServerMethod(builder, m, cast(ushort)(tabLevel+1));
 	}
 	builder.appendLine("{0}}", generateTabs(tabLevel));
 	builder.appendLine();
@@ -65,7 +65,7 @@ public void generateWebsocketClient(StringBuilder builder, WebsocketService s, u
 		builder.appendLine();
 		builder.appendLine("{0}public static void Register{1}ClientMethods(this HubConnection connection, IServiceProvider services) {", generateTabs(tabLevel+1), s.name);
 		foreach(m; s.client) {
-			generateClientMethod(builder, m, ext.namespaceMethods, cast(ushort)(tabLevel+2));
+			generateClientMethod(builder, m, cast(ushort)(tabLevel+2));
 		}
 		builder.appendLine("{0}}", generateTabs(tabLevel+1));
 		builder.appendLine("{0}}", generateTabs(tabLevel));
@@ -105,7 +105,7 @@ private void generateInterfaceMethod(StringBuilder builder, WebsocketServiceMeth
 	builder.appendLine(");");
 }
 
-public void generateServerMethod(StringBuilder builder, WebsocketServiceMethod sm, bool namespaceMethods, ushort tabLevel) {
+public void generateServerMethod(StringBuilder builder, WebsocketServiceMethod sm, ushort tabLevel) {
 	builder.append("{0}public ", generateTabs(tabLevel));
 	builder.append("Task");
 	if(sm.returns.length == 1) {
@@ -136,8 +136,8 @@ public void generateServerMethod(StringBuilder builder, WebsocketServiceMethod s
 		builder.removeRight(2);
 		builder.append(")>");
 	}
-	if (namespaceMethods) {
-		builder.append("(\"{0}.{1}\", new object[] { ", cleanName(sm.parent.name), cleanName(sm.name));
+	if (sm.namespace !is null) {
+		builder.append("(\"{0}.{1}\", new object[] { ", cleanName(sm.namespace), cleanName(sm.name));
 	} else {
 		builder.append("(\"{0}\", new object[] { ", cleanName(sm.name));
 	}
@@ -149,9 +149,9 @@ public void generateServerMethod(StringBuilder builder, WebsocketServiceMethod s
 	builder.appendLine("{0}}", generateTabs(tabLevel));
 }
 
-public void generateClientMethod(StringBuilder builder, WebsocketServiceMethod sm, bool namespaceMethods, ushort tabLevel) {
-	if (namespaceMethods) {
-		builder.append("{0}connection.On(\"{1}.{2}\", (", generateTabs(tabLevel), cleanName(sm.parent.name), cleanName(sm.name));
+public void generateClientMethod(StringBuilder builder, WebsocketServiceMethod sm, ushort tabLevel) {
+	if (sm.namespace !is null) {
+		builder.append("{0}connection.On(\"{1}.{2}\", (", generateTabs(tabLevel), cleanName(sm.namespace), cleanName(sm.name));
 	} else {
 		builder.append("{0}connection.On(\"{1}\", (", generateTabs(tabLevel), cleanName(sm.name));
 	}

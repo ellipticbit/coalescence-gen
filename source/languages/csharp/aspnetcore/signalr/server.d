@@ -47,7 +47,7 @@ public void generateWebsocketServer(StringBuilder builder, WebsocketService s, u
     }
     builder.appendLine("{0}{", generateTabs(tabLevel));
     foreach(m; s.server) {
-        generateMethod(builder, m, ext.namespaceMethods, cast(ushort)(tabLevel+1));
+        generateMethod(builder, m, cast(ushort)(tabLevel+1));
     }
     builder.appendLine("{0}}", generateTabs(tabLevel));
 }
@@ -72,12 +72,12 @@ private void generateInterfaceMethod(StringBuilder builder, WebsocketServiceMeth
     builder.appendLine(");");
 }
 
-private void generateMethod(StringBuilder builder, WebsocketServiceMethod sm, bool namespaceMethods, ushort tabLevel) {
+private void generateMethod(StringBuilder builder, WebsocketServiceMethod sm, ushort tabLevel) {
     auto ext = sm.getAspNetCoreWebsocketMethodExtension();
 	generateAuthorization(builder, ext !is null ? ext.getAuthorization() : null, sm.authenticate, sm.parent.authenticate, tabLevel);
 
-	if (namespaceMethods) {
-		builder.appendLine("{0}[HubMethodName(\"{1}.{2}\")]", generateTabs(tabLevel), cleanName(sm.parent.name), cleanName(sm.name));
+	if (sm.namespace !is null) {
+		builder.appendLine("{0}[HubMethodName(\"{1}.{2}\")]", generateTabs(tabLevel), cleanName(sm.namespace), cleanName(sm.name));
 	}
     builder.append("{0}public abstract ", generateTabs(tabLevel));
 	builder.append("Task");

@@ -408,8 +408,30 @@ public final class WebsocketService : TypeUser
 		auto ancext = root.getTag("extensions:aspnetcore", null);
 		if(ancext !is null) extensions ~= new AspNetCoreWebsocketExtension(this, ancext);
 
-		foreach(sm; root.expectTag("server").tags) {
-			server ~= new WebsocketServiceMethod(this, sm);
+		foreach(ns; root.tags) {
+			if (ns.name == "namespace") {
+				string namespace = ns.expectValue!string();
+				auto nst = root.getTag("server", null);
+				if (nst !is null) {
+					foreach(sm; nst.maybe.tags) {
+						server ~= new WebsocketServiceMethod(this, sm, namespace);
+					}
+				}
+
+				auto nct = root.getTag("client", null);
+				if (nct !is null) {
+					foreach(sm; nct.maybe.tags) {
+						client ~= new WebsocketServiceMethod(this, sm, namespace);
+					}
+				}
+			}
+		}
+
+		auto st = root.getTag("server", null);
+		if (st !is null) {
+			foreach(sm; st.maybe.tags) {
+				server ~= new WebsocketServiceMethod(this, sm);
+			}
 		}
 
 		auto ct = root.getTag("client", null);
@@ -428,6 +450,7 @@ public final class WebsocketServiceMethod : TypeUser
 	public override @property TypeMode mode() { return TypeMode.Service; }
 
 	public WebsocketService parent;
+	public string namespace = null;
 	public bool hidden;
 
 	public bool sync;
@@ -438,9 +461,10 @@ public final class WebsocketServiceMethod : TypeUser
 
 	public LanguageExtensionBase[] extensions;
 
-	public this(WebsocketService parent, Tag root) {
+	public this(WebsocketService parent, Tag root, string namespace = null) {
 		this.parent = parent;
 		this.name = root.name;
+		this.namespace = namespace;
 		this.hidden = root.getAttribute!bool("hidden", false);
 		this.sync = root.getAttribute!bool("sync", false);
 		this.authenticate = root.getAttribute!bool("authenticate", true);
