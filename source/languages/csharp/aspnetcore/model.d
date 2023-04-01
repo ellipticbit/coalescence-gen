@@ -28,7 +28,7 @@ public void generateModel(StringBuilder builder, Model m, ushort tabLevel)
 	if (hasOption("xaml") && clientGen)
 	{
 		builder.appendLine("{0}public event PropertyChangedEventHandler PropertyChanged;", generateTabs(tabLevel+1));
-		builder.appendLine("{0}protected void BindablePropertyChanged(string propertyName) {", generateTabs(tabLevel+1));
+		builder.appendLine("{0}private void BindablePropertyChanged(string propertyName) {", generateTabs(tabLevel+1));
 		builder.appendLine("{0}if (PropertyChanged != null)", generateTabs(tabLevel+2));
 		builder.appendLine("{0}PropertyChanged(this, new PropertyChangedEventArgs(propertyName));", generateTabs(tabLevel+3));
 		builder.appendLine("{0}}", generateTabs(tabLevel+1));
