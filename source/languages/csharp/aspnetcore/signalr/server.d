@@ -39,10 +39,10 @@ public void generateWebsocketServer(StringBuilder builder, WebsocketService s, u
         builder.appendLine("{0}}", generateTabs(tabLevel));
     }
 
-    auto ext = s.getAspNetCoreWebsocketExtension();
+	builder.appendLine();
+	auto ext = s.getAspNetCoreWebsocketExtension();
 	generateAuthorization(builder, ext !is null ? ext.getAuthorization() : null, s.authenticate, false, tabLevel);
 
-	builder.appendLine();
     if (s.hasClient()) {
         builder.appendLine("{0}{2} abstract class {1}HubBase : Hub<I{1}{3}>, I{1}{4}", generateTabs(tabLevel), s.name, s.isPublic ? "public" : "internal", serverGen ? "Client" : "Server", serverGen ? "Server" : "Client");
     } else {

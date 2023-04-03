@@ -69,7 +69,7 @@ public void generateWebsocketClient(StringBuilder builder, WebsocketService s, u
 	if (s.namespaces.length != 0) builder.removeRight(2);
 	builder.appendLine(">(this IServiceCollection services)");
 	foreach (ns; s.namespaces) {
-		if (ns.client.length != 0) builder.appendLine("{0}where T{2}Client : class, I{1}{2}Client ", generateTabs(tabLevel+2), cleanName(s.name), cleanName(ns.name));
+		if (ns.client.length != 0) builder.appendLine("{0}where T{2}Client : class, I{1}{2}Client", generateTabs(tabLevel+2), cleanName(s.name), cleanName(ns.name));
 	}
 	builder.appendLine("{0}{", generateTabs(tabLevel+1));
 	foreach (ns; s.namespaces) {
