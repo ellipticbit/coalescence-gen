@@ -17,42 +17,47 @@ import std.string;
 
 public void generateWebsocketServer(StringBuilder builder, WebsocketService s, ushort tabLevel)
 {
+	builder.appendLine();
+	builder.appendLine("{0}{2} interface I{1}Server", generateTabs(tabLevel), s.name, s.isPublic ? "public" : "internal");
+	builder.appendLine("{0}{", generateTabs(tabLevel));
+	foreach(ns; s.namespaces) {
+		foreach(m; ns.server) {
+			generateInterfaceMethod(builder, m, ns.name, cast(ushort)(tabLevel+1));
+		}
+	}
+	builder.appendLine("{0}}", generateTabs(tabLevel));
 
-    builder.appendLine();
-    builder.appendLine("{0}{2} interface I{1}Server", generateTabs(tabLevel), s.name, s.isPublic ? "public" : "internal");
-    builder.appendLine("{0}{", generateTabs(tabLevel));
-    foreach(m; s.server) {
-        generateInterfaceMethod(builder, m, cast(ushort)(tabLevel+1));
-    }
-    builder.appendLine("{0}}", generateTabs(tabLevel));
-    builder.appendLine();
-
-    if (s.client.length != 0) {
+    if (s.hasClient()) {
+		builder.appendLine();
         builder.appendLine("{0}{2} interface I{1}Client", generateTabs(tabLevel), s.name, s.isPublic ? "public" : "internal");
         builder.appendLine("{0}{", generateTabs(tabLevel));
-        foreach(m; s.client) {
-            generateInterfaceMethod(builder, m, cast(ushort)(tabLevel+1));
-        }
+		foreach(ns; s.namespaces) {
+			foreach(m; ns.client) {
+				generateInterfaceMethod(builder, m, ns.name, cast(ushort)(tabLevel+1));
+			}
+		}
         builder.appendLine("{0}}", generateTabs(tabLevel));
-        builder.appendLine();
     }
 
     auto ext = s.getAspNetCoreWebsocketExtension();
 	generateAuthorization(builder, ext !is null ? ext.getAuthorization() : null, s.authenticate, false, tabLevel);
 
-    if (s.client.length != 0) {
+	builder.appendLine();
+    if (s.hasClient()) {
         builder.appendLine("{0}{2} abstract class {1}HubBase : Hub<I{1}{3}>, I{1}{4}", generateTabs(tabLevel), s.name, s.isPublic ? "public" : "internal", serverGen ? "Client" : "Server", serverGen ? "Server" : "Client");
     } else {
         builder.appendLine("{0}{2} abstract class {1}HubBase : Hub, I{1}{3}", generateTabs(tabLevel), s.name, s.isPublic ? "public" : "internal", serverGen ? "Server" : "Client");
     }
     builder.appendLine("{0}{", generateTabs(tabLevel));
-    foreach(m; s.server) {
-        generateMethod(builder, m, cast(ushort)(tabLevel+1));
-    }
+	foreach(ns; s.namespaces) {
+		foreach(m; ns.server) {
+			generateMethod(builder, m, ns.name, cast(ushort)(tabLevel+1));
+		}
+	}
     builder.appendLine("{0}}", generateTabs(tabLevel));
 }
 
-private void generateInterfaceMethod(StringBuilder builder, WebsocketServiceMethod sm, ushort tabLevel) {
+private void generateInterfaceMethod(StringBuilder builder, WebsocketServiceMethod sm, string namespace, ushort tabLevel) {
 	builder.append(generateTabs(tabLevel));
 	builder.append("Task");
 	if(sm.returns.length == 1) {
@@ -67,17 +72,17 @@ private void generateInterfaceMethod(StringBuilder builder, WebsocketServiceMeth
 		builder.removeRight(2);
 		builder.append(")>");
 	}
-    builder.append(" {0}(", cleanName(sm.name));
+    builder.append(" {0}{1}(", cleanName(namespace), cleanName(sm.name));
     generateMethodParameters(builder, sm.parameters);
     builder.appendLine(");");
 }
 
-private void generateMethod(StringBuilder builder, WebsocketServiceMethod sm, ushort tabLevel) {
+private void generateMethod(StringBuilder builder, WebsocketServiceMethod sm, string namespace, ushort tabLevel) {
     auto ext = sm.getAspNetCoreWebsocketMethodExtension();
 	generateAuthorization(builder, ext !is null ? ext.getAuthorization() : null, sm.authenticate, sm.parent.authenticate, tabLevel);
 
-	if (sm.namespace !is null) {
-		builder.appendLine("{0}[HubMethodName(\"{1}.{2}\")]", generateTabs(tabLevel), cleanName(sm.namespace), cleanName(sm.name));
+	if (namespace !is null && namespace != string.init) {
+		builder.appendLine("{0}[HubMethodName(\"{1}.{2}\")]", generateTabs(tabLevel), cleanName(namespace), cleanName(sm.name));
 	}
     builder.append("{0}public abstract ", generateTabs(tabLevel));
 	builder.append("Task");
@@ -93,7 +98,7 @@ private void generateMethod(StringBuilder builder, WebsocketServiceMethod sm, us
 		builder.removeRight(2);
 		builder.append(")>");
 	}
-    builder.append(" {0}(", cleanName(sm.name));
+    builder.append(" {0}{1}(", cleanName(namespace), cleanName(sm.name));
     generateMethodParameters(builder, sm.parameters);
     builder.appendLine(");");
 }

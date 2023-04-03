@@ -386,14 +386,11 @@ public final class WebsocketService : TypeUser
 	public override @property TypeMode mode() { return TypeMode.Service; }
 
 	public Namespace parent;
-	public WebsocketServiceMethod[] server;
-	public WebsocketServiceMethod[] client;
+	public WebsocketServiceNamespace[] namespaces;
 	public LanguageExtensionBase[] extensions;
 
 	public WebsocketServiceSystem systemMode;
 	public bool isPublic;
-	public string route;
-	public bool hasRoute() { return route != null && route != string.init; }
 	public bool authenticate;
 
 	public this(Namespace parent, Tag root) {
@@ -402,7 +399,6 @@ public final class WebsocketService : TypeUser
 		string mstr = root.getAttribute!string("system", "SignalR").toLower();
 		this.systemMode = (mstr == "Raw".toLower() ? WebsocketServiceSystem.Raw : WebsocketServiceSystem.SignalR);
 		this.isPublic = root.getAttribute!bool("public", true);
-		this.route = root.getAttribute!string("route", string.init).strip().strip("/");
 		this.authenticate = root.getAttribute!bool("authenticate", true);
 
 		auto ancext = root.getTag("extensions:aspnetcore", null);
@@ -411,37 +407,65 @@ public final class WebsocketService : TypeUser
 		foreach(ns; root.tags) {
 			if (ns.name == "namespace") {
 				string namespace = ns.expectValue!string();
+				WebsocketServiceMethod[] nssml;
 				auto nst = ns.getTag("server", null);
 				if (nst !is null) {
 					foreach(sm; nst.maybe.tags) {
-						server ~= new WebsocketServiceMethod(this, sm, namespace);
+						nssml ~= new WebsocketServiceMethod(this, sm);
 					}
 				}
 
+				WebsocketServiceMethod[] ncsml;
 				auto nct = ns.getTag("client", null);
 				if (nct !is null) {
 					foreach(sm; nct.maybe.tags) {
-						client ~= new WebsocketServiceMethod(this, sm, namespace);
+						ncsml ~= new WebsocketServiceMethod(this, sm);
 					}
 				}
+
+				namespaces ~= new WebsocketServiceNamespace(namespace, nssml, ncsml);
 			}
 		}
 
+		WebsocketServiceMethod[] ssml;
 		auto st = root.getTag("server", null);
 		if (st !is null) {
 			foreach(sm; st.maybe.tags) {
-				server ~= new WebsocketServiceMethod(this, sm);
+				ssml ~= new WebsocketServiceMethod(this, sm);
 			}
 		}
 
+		WebsocketServiceMethod[] csml;
 		auto ct = root.getTag("client", null);
 		if (ct !is null) {
 			foreach(sm; ct.maybe.tags) {
-				client ~= new WebsocketServiceMethod(this, sm);
+				csml ~= new WebsocketServiceMethod(this, sm);
 			}
 		}
 
+		namespaces ~= new WebsocketServiceNamespace(string.init, ssml, csml);
+
 		super(name, root.location);
+	}
+
+	public bool hasClient() {
+		ulong count = 0;
+		foreach(ns; namespaces) {
+			count += ns.client.length;
+		}
+		return count != 0;
+	}
+}
+
+public final class WebsocketServiceNamespace {
+	public string name;
+	public WebsocketServiceMethod[] server;
+	public WebsocketServiceMethod[] client;
+
+	public this(string namespace, WebsocketServiceMethod[] server, WebsocketServiceMethod[] client) {
+		this.name = namespace;
+		this.server = server;
+		this.client = client;
 	}
 }
 
@@ -450,7 +474,6 @@ public final class WebsocketServiceMethod : TypeUser
 	public override @property TypeMode mode() { return TypeMode.Service; }
 
 	public WebsocketService parent;
-	public string namespace = null;
 	public bool hidden;
 
 	public bool sync;
@@ -461,10 +484,9 @@ public final class WebsocketServiceMethod : TypeUser
 
 	public LanguageExtensionBase[] extensions;
 
-	public this(WebsocketService parent, Tag root, string namespace = null) {
+	public this(WebsocketService parent, Tag root) {
 		this.parent = parent;
 		this.name = root.name;
-		this.namespace = namespace;
 		this.hidden = root.getAttribute!bool("hidden", false);
 		this.sync = root.getAttribute!bool("sync", false);
 		this.authenticate = root.getAttribute!bool("authenticate", true);

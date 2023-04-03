@@ -188,22 +188,24 @@ public bool analyseService(HttpService s)
 public bool analyseWebsocket(WebsocketService s)
 {
 	bool hasErrors = false;
-	foreach(sm; s.server)
-	{
-		foreach(smp; sm.parameters) {
-			if (analyseType(smp, s.parent)) hasErrors = true;
+	foreach(ns; s.namespaces) {
+		foreach(sm; ns.server)
+		{
+			foreach(smp; sm.parameters) {
+				if (analyseType(smp, s.parent)) hasErrors = true;
+			}
+			foreach(smp; sm.returns) {
+				if (analyseType(smp, s.parent)) hasErrors = true;
+			}
 		}
-		foreach(smp; sm.returns) {
-			if (analyseType(smp, s.parent)) hasErrors = true;
-		}
-	}
-	foreach(sm; s.client)
-	{
-		foreach(smp; sm.parameters) {
-			if (analyseType(smp, s.parent)) hasErrors = true;
-		}
-		foreach(smp; sm.returns) {
-			if (analyseType(smp, s.parent)) hasErrors = true;
+		foreach(sm; ns.client)
+		{
+			foreach(smp; sm.parameters) {
+				if (analyseType(smp, s.parent)) hasErrors = true;
+			}
+			foreach(smp; sm.returns) {
+				if (analyseType(smp, s.parent)) hasErrors = true;
+			}
 		}
 	}
 	return true;
