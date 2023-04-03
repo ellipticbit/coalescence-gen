@@ -64,12 +64,12 @@ public void generateWebsocketClient(StringBuilder builder, WebsocketService s, u
 	builder.appendLine("{0}{", generateTabs(tabLevel));
 	builder.append("{0}public static void Register{1}ClientServices<", generateTabs(tabLevel+1), cleanName(s.name));
 	foreach (ns; s.namespaces) {
-		builder.append("T{0}Client, ", cleanName(ns.name));
+		if (ns.client.length != 0) builder.append("T{0}Client, ", cleanName(ns.name));
 	}
 	if (s.namespaces.length != 0) builder.removeRight(2);
 	builder.appendLine(">(this IServiceCollection services)");
 	foreach (ns; s.namespaces) {
-		builder.appendLine("{0}where T{2}Client : class, I{1}{2}Client ", generateTabs(tabLevel+2), cleanName(s.name), cleanName(ns.name));
+		if (ns.client.length != 0) builder.appendLine("{0}where T{2}Client : class, I{1}{2}Client ", generateTabs(tabLevel+2), cleanName(s.name), cleanName(ns.name));
 	}
 	builder.appendLine("{0}{", generateTabs(tabLevel+1));
 	foreach (ns; s.namespaces) {
