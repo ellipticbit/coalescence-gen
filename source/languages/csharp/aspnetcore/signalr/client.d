@@ -184,6 +184,6 @@ public void generateClientMethod(StringBuilder builder, WebsocketServiceMethod s
 		builder.append("{0}, ", smp.name);
 	}
 	if (sm.parameters.length > 0) builder.removeRight(2);
-	builder.appendLine(");");
+	builder.appendLine("),");
 	builder.appendLine("{0}});", generateTabs(tabLevel));
 }
