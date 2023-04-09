@@ -78,12 +78,14 @@ public void generateWebsocketClient(StringBuilder builder, WebsocketService s, u
 	}
 	builder.appendLine("{0}}", generateTabs(tabLevel+1));
 	builder.appendLine();
-	builder.appendLine("{0}public static void Register{1}ClientMethods(this HubConnection connection, IServiceProvider services) {", generateTabs(tabLevel+1), cleanName(s.name));
+	builder.appendLine("{0}public static IEnumerable<IDisposable> Register{1}ClientMethods(this HubConnection connection, IServiceProvider services) {", generateTabs(tabLevel+1), cleanName(s.name));
+	builder.appendLine("{0}var rl = new List<IDisposable>();", generateTabs(tabLevel+2));
 	foreach(ns; s.namespaces) {
 		foreach(m; ns.client) {
 			generateClientMethod(builder, m, ns.name, cast(ushort)(tabLevel+2));
 		}
 	}
+	builder.appendLine("{0}return rl;", generateTabs(tabLevel+2));
 	builder.appendLine("{0}}", generateTabs(tabLevel+1));
 	builder.appendLine("{0}}", generateTabs(tabLevel));
 }
@@ -166,7 +168,7 @@ public void generateServerMethod(StringBuilder builder, WebsocketServiceMethod s
 
 public void generateClientMethod(StringBuilder builder, WebsocketServiceMethod sm, string namespace, ushort tabLevel) {
 	if (namespace !is null && namespace != string.init) {
-		builder.append("{0}connection.On(\"{1}.{2}\", (", generateTabs(tabLevel), cleanName(namespace), cleanName(sm.name));
+		builder.append("{0}rl.add(connection.On(\"{1}.{2}\", (", generateTabs(tabLevel), cleanName(namespace), cleanName(sm.name));
 	} else {
 		builder.append("{0}connection.On(\"{1}\", (", generateTabs(tabLevel), cleanName(sm.name));
 	}
@@ -182,5 +184,5 @@ public void generateClientMethod(StringBuilder builder, WebsocketServiceMethod s
 	}
 	if (sm.parameters.length > 0) builder.removeRight(2);
 	builder.appendLine(");");
-	builder.appendLine("{0}});", generateTabs(tabLevel));
+	builder.appendLine("{0}}));", generateTabs(tabLevel));
 }
