@@ -74,7 +74,7 @@ int main(string[] args)
     loadFiles();
 
     //Do semantic analysis
-    if(!analyse()) {
+    if(analyse()) {
         writeln("Analysis failed.");
         return 1;
     }

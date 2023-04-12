@@ -24,22 +24,22 @@ public bool analyse()
 		{
 			foreach(e; ns.enums)
 			{
-				if(!analyseEnum(e))
+				if(analyseEnum(e))
 					hasErrors = true;
 			}
 			foreach(m; ns.models)
 			{
-				if(!analyseModel(m))
+				if(analyseModel(m))
 					hasErrors = true;
 			}
 			foreach(s; ns.services)
 			{
-				if(!analyseService(s))
+				if(analyseService(s))
 					hasErrors = true;
 			}
 			foreach(s; ns.sockets)
 			{
-				if(!analyseWebsocket(s))
+				if(analyseWebsocket(s))
 					hasErrors = true;
 			}
 		}
@@ -55,10 +55,10 @@ private bool analyseType(TypeComplex type, Namespace curns)
 		return analyseType((cast(TypeDictionary)type.type).keyType, curns) && analyseType((cast(TypeDictionary)type.type).valueType, curns);
 	} else if (typeid(type.type) == typeid(TypeUnknown)) {
 		type.type = analyseTypeUnknown(cast(TypeUnknown)type.type, curns);
-		return type.type !is null;
+		return type.type is null;
 	}
 
-	return true;
+	return false;
 }
 
 private TypeBase analyseTypeUnknown(TypeUnknown type, Namespace curns)
