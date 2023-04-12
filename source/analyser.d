@@ -17,6 +17,7 @@ import std.string;
 
 public bool analyse()
 {
+	bool hasErrors = false;
 	foreach(pf; projectFiles)
 	{
 		foreach(ns; pf.namespaces)
@@ -24,26 +25,26 @@ public bool analyse()
 			foreach(e; ns.enums)
 			{
 				if(!analyseEnum(e))
-					return false;
+					hasErrors = true;
 			}
 			foreach(m; ns.models)
 			{
 				if(!analyseModel(m))
-					return false;
+					hasErrors = true;
 			}
 			foreach(s; ns.services)
 			{
 				if(!analyseService(s))
-					return false;
+					hasErrors = true;
 			}
 			foreach(s; ns.sockets)
 			{
 				if(!analyseWebsocket(s))
-					return false;
+					hasErrors = true;
 			}
 		}
 	}
-	return true;
+	return hasErrors;
 }
 
 private bool analyseType(TypeComplex type, Namespace curns)
@@ -90,6 +91,8 @@ private TypeBase analyseTypeUnknown(TypeUnknown type, Namespace curns)
 
 public bool analyseEnum(Enumeration e)
 {
+	bool hasErrors = false;
+
 	foreach(ev; e.values)
 	{
 		if(ev.aggregate.length == 0)
@@ -108,14 +111,14 @@ public bool analyseEnum(Enumeration e)
 			if (fe is null)
 			{
 				writeAnalyserError("Unable to locate enumeration: " ~ teavl, ev.sourceLocation);
-				return false;
+				hasErrors = true;
 			}
 
 			auto fev = fe.values.find!(a => a.name == value);
 			if (fev.empty())
 			{
 				writeAnalyserError("Unable to locate enumeration value: " ~ value, ev.sourceLocation);
-				return false;
+				hasErrors = true;
 			}
 
 			eav.type = fe;
@@ -123,24 +126,25 @@ public bool analyseEnum(Enumeration e)
 		}
 	}
 
-	return true;
+	return hasErrors;
 }
 
 public bool analyseModel(Model m)
 {
+	bool hasErrors = false;
 	foreach(mm; m.members)
 	{
 		//Analyse the type
 		if(!analyseType(mm.type, m.parent))
-			return false;
+			hasErrors = true;
 	}
 
 	if (m.members.any!(a => a.primaryKey && a.type.mode != TypeMode.Primitive)()) {
 		writeAnalyserError(format("Primary Key for type '%s' must be a primitive type.", m.name), m.sourceLocation);
-		return false;
+		hasErrors = true;
 	}
 
-	return true;
+	return hasErrors;
 }
 
 public bool analyseService(HttpService s)
@@ -206,7 +210,7 @@ public bool analyseWebsocket(WebsocketService s)
 			}
 		}
 	}
-	return true;
+	return hasErrors;
 }
 
 public Enumeration searchEnums(string name, string namespace = string.init)
