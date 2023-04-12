@@ -1,6 +1,6 @@
 namespace "Service.Network" {
-	enum "TestEnum" packed=true {
-		value1 
+	enum "TestEnum" packed=false {
+		value1
 		value2 100
 		value3 "Service.Network.TestEnum.value1" "Service.Network.TestEnum.value2"
 	}
@@ -12,6 +12,7 @@ namespace "Service.Network" {
 		Member3 type="Service.Network.TestEnum" transport="m3"
 		IntCollectionTest type="[int32]" transport="intt"
 		ModelCollectionTest type="[SubModel]" transport="mt"
+		NamespaceModelTest type="[NamespaceTest]" transport="nt"
 	}
 
 	model "SubModel" {

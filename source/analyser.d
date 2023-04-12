@@ -70,16 +70,14 @@ private TypeBase analyseTypeUnknown(TypeUnknown type, Namespace curns)
 			namespace ~= s ~ ".";
 	if(namespace != string.init)
 		namespace = to!string(namespace[0..$-1]);
-	else
-		namespace = curns.segments.join(".");
 
-	Enumeration fe = searchEnums(namespace, name);
-	Model fm = searchModels(namespace, name);
+	Enumeration fe = searchEnums(name, namespace);
+	Model fm = searchModels(name, namespace);
 
 	if(fe is null && fm is null)
 	{
 		writeAnalyserError("Unable to locate type: " ~ type.typeName, type.sourceLocation);
-		searchSuggest(cast(TypeUser)type, namespace, name);
+		searchSuggest(cast(TypeUser)type, name);
 		return null;
 	}
 
@@ -106,7 +104,7 @@ public bool analyseEnum(Enumeration e)
 			string ns = eav.aggregateLabel[0..lastIndexOf(eav.aggregateLabel, '.')];
 			eav.aggregateLabel = null;
 
-			auto fe = searchEnums(ns, name);
+			auto fe = searchEnums(name, ns);
 			if (fe is null)
 			{
 				writeAnalyserError("Unable to locate enumeration: " ~ teavl, ev.sourceLocation);
@@ -211,73 +209,72 @@ public bool analyseWebsocket(WebsocketService s)
 	return true;
 }
 
-public Enumeration searchEnums(string namespace, string name)
+public Enumeration searchEnums(string name, string namespace = string.init)
 {
+	Enumeration[] matches;
+
 	//Search the current namespace if no FQN is detected otherwise search all namespaces
 	foreach(pf; projectFiles)
 	{
 		foreach(ns; pf.namespaces)
 		{
-			if (ns.name.toLower() != namespace.toLower())
+			if (namespace != string.init && ns.name.toLower() != namespace.toLower())
 				continue;
 
 			foreach(m; ns.enums)
 			{
 				if (m.name == name)
-					return m;
+					matches ~= m;
 			}
 		}
 	}
 
-	return null;
+	return matches.length != 1 ? null : matches[0];
 }
 
-private Model searchModels(string namespace, string name)
+private Model searchModels(string name, string namespace = string.init)
 {
+	Model[] matches;
+
 	//Search the current namespace if no FQN is detected otherwise search all namespaces
 	foreach(pf; projectFiles)
 	{
 		foreach(ns; pf.namespaces)
 		{
-			if (ns.name.toLower() != namespace.toLower())
+			if (namespace != string.init && ns.name.toLower() != namespace.toLower())
 				continue;
 
 			foreach(m; ns.models)
 			{
 				if (m.name == name)
-					return m;
+					matches ~= m;
 			}
 		}
 	}
 
-	return null;
+	return matches.length != 1 ? null : matches[0];
 }
 
-private void searchSuggest(TypeUser type, string namespace, string name)
+private void searchSuggest(TypeUser type, string name)
 {
 	//Suggestion search
 	foreach(pf; projectFiles)
 	{
 		foreach(ns; pf.namespaces)
 		{
-			auto n1 = to!string(ns.name.toLower().dup().array().sort());
-			auto n2 = to!string(namespace.toLower().dup().array().sort());
-			if (ns.name.toLower() == namespace.toLower() || n1 == n2)
+			foreach(m; ns.enums)
 			{
-				foreach(m; ns.enums)
-				{
-					auto s1 = to!string(m.name.toLower().dup().array().sort());
-					auto s2 = to!string(name.toLower().dup().array().sort());
-					if (m.name.toLower() == name.toLower() || s1 == s2)
-						writeTypeErrorSuggest(type, m.getFqn());
-				}
-				foreach(m; ns.models)
-				{
-					auto s1 = to!string(m.name.toLower().dup().array().sort());
-					auto s2 = to!string(name.toLower().dup().array().sort());
-					if (m.name.toLower() == name.toLower() || s1 == s2)
-						writeTypeErrorSuggest(type, m.getFqn());
-				}
+				auto s1 = to!string(m.name.toLower().dup().array().sort());
+				auto s2 = to!string(name.toLower().dup().array().sort());
+				if (m.name.toLower() == name.toLower() || s1 == s2)
+					writeTypeErrorSuggest(type, m.getFqn());
+			}
+			foreach(m; ns.models)
+			{
+				auto s1 = to!string(m.name.toLower().dup().array().sort());
+				auto s2 = to!string(name.toLower().dup().array().sort());
+				if (m.name.toLower() == name.toLower() || s1 == s2)
+					writeTypeErrorSuggest(type, m.getFqn());
 			}
 		}
 	}

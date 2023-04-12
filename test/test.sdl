@@ -1,4 +1,8 @@
 namespace "Service.Network" {
+	model "NamespaceTest" {
+		TenantId type="int64"
+	}
+
 	websocket "SocketService" {
 		extensions:aspnetcore roles="role" allRoles=false policy="policy"
 		server {
