@@ -44,6 +44,7 @@ public bool analyse()
 			}
 		}
 	}
+
 	return hasErrors;
 }
 
@@ -135,7 +136,7 @@ public bool analyseModel(Model m)
 	foreach(mm; m.members)
 	{
 		//Analyse the type
-		if(!analyseType(mm.type, m.parent))
+		if(analyseType(mm.type, m.parent))
 			hasErrors = true;
 	}
 
