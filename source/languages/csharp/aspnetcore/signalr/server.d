@@ -48,13 +48,13 @@ public void generateWebsocketServer(StringBuilder builder, WebsocketService s, u
     } else {
         builder.appendLine("{0}{2} abstract class {1}HubBase : Hub, I{1}{3}", generateTabs(tabLevel), s.name, s.isPublic ? "public" : "internal", serverGen ? "Server" : "Client");
     }
-    builder.appendLine("{0}{", generateTabs(tabLevel));
+	builder.appendLine("{0}{", generateTabs(tabLevel));
 	foreach(ns; s.namespaces) {
 		foreach(m; ns.server) {
 			generateMethod(builder, m, ns.name, cast(ushort)(tabLevel+1));
 		}
 	}
-    builder.appendLine("{0}}", generateTabs(tabLevel));
+	builder.appendLine("{0}}", generateTabs(tabLevel));
 }
 
 private void generateInterfaceMethod(StringBuilder builder, WebsocketServiceMethod sm, string namespace, ushort tabLevel) {
@@ -82,7 +82,9 @@ private void generateMethod(StringBuilder builder, WebsocketServiceMethod sm, st
 	generateAuthorization(builder, ext !is null ? ext.getAuthorization() : null, sm.authenticate, sm.parent.authenticate, tabLevel);
 
 	if (namespace !is null && namespace != string.init) {
-		builder.appendLine("{0}[HubMethodName(\"{1}.{2}\")]", generateTabs(tabLevel), cleanName(namespace), cleanName(sm.name));
+		builder.appendLine("{0}[HubMethodName(\"{1}.{2}\")]", generateTabs(tabLevel), cleanName(namespace), cleanName(sm.socketName));
+	} else {
+		builder.appendLine("{0}[HubMethodName(\"{1}\")]", generateTabs(tabLevel), cleanName(sm.socketName));
 	}
     builder.append("{0}public abstract ", generateTabs(tabLevel));
 	builder.append("Task");

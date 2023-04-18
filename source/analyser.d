@@ -191,9 +191,18 @@ public bool analyseService(HttpService s)
 public bool analyseWebsocket(WebsocketService s)
 {
 	bool hasErrors = false;
+	int[string] snl;
+	int[string] cnl;
 	foreach(ns; s.namespaces) {
 		foreach(sm; ns.server)
 		{
+			if ((sm.name in snl) is null) {
+				snl[sm.name] = 1;
+			} else {
+				snl[sm.name] += 1;
+			}
+			if (snl[sm.name] > 1) sm.socketName ~= "-" ~ to!string(snl[sm.name]);
+
 			foreach(smp; sm.parameters) {
 				if (analyseType(smp, s.parent)) hasErrors = true;
 			}
@@ -203,6 +212,13 @@ public bool analyseWebsocket(WebsocketService s)
 		}
 		foreach(sm; ns.client)
 		{
+			if ((sm.name in cnl) is null) {
+				cnl[sm.name] = 1;
+			} else {
+				cnl[sm.name] += 1;
+			}
+			if (cnl[sm.name] > 1) sm.socketName ~= "-" ~ to!string(cnl[sm.name]);
+
 			foreach(smp; sm.parameters) {
 				if (analyseType(smp, s.parent)) hasErrors = true;
 			}

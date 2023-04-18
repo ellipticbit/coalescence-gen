@@ -474,6 +474,7 @@ public final class WebsocketServiceMethod : TypeUser
 	public override @property TypeMode mode() { return TypeMode.Service; }
 
 	public WebsocketService parent;
+	public string socketName;
 	public bool hidden;
 
 	public bool sync;
@@ -487,6 +488,7 @@ public final class WebsocketServiceMethod : TypeUser
 	public this(WebsocketService parent, Tag root) {
 		this.parent = parent;
 		this.name = root.name;
+		this.socketName = root.name;
 		this.hidden = root.getAttribute!bool("hidden", false);
 		this.sync = root.getAttribute!bool("sync", false);
 		this.authenticate = root.getAttribute!bool("authenticate", true);

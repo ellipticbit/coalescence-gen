@@ -155,9 +155,9 @@ public void generateServerMethod(StringBuilder builder, WebsocketServiceMethod s
 		builder.append(")>");
 	}
 	if (namespace !is null && namespace != string.init) {
-		builder.append("(\"{0}.{1}\", new object[] { ", cleanName(namespace), cleanName(sm.name));
+		builder.append("(\"{0}.{1}\", new object[] { ", cleanName(namespace), cleanName(sm.socketName));
 	} else {
-		builder.append("(\"{0}\", new object[] { ", cleanName(sm.name));
+		builder.append("(\"{0}\", new object[] { ", cleanName(sm.socketName));
 	}
 	foreach (smp; sm.parameters) {
 		builder.append("{0}, ", smp.name);
@@ -169,9 +169,9 @@ public void generateServerMethod(StringBuilder builder, WebsocketServiceMethod s
 
 public void generateClientMethod(StringBuilder builder, WebsocketServiceMethod sm, string namespace, ushort tabLevel) {
 	if (namespace !is null && namespace != string.init) {
-		builder.append("{0}connection.On(\"{1}.{2}\", (", generateTabs(tabLevel), cleanName(namespace), cleanName(sm.name));
+		builder.append("{0}connection.On(\"{1}.{2}\", (", generateTabs(tabLevel), cleanName(namespace), cleanName(sm.socketName));
 	} else {
-		builder.append("{0}connection.On(\"{1}\", (", generateTabs(tabLevel), cleanName(sm.name));
+		builder.append("{0}connection.On(\"{1}\", (", generateTabs(tabLevel), cleanName(sm.socketName));
 	}
 	foreach (smp; sm.parameters) {
 		builder.append("{0} {1}, ", generateType(smp, false), smp.name);

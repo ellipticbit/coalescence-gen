@@ -6,12 +6,15 @@ namespace "Service.Network" {
 	websocket "SocketService" {
 		extensions:aspnetcore roles="role" allRoles=false policy="policy"
 		server {
-			Method1 {
+			Method {
 				parameters customerId="int32"
 				return result="TestModel"
 			}
 			Method2 sync=true {
 				return result="void"
+			}
+			Method {
+				return result="TestModel"
 			}
 		}
 		client {
