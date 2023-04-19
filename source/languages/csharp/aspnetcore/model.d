@@ -62,7 +62,6 @@ public void generateModel(StringBuilder builder, Model m, ushort tabLevel)
         builder.appendLine();
     }
 
-
     if (m.hasDatabase && serverGen)
     {
         builder.appendLine("{0}public {2}({1} dbObj)", generateTabs(tabLevel+1), m.database, m.name);
@@ -95,8 +94,8 @@ public void generateModel(StringBuilder builder, Model m, ushort tabLevel)
             builder.appendLine("{0}dbObj.{1} = this.{2};", generateTabs(tabLevel+2), mm.database,  mm.name);
         //Cannot generate updates for Enums.
         foreach(mm; m.members.filter!(a => !a.readonly && a.modelbind && a.update && a.hasDatabase && (a.type.type.mode == TypeMode.Model))()) {
-            builder.appendLine("{0}if (dbObj.{1} == null) dbObj.{1} = context.Add(new {2}()).Entity;", generateTabs(tabLevel+2), mm.database, m.database);
-            builder.appendLine("{0}this.{1}.UpdateEntity(context, dbObj.{2});", generateTabs(tabLevel+2), mm.name, mm.database);
+            builder.appendLine("{0}if (dbObj.{1} == null) dbObj.{1} = context.Add(new {2}()).Entity;", generateTabs(tabLevel+2), mm.database, generateType(mm.type, false));
+            builder.appendLine("{0}this.{1}.Update(context, dbObj.{2});", generateTabs(tabLevel+2), mm.name, mm.database);
         }
         builder.appendLine("{0}PostUpdate(context, dbObj);", generateTabs(tabLevel+2));
         builder.appendLine("{0}if (!cascade) return;", generateTabs(tabLevel+2));
