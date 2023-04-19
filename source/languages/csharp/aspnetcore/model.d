@@ -62,6 +62,7 @@ public void generateModel(StringBuilder builder, Model m, ushort tabLevel)
         builder.appendLine();
     }
 
+
     if (m.hasDatabase && serverGen)
     {
         builder.appendLine("{0}public {2}({1} dbObj)", generateTabs(tabLevel+1), m.database, m.name);
@@ -76,7 +77,7 @@ public void generateModel(StringBuilder builder, Model m, ushort tabLevel)
         foreach(mm; m.members.filter!(a => !a.readonly && a.modelbind && a.hasDatabase && (a.type.type.mode == TypeMode.Collection))()) {
             builder.appendLine("{0}{1} = new {3}(dbObj.{2}.Count);", generateTabs(tabLevel+2), mm.name, mm.database, generateType(mm.type, false));
             builder.appendLine("{0}foreach(var t in dbObj.{1}) {", generateTabs(tabLevel+2), mm.database);
-            auto tc = cast(TypeCollection)mm.type;
+            auto tc = cast(TypeCollection)mm.type.type;
             if (tc.collectionType.mode == TypeMode.Model) {
                 builder.appendLine("{0}{1}.Add(new {2}(t));", generateTabs(tabLevel+3), mm.name, generateType(tc.collectionType, false));
             } else if (tc.collectionType.mode == TypeMode.Primitive) {
@@ -100,7 +101,7 @@ public void generateModel(StringBuilder builder, Model m, ushort tabLevel)
         builder.appendLine("{0}PostUpdate(context, dbObj);", generateTabs(tabLevel+2));
         builder.appendLine("{0}if (!cascade) return;", generateTabs(tabLevel+2));
         foreach(mm; m.members.filter!(a => !a.readonly && a.modelbind && a.update && a.hasDatabase && (a.type.type.mode == TypeMode.Collection))()) {
-            auto tc = cast(TypeCollection)mm.type;
+            auto tc = cast(TypeCollection)mm.type.type;
             builder.appendLine("{0}foreach(var t in dbObj.{1}.ToArray()) {", generateTabs(tabLevel+2), mm.database);
             if (tc.collectionType.mode == TypeMode.Model) {
                 auto otc = cast(TypeModel)tc.collectionType;
@@ -118,7 +119,7 @@ public void generateModel(StringBuilder builder, Model m, ushort tabLevel)
             builder.appendLine("{0}}", generateTabs(tabLevel+2));
         }
         foreach(mm; m.members.filter!(a => !a.readonly && a.modelbind && a.update && a.hasDatabase && (a.type.type.mode == TypeMode.Collection))()) {
-            auto tc = cast(TypeCollection)mm.type;
+            auto tc = cast(TypeCollection)mm.type.type;
             if (tc.collectionType.mode == TypeMode.Primitive) builder.appendLine("{0}dbObj.{1}.Clear();", generateTabs(tabLevel+2), mm.database);
             builder.appendLine("{0}if (this.{1} != null) {", generateTabs(tabLevel+2), mm.name);
             builder.appendLine("{0}var _tdbl = dbObj.{1}.ToList();", generateTabs(tabLevel+3), mm.database);
@@ -197,7 +198,7 @@ private void generateMemberModel(StringBuilder builder, Model m, ModelMember mm,
 		builder.appendLine("{0}[JsonInclude]", generateTabs(tabLevel));
 	}
 	if (hasOption("xaml") && clientGen) {
-		builder.appendLine("{0}public {1} {2} { get { return _{2}; } {3}set { _{2} = value; BindablePropertyChanged(\"{2}\"); } }", generateTabs(tabLevel), generateType(mm.type, false), mm.name, mm.readonly ? "private ": string.init);
+		builder.appendLine("{0}public {1} {2} { get { return _{2}; } {3}set { _{2} = value; BindablePropertyChanged(nameof({2})); } }", generateTabs(tabLevel), generateType(mm.type, false), mm.name, mm.readonly ? "private ": string.init);
 	} else {
 		builder.appendLine("{0}public {1} {2} { get { return _{2}; } {3}set { _{2} = value; } }", generateTabs(tabLevel), generateType(mm.type, false), mm.name, mm.readonly ? "private ": string.init);
 	}
