@@ -31,24 +31,6 @@ public __gshared string[string] options;
 public __gshared int errorCount = 0;
 public __gshared int warnCount = 0;
 
-public string generateTabs(uint tabLevel)
-{
-    if(useSpaces) {
-        char[] tabs = new char[tabLevel * tabSpaces];
-        for(uint i = 0; i < (tabLevel * tabSpaces); i++) {
-            tabs[i] = ' ';
-        }
-        return to!string(tabs);
-    }
-    else {
-        char[] tabs = new char[tabLevel];
-        for(uint i = 0; i < tabLevel; i++) {
-            tabs[i] = '\t';
-        }
-        return to!string(tabs);
-    }
-}
-
 public string cleanName(string name) {
     return name.replace("[", string.init)
             .replace("]", string.init)

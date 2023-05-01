@@ -22,73 +22,73 @@ public void generateWebsocketClient(StringBuilder builder, WebsocketService s, u
 	foreach(ns; s.namespaces) {
 		if (ns.server.length != 0) {
 			builder.appendLine();
-			builder.appendLine("{0}{3} interface I{1}{2}Server", generateTabs(tabLevel), cleanName(s.name), cleanName(ns.name), s.isPublic ? "public" : "internal");
-			builder.appendLine("{0}{", generateTabs(tabLevel));
+			builder.tabs(tabLevel).appendLine("{2} interface I{0}{1}Server", cleanName(s.name), cleanName(ns.name), s.isPublic ? "public" : "internal");
+			builder.tabs(tabLevel++).appendLine("{");
 			foreach(m; ns.server) {
 				generateInterfaceMethod(builder, m, cast(ushort)(tabLevel+1));
 			}
-			builder.appendLine("{0}}", generateTabs(tabLevel));
+			builder.tabs(--tabLevel).appendLine("}");
 			builder.appendLine();
 
-			builder.appendLine("{0}{3} class {1}{2}Server : I{1}{2}Server", generateTabs(tabLevel), cleanName(s.name), cleanName(ns.name), s.isPublic ? "public" : "internal");
-			builder.appendLine("{0}{", generateTabs(tabLevel));
-			builder.appendLine("{0}private readonly HubConnection _hub;", generateTabs(tabLevel+1));
+			builder.tabs(tabLevel).appendLine("{2} class {0}{1}Server : I{0}{1}Server", cleanName(s.name), cleanName(ns.name), s.isPublic ? "public" : "internal");
+			builder.tabs(tabLevel++).appendLine("{");
+			builder.tabs(tabLevel).appendLine("private readonly HubConnection _hub;");
 			builder.appendLine();
-			builder.appendLine("{0}public {1}{2}Server(IHotwireSignalRRepository repo) {", generateTabs(tabLevel+1), cleanName(s.name), cleanName(ns.name));
+			builder.tabs(tabLevel++).appendLine("public {0}{1}Server(IHotwireSignalRRepository repo) {", cleanName(s.name), cleanName(ns.name));
 			if (ext.clientConnection !is null && ext.clientConnection != string.init) {
-				builder.appendLine("{0}_hub = repo.Get(\"{1}\");", generateTabs(tabLevel+2), ext.clientConnection);
+				builder.tabs(tabLevel).appendLine("_hub = repo.Get(\"{0}\");", ext.clientConnection);
 			} else {
-				builder.appendLine("{0}_hub = repo.Get();", generateTabs(tabLevel+2));
+				builder.tabs(tabLevel).appendLine("_hub = repo.Get();");
 			}
-			builder.appendLine("{0}}", generateTabs(tabLevel+1));
+			builder.tabs(--tabLevel).appendLine("}");
 			builder.appendLine();
 			foreach(m; ns.server) {
 				generateServerMethod(builder, m, ns.name, cast(ushort)(tabLevel+1));
 			}
-			builder.appendLine("{0}}", generateTabs(tabLevel));
+			builder.tabs(--tabLevel).appendLine("}");
 		}
 
 		if (ns.client.length != 0) {
 			builder.appendLine();
-			builder.appendLine("{0}{3} interface I{1}{2}Client", generateTabs(tabLevel), cleanName(s.name), cleanName(ns.name), s.isPublic ? "public" : "internal");
-			builder.appendLine("{0}{", generateTabs(tabLevel));
+			builder.tabs(tabLevel).appendLine("{2} interface I{0}{1}Client", cleanName(s.name), cleanName(ns.name), s.isPublic ? "public" : "internal");
+			builder.tabs(tabLevel++).appendLine("{");
 			foreach(m; ns.client) {
 				generateInterfaceMethod(builder, m, cast(ushort)(tabLevel+1));
 			}
-			builder.appendLine("{0}}", generateTabs(tabLevel));
+			builder.tabs(--tabLevel).appendLine("}");
 		}
 	}
 
 	builder.appendLine();
-	builder.appendLine("{0}{2} static class {1}ClientExtensions", generateTabs(tabLevel), cleanName(s.name), s.isPublic ? "public" : "internal");
-	builder.appendLine("{0}{", generateTabs(tabLevel));
-	builder.append("{0}public static void Register{1}ClientServices<", generateTabs(tabLevel+1), cleanName(s.name));
+	builder.tabs(tabLevel).appendLine("{1} static class {0}ClientExtensions", cleanName(s.name), s.isPublic ? "public" : "internal");
+	builder.tabs(tabLevel++).appendLine("{");
+	builder.tabs(tabLevel).append("public static void Register{0}ClientServices<", cleanName(s.name));
 	foreach (ns; s.namespaces) {
 		if (ns.client.length != 0) builder.append("T{0}Client, ", cleanName(ns.name));
 	}
 	if (s.namespaces.length != 0) builder.removeRight(2);
 	builder.appendLine(">(this IServiceCollection services)");
 	foreach (ns; s.namespaces) {
-		if (ns.client.length != 0) builder.appendLine("{0}where T{2}Client : class, I{1}{2}Client", generateTabs(tabLevel+2), cleanName(s.name), cleanName(ns.name));
+		if (ns.client.length != 0) builder.tabs(tabLevel+1).appendLine("where T{1}Client : class, I{0}{1}Client", cleanName(s.name), cleanName(ns.name));
 	}
-	builder.appendLine("{0}{", generateTabs(tabLevel+1));
+	builder.tabs(tabLevel++).appendLine("{");
 	foreach (ns; s.namespaces) {
-		if (ns.server.length != 0) builder.appendLine("{0}services.TryAddTransient<I{1}{2}Server, {1}{2}Server>();", generateTabs(tabLevel+2), cleanName(s.name), cleanName(ns.name));
-		if (ns.client.length != 0) builder.appendLine("{0}services.TryAddTransient<I{1}{2}Client, T{2}Client>();", generateTabs(tabLevel+2), cleanName(s.name), cleanName(ns.name));
+		if (ns.server.length != 0) builder.tabs(tabLevel).appendLine("services.TryAddTransient<I{0}{1}Server, {0}{1}Server>();", cleanName(s.name), cleanName(ns.name));
+		if (ns.client.length != 0) builder.tabs(tabLevel).appendLine("services.TryAddTransient<I{0}{1}Client, T{1}Client>();", cleanName(s.name), cleanName(ns.name));
 	}
-	builder.appendLine("{0}}", generateTabs(tabLevel+1));
+	builder.tabs(--tabLevel).appendLine("}");
 	builder.appendLine();
-	builder.appendLine("{0}public static IEnumerable<IDisposable> Register{1}ClientMethods(this HubConnection connection, IServiceProvider services) {", generateTabs(tabLevel+1), cleanName(s.name));
-	builder.appendLine("{0}var rl = new List<IDisposable> {", generateTabs(tabLevel+2));
+	builder.tabs(tabLevel++).appendLine("public static IEnumerable<IDisposable> Register{0}ClientMethods(this HubConnection connection, IServiceProvider services) {", cleanName(s.name));
+	builder.tabs(tabLevel++).appendLine("var rl = new List<IDisposable> {");
 	foreach(ns; s.namespaces) {
 		foreach(m; ns.client) {
 			generateClientMethod(builder, m, ns.name, cast(ushort)(tabLevel+3));
 		}
 	}
-	builder.appendLine("{0}};", generateTabs(tabLevel+2));
-	builder.appendLine("{0}return rl;", generateTabs(tabLevel+2));
-	builder.appendLine("{0}}", generateTabs(tabLevel+1));
-	builder.appendLine("{0}}", generateTabs(tabLevel));
+	builder.tabs(--tabLevel).appendLine("};");
+	builder.tabs(tabLevel).appendLine("return rl;");
+	builder.tabs(--tabLevel).appendLine("}");
+	builder.tabs(--tabLevel).appendLine("}");
 }
 
 private void generateMethodParameters(StringBuilder builder, TypeComplex[] smpl)
@@ -104,8 +104,7 @@ private void generateMethodParameters(StringBuilder builder, TypeComplex[] smpl)
 }
 
 private void generateInterfaceMethod(StringBuilder builder, WebsocketServiceMethod sm, ushort tabLevel) {
-	builder.append(generateTabs(tabLevel));
-	builder.append("Task");
+	builder.tabs(tabLevel).append("Task");
 	if(sm.returns.length == 1) {
 		if (sm.returns[0].type.mode != TypeMode.Void) {
 			builder.append("<{0}>", generateType(sm.returns[0], false));
@@ -124,8 +123,7 @@ private void generateInterfaceMethod(StringBuilder builder, WebsocketServiceMeth
 }
 
 public void generateServerMethod(StringBuilder builder, WebsocketServiceMethod sm, string namespace, ushort tabLevel) {
-	builder.append("{0}public ", generateTabs(tabLevel));
-	builder.append("Task");
+	builder.tabs(tabLevel++).append("public Task");
 	if(sm.returns.length == 1) {
 		if (sm.returns[0].type.mode != TypeMode.Void) {
 			builder.append("<{0}>", generateType(sm.returns[0], false));
@@ -141,7 +139,7 @@ public void generateServerMethod(StringBuilder builder, WebsocketServiceMethod s
 	builder.append(" {0}(", cleanName(sm.name));
 	generateMethodParameters(builder, sm.parameters);
 	builder.appendLine(") {");
-	builder.append("{0}return this._hub.InvokeCoreAsync", generateTabs(tabLevel+1));
+	builder.tabs(tabLevel).append("return this._hub.InvokeCoreAsync");
 	if(sm.returns.length == 1) {
 		if (sm.returns[0].type.mode != TypeMode.Void) {
 			builder.append("<{0}>", generateType(sm.returns[0], false));
@@ -164,26 +162,26 @@ public void generateServerMethod(StringBuilder builder, WebsocketServiceMethod s
 	}
 	if (sm.parameters.length > 0) builder.removeRight(2);
 	builder.appendLine(" });");
-	builder.appendLine("{0}}", generateTabs(tabLevel));
+	builder.tabs(--tabLevel).appendLine("}");
 }
 
 public void generateClientMethod(StringBuilder builder, WebsocketServiceMethod sm, string namespace, ushort tabLevel) {
 	if (namespace !is null && namespace != string.init) {
-		builder.append("{0}connection.On(\"{1}.{2}\", (", generateTabs(tabLevel), cleanName(namespace), cleanName(sm.socketName));
+		builder.tabs(tabLevel++).append("connection.On(\"{1}.{2}\", (", cleanName(namespace), cleanName(sm.socketName));
 	} else {
-		builder.append("{0}connection.On(\"{1}\", (", generateTabs(tabLevel), cleanName(sm.socketName));
+		builder.tabs(tabLevel++).append("connection.On(\"{1}\", (", cleanName(sm.socketName));
 	}
 	foreach (smp; sm.parameters) {
 		builder.append("{0} {1}, ", generateType(smp, false), smp.name);
 	}
 	if (sm.parameters.length > 0) builder.removeRight(2);
 	builder.appendLine(") => {");
-	builder.appendLine("{0}var t = ActivatorUtilities.GetServiceOrCreateInstance<I{1}{2}Client>(services);", generateTabs(tabLevel+1), cleanName(sm.parent.name), cleanName(namespace));
-	builder.append("{0}return t.{1}(", generateTabs(tabLevel+1), cleanName(sm.name));
+	builder.appendLine("var t = ActivatorUtilities.GetServiceOrCreateInstance<I{1}{2}Client>(services);", cleanName(sm.parent.name), cleanName(namespace));
+	builder.tabs(tabLevel).append("return t.{1}(", cleanName(sm.name));
 	foreach (smp; sm.parameters) {
 		builder.append("{0}, ", smp.name);
 	}
 	if (sm.parameters.length > 0) builder.removeRight(2);
 	builder.appendLine(");");
-	builder.appendLine("{0}}),", generateTabs(tabLevel));
+	builder.tabs(--tabLevel).appendLine("}),");
 }

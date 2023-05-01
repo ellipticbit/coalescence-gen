@@ -12,28 +12,28 @@ import std.stdio;
 public void generateEnum(StringBuilder builder, Enumeration en, ushort tabLevel)
 {
     builder.appendLine();
-    builder.appendLine("{0}[DataContract]", generateTabs(tabLevel));
+    builder.tabs(tabLevel).appendLine("[DataContract]");
     if(en.packed)
     {
-        builder.appendLine("{0}[Flags]", generateTabs(tabLevel));
-        builder.appendLine("{0}public enum {1} : ulong", generateTabs(tabLevel), en.name);
+        builder.tabs(tabLevel).appendLine("[Flags]");
+        builder.tabs(tabLevel).appendLine("public enum {0} : ulong", en.name);
     }
     else
-        builder.appendLine("{0}public enum {1}", generateTabs(tabLevel), en.name);
-    builder.appendLine("{0}{", generateTabs(tabLevel));
+        builder.tabs(tabLevel).appendLine("public enum {0}", en.name);
+    builder.tabs(tabLevel++).appendLine("{");
     if (en.packed)
-        builder.appendLine("{0}[EnumMember()] None = 0,", generateTabs(tabLevel + 1));
+        builder.tabs(tabLevel).appendLine("[EnumMember()] None = 0,");
     ushort bsc = 0;
     foreach(env; en.values)
     {
         if(en.packed) {
-            builder.appendLine("{0}[EnumMember()] {1} = 1 << {2},", generateTabs(tabLevel + 1), env.name, to!string(bsc++));
+            builder.tabs(tabLevel).appendLine("[EnumMember()] {0} = 1 << {1},", env.name, to!string(bsc++));
         }
         else if(!env.value.isNull) {
-            builder.appendLine("{0}[EnumMember()] {1} = {2},", generateTabs(tabLevel + 1), env.name, to!string(env.value.get()));
+            builder.tabs(tabLevel).appendLine("[EnumMember()] {0} = {1},", env.name, to!string(env.value.get()));
         }
         else if(env.aggregate.length != 0) {
-            builder.append("{0}[EnumMember()] {1} = ", generateTabs(tabLevel + 1), env.name);
+            builder.tabs(tabLevel).append("[EnumMember()] {0} = ", env.name);
             for(int i = 0; i < env.aggregate.length; i++)
             {
                 //writeln(env.name);
@@ -44,8 +44,8 @@ public void generateEnum(StringBuilder builder, Enumeration en, ushort tabLevel)
             builder.appendLine(",");
         }
         else {
-            builder.appendLine("{0}[EnumMember()] {1},", generateTabs(tabLevel + 1), env.name);
+            builder.tabs(tabLevel).appendLine("[EnumMember()] {0},", env.name);
         }
     }
-    builder.appendLine("{0}}", generateTabs(tabLevel));
+    builder.tabs(tabLevel).appendLine("}");
 }

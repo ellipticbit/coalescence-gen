@@ -7,18 +7,38 @@ import std.ascii;
 import std.algorithm;
 import std.typecons;
 
+import std.stdio;
+
 public class StringBuilder
 {
 private:
     char[] chars;
+	bool useSpaces;
+	int tabSpaces;
+
+    @safe string newLine() {
+/*
+		version(Windows) {
+			return "\r\n";
+		} else {
+			return "\n";
+		}
+*/
+		return "\n";
+    }
 
 public:
     @property ulong length() { return chars.length; }
 
-    @safe this() {    }
+    @safe this() {
+		this.useSpaces = false;
+		this.tabSpaces = 4;
+	}
 
-    @safe this(string initialValue) {
+    @safe this(string initialValue, bool useSpaces = false, int tabSpaces = 4) {
         chars = initialValue.dup;
+		this.useSpaces = useSpaces;
+		this.tabSpaces = tabSpaces;
     }
 
     @safe this(size_t initialCapacity) {
@@ -26,7 +46,7 @@ public:
     }
 
     @trusted override string toString() {
-        return to!string(chars[0..$]);
+        return to!string(chars);
     }
 
     @trusted string toString(int start, int length) {
@@ -79,14 +99,30 @@ public:
         chars = chars[0+count..$];
     }
 
+	@safe StringBuilder tabs(uint count)
+	{
+		if(useSpaces) {
+			char[] tabs = new char[count * tabSpaces];
+			for(uint i = 0; i < (count * tabSpaces); i++) {
+				tabs[i] = ' ';
+			}
+			append(to!string(tabs));
+		}
+		else {
+			char[] tabs = new char[count];
+			for(uint i = 0; i < count; i++) {
+				tabs[i] = '\t';
+			}
+			append(to!string(tabs));
+		}
+
+		return this;
+	}
+
 /* Doesn't work
     @safe void remove(ulong startIndex, ulong endIndex)
     {
         chars = std.algorithm.mutation.remove(chars, tuple(startIndex, endIndex));
     }
 */
-    private @safe string newLine()
-    {
-        return "\n";
-    }
 }

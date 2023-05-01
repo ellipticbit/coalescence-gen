@@ -17,29 +17,28 @@ public void generateModel(StringBuilder builder, Model m, ushort tabLevel)
 {
     builder.appendLine();
     if (hasOption("useNewtonsoft")) {
-        builder.appendLine("{0}[DataContract]", generateTabs(tabLevel));
+        builder.tabs(tabLevel).appendLine("[DataContract]");
     }
-    builder.appendLine("{0}public sealed partial class {1}{2}", generateTabs(tabLevel), m.name, (hasOption("xaml") && clientGen) ? " : INotifyPropertyChanged" : string.init);
-    builder.appendLine("{0}{", generateTabs(tabLevel));
+    builder.tabs(tabLevel).appendLine("public sealed partial class {0}{1}", m.name, (hasOption("xaml") && clientGen) ? " : INotifyPropertyChanged" : string.init);
+    builder.tabs(tabLevel++).appendLine("{");
 
     foreach(v; m.members)
-        generateMemberModel(builder, m, v, cast(ushort)(tabLevel+1));
+        generateMemberModel(builder, m, v, cast(ushort)(tabLevel));
 
 	if (hasOption("xaml") && clientGen)
 	{
-		builder.appendLine("{0}public event PropertyChangedEventHandler PropertyChanged;", generateTabs(tabLevel+1));
-		builder.appendLine("{0}private void BindablePropertyChanged(string propertyName) {", generateTabs(tabLevel+1));
-		builder.appendLine("{0}if (PropertyChanged != null)", generateTabs(tabLevel+2));
-		builder.appendLine("{0}PropertyChanged(this, new PropertyChangedEventArgs(propertyName));", generateTabs(tabLevel+3));
-		builder.appendLine("{0}}", generateTabs(tabLevel+1));
+		builder.tabs(tabLevel).appendLine("public event PropertyChangedEventHandler PropertyChanged;");
+		builder.tabs(tabLevel++).appendLine("private void BindablePropertyChanged(string propertyName) {");
+		builder.tabs(tabLevel).appendLine("if (PropertyChanged != null) PropertyChanged(this, new PropertyChangedEventArgs(propertyName));");
+		builder.tabs(--tabLevel).appendLine("}");
 	}
 
-    builder.appendLine("{0}public {1}() { }", generateTabs(tabLevel+1), m.name);
+    builder.tabs(tabLevel).appendLine("public {0}() { }", m.name);
     builder.appendLine();
 
     if (serverGen)
     {
-        builder.append("{0}public static {1} Create{1}(", generateTabs(tabLevel+1), m.name);
+        builder.tabs(tabLevel).append("public static {0} Create{0}(", m.name);
 
         if(m.members.any!(a => a.readonly))
         {
@@ -52,56 +51,56 @@ public void generateModel(StringBuilder builder, Model m, ushort tabLevel)
         }
 
         builder.appendLine(")");
-        builder.appendLine("{0}{", generateTabs(tabLevel+1));
-        builder.appendLine("{0}return new {1}()", generateTabs(tabLevel+2), m.name);
-        builder.appendLine("{0}{", generateTabs(tabLevel+2));
+        builder.tabs(tabLevel++).appendLine("{");
+        builder.tabs(tabLevel).appendLine("return new {0}()", m.name);
+        builder.tabs(tabLevel++).appendLine("{");
         foreach(mm; m.members.filter!(a => a.readonly && (a.type.type.mode == TypeMode.Primitive || a.type.type.mode == TypeMode.ByteArray))())
-            builder.appendLine("{0}{1} = {1},", generateTabs(tabLevel+3), mm.name);
-        builder.appendLine("{0}};", generateTabs(tabLevel+2));
-        builder.appendLine("{0}}", generateTabs(tabLevel+1));
+            builder.tabs(tabLevel).appendLine("{0} = {0},", mm.name);
+        builder.tabs(--tabLevel).appendLine("};");
+        builder.tabs(--tabLevel).appendLine("}");
         builder.appendLine();
     }
 
     if (m.hasDatabase && serverGen)
     {
-        builder.appendLine("{0}public {2}({1} dbObj)", generateTabs(tabLevel+1), m.database, m.name);
-        builder.appendLine("{0}{", generateTabs(tabLevel+1));
+        builder.tabs(tabLevel).appendLine("public {1}({0} dbObj)", m.database, m.name);
+        builder.tabs(tabLevel++).appendLine("{");
 
         foreach(mm; m.members.filter!(a => a.hasDatabase && (a.type.type.mode == TypeMode.Primitive || a.type.type.mode == TypeMode.ByteArray))())
-            builder.appendLine("{0}{1} = dbObj.{2};", generateTabs(tabLevel+2), mm.name, mm.database);
+            builder.tabs(tabLevel).appendLine("{0} = dbObj.{1};", mm.name, mm.database);
         foreach(mm; m.members.filter!(a => a.hasDatabase && (a.type.type.mode == TypeMode.Enum))())
-            builder.appendLine("{0}{1} = ({3})dbObj.{2};", generateTabs(tabLevel+2), mm.name, mm.database, generateType(mm.type, false));
+            builder.tabs(tabLevel).appendLine("{0} = ({2})dbObj.{1};", mm.name, mm.database, generateType(mm.type, false));
         foreach(mm; m.members.filter!(a => a.modelbind && a.hasDatabase && (a.type.type.mode == TypeMode.Model))())
-            builder.appendLine("{0}{1} = new {3}(dbObj.{2});", generateTabs(tabLevel+2), mm.name, mm.database, generateType(mm.type, false));
+            builder.tabs(tabLevel).appendLine("{0} = new {2}(dbObj.{1});", mm.name, mm.database, generateType(mm.type, false));
         foreach(mm; m.members.filter!(a => !a.readonly && a.modelbind && a.hasDatabase && (a.type.type.mode == TypeMode.Collection))()) {
-            builder.appendLine("{0}{1} = new {3}(dbObj.{2}.Count);", generateTabs(tabLevel+2), mm.name, mm.database, generateType(mm.type, false));
-            builder.appendLine("{0}foreach(var t in dbObj.{1}) {", generateTabs(tabLevel+2), mm.database);
+            builder.tabs(tabLevel).appendLine("{0} = new {2}(dbObj.{1}.Count);", mm.name, mm.database, generateType(mm.type, false));
+            builder.tabs(tabLevel).appendLine("foreach(var t in dbObj.{0}) {", mm.database);
             auto tc = cast(TypeCollection)mm.type.type;
             if (tc.collectionType.mode == TypeMode.Model) {
-                builder.appendLine("{0}{1}.Add(new {2}(t));", generateTabs(tabLevel+3), mm.name, generateType(tc.collectionType, false));
+                builder.tabs(tabLevel).appendLine("{0}.Add(new {1}(t));", mm.name, generateType(tc.collectionType, false));
             } else if (tc.collectionType.mode == TypeMode.Primitive) {
-                builder.appendLine("{0}{1}.Add(t);", generateTabs(tabLevel+3), mm.name);
+                builder.tabs(tabLevel).appendLine("{0}.Add(t);", mm.name);
             }
-            builder.appendLine("{0}}", generateTabs(tabLevel+2));
+            builder.tabs(tabLevel).appendLine("}");
         }
-        builder.appendLine("{0}PostCreate(dbObj);", generateTabs(tabLevel+2));
-        builder.appendLine("{0}}", generateTabs(tabLevel+1));
-        builder.appendLine("{0}partial void PostCreate({1} entity);", generateTabs(tabLevel+1), m.database);
+        builder.tabs(tabLevel).appendLine("PostCreate(dbObj);");
+        builder.tabs(--tabLevel).appendLine("}");
+        builder.tabs(tabLevel).appendLine("partial void PostCreate({0} entity);", m.database);
         builder.appendLine();
-        builder.appendLine("{0}public void Update(Microsoft.EntityFrameworkCore.DbContext context, {1} dbObj, bool cascade = false)", generateTabs(tabLevel+1), m.database);
-        builder.appendLine("{0}{", generateTabs(tabLevel+1));
+        builder.tabs(tabLevel).appendLine("public void Update(Microsoft.EntityFrameworkCore.DbContext context, {0} dbObj, bool cascade = false)", m.database);
+        builder.tabs(tabLevel++).appendLine("{");
         foreach(mm; m.members.filter!(a => !a.readonly && a.hasDatabase && (a.type.type.mode == TypeMode.Primitive || a.type.type.mode == TypeMode.ByteArray))())
-            builder.appendLine("{0}dbObj.{1} = this.{2};", generateTabs(tabLevel+2), mm.database,  mm.name);
+            builder.tabs(tabLevel).appendLine("dbObj.{0} = this.{1};", mm.database,  mm.name);
         //Cannot generate updates for Enums.
         foreach(mm; m.members.filter!(a => !a.readonly && a.modelbind && a.update && a.hasDatabase && (a.type.type.mode == TypeMode.Model))()) {
-            builder.appendLine("{0}if (dbObj.{1} == null) dbObj.{1} = context.Add(new {2}()).Entity;", generateTabs(tabLevel+2), mm.database, generateType(mm.type, false));
-            builder.appendLine("{0}this.{1}.Update(context, dbObj.{2});", generateTabs(tabLevel+2), mm.name, mm.database);
+            builder.tabs(tabLevel).appendLine("if (dbObj.{0} == null) dbObj.{0} = context.Add(new {1}()).Entity;", mm.database, generateType(mm.type, false));
+            builder.tabs(tabLevel).appendLine("this.{0}.Update(context, dbObj.{1});", mm.name, mm.database);
         }
-        builder.appendLine("{0}PostUpdate(context, dbObj);", generateTabs(tabLevel+2));
-        builder.appendLine("{0}if (!cascade) return;", generateTabs(tabLevel+2));
+        builder.tabs(tabLevel).appendLine("PostUpdate(context, dbObj);");
+        builder.tabs(tabLevel).appendLine("if (!cascade) return;");
         foreach(mm; m.members.filter!(a => !a.readonly && a.modelbind && a.update && a.hasDatabase && (a.type.type.mode == TypeMode.Collection))()) {
             auto tc = cast(TypeCollection)mm.type.type;
-            builder.appendLine("{0}foreach(var t in dbObj.{1}.ToArray()) {", generateTabs(tabLevel+2), mm.database);
+            builder.tabs(tabLevel++).appendLine("foreach(var t in dbObj.{0}.ToArray()) {", mm.database);
             if (tc.collectionType.mode == TypeMode.Model) {
                 auto otc = cast(TypeModel)tc.collectionType;
                 if (otc.definition.hasPrimaryKey) {
@@ -109,20 +108,20 @@ public void generateModel(StringBuilder builder, Model m, ushort tabLevel)
                     foreach (pkm; otc.definition.members.filter!(a => a.primaryKey)()) {
                         terms ~= "a." ~ pkm.name ~ " == " ~ "t." ~ pkm.database;
                     }
-                    builder.appendLine("{0}var f = this.{1}.FirstOrDefault(a => {2});", generateTabs(tabLevel+3), mm.name, terms.join(" && "));
-                    builder.appendLine("{0}if (f != null) continue;", generateTabs(tabLevel+3), otc.definition.database);
-                    builder.appendLine("{0}context.Remove(t);", generateTabs(tabLevel+3));
-                    builder.appendLine("{0}dbObj.{1}.Remove(t);", generateTabs(tabLevel+3), mm.database);
+                    builder.tabs(tabLevel).appendLine("var f = this.{0}.FirstOrDefault(a => {1});", mm.name, terms.join(" && "));
+                    builder.tabs(tabLevel).appendLine("if (f != null) continue;", otc.definition.database);
+                    builder.tabs(tabLevel).appendLine("context.Remove(t);");
+                    builder.tabs(tabLevel).appendLine("dbObj.{0}.Remove(t);", mm.database);
                 }
             }
-            builder.appendLine("{0}}", generateTabs(tabLevel+2));
+            builder.tabs(--tabLevel).appendLine("}");
         }
         foreach(mm; m.members.filter!(a => !a.readonly && a.modelbind && a.update && a.hasDatabase && (a.type.type.mode == TypeMode.Collection))()) {
             auto tc = cast(TypeCollection)mm.type.type;
-            if (tc.collectionType.mode == TypeMode.Primitive) builder.appendLine("{0}dbObj.{1}.Clear();", generateTabs(tabLevel+2), mm.database);
-            builder.appendLine("{0}if (this.{1} != null) {", generateTabs(tabLevel+2), mm.name);
-            builder.appendLine("{0}var _tdbl = dbObj.{1}.ToList();", generateTabs(tabLevel+3), mm.database);
-            builder.appendLine("{0}foreach(var t in this.{1}) {", generateTabs(tabLevel+3), mm.name);
+            if (tc.collectionType.mode == TypeMode.Primitive) builder.appendLine("dbObj.{0}.Clear();", mm.database);
+            builder.tabs(tabLevel++).appendLine("if (this.{0} != null) {", mm.name);
+            builder.tabs(tabLevel).appendLine("var _tdbl = dbObj.{0}.ToList();", mm.database);
+            builder.tabs(tabLevel++).appendLine("foreach(var t in this.{0}) {", mm.name);
             if (tc.collectionType.mode == TypeMode.Model) {
                 auto otc = cast(TypeModel)tc.collectionType;
                 if (otc.definition.hasPrimaryKey) {
@@ -130,19 +129,19 @@ public void generateModel(StringBuilder builder, Model m, ushort tabLevel)
                     foreach (pkm; otc.definition.members.filter!(a => a.primaryKey)()) {
                         terms ~= "a." ~ pkm.database ~ " == " ~ "t." ~ pkm.name;
                     }
-                    builder.appendLine("{0}var f = _tdbl.FirstOrDefault(a => {1});", generateTabs(tabLevel+4), terms.join(" && "));
-                    builder.appendLine("{0}var n = f ?? context.Add(new {1}()).Entity;", generateTabs(tabLevel+4), otc.definition.database);
-                    builder.appendLine("{0}t.Update(context, n, cascade);", generateTabs(tabLevel+4));
-                    builder.appendLine("{0}if (f == null) dbObj.{1}.Add(n);", generateTabs(tabLevel+4), mm.database);
+                    builder.tabs(tabLevel).appendLine("var f = _tdbl.FirstOrDefault(a => {0});", terms.join(" && "));
+                    builder.tabs(tabLevel).appendLine("var n = f ?? context.Add(new {0}()).Entity;", otc.definition.database);
+                    builder.tabs(tabLevel).appendLine("t.Update(context, n, cascade);");
+                    builder.tabs(tabLevel).appendLine("if (f == null) dbObj.{0}.Add(n);", mm.database);
                 }
             } else if (tc.collectionType.mode == TypeMode.Primitive) {
-                builder.appendLine("{0}dbObj.{1}.Add(t);", generateTabs(tabLevel+4), mm.database);
+                builder.tabs(tabLevel).appendLine("dbObj.{0}.Add(t);", mm.database);
             }
-            builder.appendLine("{0}}", generateTabs(tabLevel+3));
-            builder.appendLine("{0}}", generateTabs(tabLevel+2));
+            builder.tabs(--tabLevel).appendLine("}");
+            builder.tabs(--tabLevel).appendLine("}");
         }
-        builder.appendLine("{0}}", generateTabs(tabLevel+1));
-        builder.appendLine("{0}partial void PostUpdate(Microsoft.EntityFrameworkCore.DbContext context, {1} entity);", generateTabs(tabLevel+1), m.database);
+        builder.tabs(--tabLevel).appendLine("}");
+        builder.tabs(tabLevel).appendLine("partial void PostUpdate(Microsoft.EntityFrameworkCore.DbContext context, {0} entity);", m.database);
         builder.appendLine();
     }
 
@@ -167,39 +166,39 @@ public void generateModel(StringBuilder builder, Model m, ushort tabLevel)
     }
 
     if (serverGen && !m.hasDatabase && m.members.any!(a => a.hasDatabase)) {
-        builder.appendLine("{0}public {1}(System.Data.DataTableReader reader)", generateTabs(tabLevel+1), m.name);
-        builder.appendLine("{0}{", generateTabs(tabLevel+1));
+        builder.tabs(tabLevel).appendLine("public {0}(System.Data.DataTableReader reader)", m.name);
+        builder.tabs(tabLevel++).appendLine("{");
         foreach(mm; m.members.filter!(a => a.hasDatabase && (a.type.type.mode == TypeMode.Primitive))()) {
-            builder.appendLine("{0}if (!reader.IsDBNull(reader.GetOrdinal(\"{1}\"))) {1} = reader.Get{2}(reader.GetOrdinal(\"{1}\"));", generateTabs(tabLevel+2), mm.name, GetDataReaderTypeName(cast(TypePrimitive)mm.type.type));
+            builder.tabs(tabLevel).appendLine("if (!reader.IsDBNull(reader.GetOrdinal(\"{0}\"))) {0} = reader.Get{1}(reader.GetOrdinal(\"{0}\"));", mm.name, GetDataReaderTypeName(cast(TypePrimitive)mm.type.type));
         }
         foreach(mm; m.members.filter!(a => a.hasDatabase && (a.type.type.mode == TypeMode.ByteArray))()) {
-            builder.appendLine("{0}if (!reader.IsDBNull(reader.GetOrdinal(\"{1}\"))) {{", generateTabs(tabLevel+2), mm.name);
-            builder.appendLine("{0}var len = reader.GetBytes(reader.GetOrdinal(\"{1}\"), 0, null, 0, Int32.MaxValue);", generateTabs(tabLevel+3), mm.name);
-            builder.appendLine("{0}{1} = new byte[len];", generateTabs(tabLevel+3), mm.name);
-            builder.appendLine("{0}{1} = reader.GetBytes(reader.GetOrdinal(\"{1}\"), 0, {1}, 0, len);", generateTabs(tabLevel+3), mm.name);
-            builder.appendLine("{0}}}", generateTabs(tabLevel+2), mm.name);
+            builder.tabs(tabLevel++).appendLine("if (!reader.IsDBNull(reader.GetOrdinal(\"{0}\"))) {{", mm.name);
+            builder.tabs(tabLevel).appendLine("var len = reader.GetBytes(reader.GetOrdinal(\"{0}\"), 0, null, 0, Int32.MaxValue);", mm.name);
+            builder.tabs(tabLevel).appendLine("{0} = new byte[len];", mm.name);
+            builder.tabs(tabLevel).appendLine("{0} = reader.GetBytes(reader.GetOrdinal(\"{0}\"), 0, {0}, 0, len);", mm.name);
+            builder.tabs(--tabLevel).appendLine("}}", mm.name);
         }
-        builder.appendLine("{0}}", generateTabs(tabLevel+1));
+        builder.tabs(--tabLevel).appendLine("}");
         builder.appendLine();
     }
 
-    builder.appendLine("{0}}", generateTabs(tabLevel));
+    builder.tabs(--tabLevel).appendLine("}");
 }
 
 private void generateMemberModel(StringBuilder builder, Model m, ModelMember mm, ushort tabLevel)
 {
 	if (mm.hidden) return;
 
-	if (hasOption("useNewtonsoft")) builder.appendLine("{0}[DataMember(Name = \"{1}\", IsRequired = {2})]", generateTabs(tabLevel), mm.hasTransport ? mm.transport : mm.name, mm.type.nullable ? "false" : "true");
-	builder.appendLine("{0}private {1} _{2};", generateTabs(tabLevel), generateType(mm.type, false), mm.name);
+	if (hasOption("useNewtonsoft")) builder.tabs(tabLevel).appendLine("[DataMember(Name = \"{0}\", IsRequired = {1})]", mm.hasTransport ? mm.transport : mm.name, mm.type.nullable ? "false" : "true");
+	builder.tabs(tabLevel).appendLine("private {0} _{1};", generateType(mm.type, false), mm.name);
 	if (!hasOption("useNewtonsoft")) {
-		builder.appendLine("{0}[JsonPropertyName(\"{1}\")]", generateTabs(tabLevel), mm.hasTransport ? mm.transport : mm.name);
-		builder.appendLine("{0}[JsonInclude]", generateTabs(tabLevel));
+		builder.tabs(tabLevel).appendLine("[JsonPropertyName(\"{0}\")]", mm.hasTransport ? mm.transport : mm.name);
+		builder.tabs(tabLevel).appendLine("[JsonInclude]");
 	}
 	if (hasOption("xaml") && clientGen) {
-		builder.appendLine("{0}public {1} {2} { get { return _{2}; } {3}set { _{2} = value; BindablePropertyChanged(nameof({2})); } }", generateTabs(tabLevel), generateType(mm.type, false), mm.name, mm.readonly ? "private ": string.init);
+		builder.tabs(tabLevel).appendLine("public {0} {1} { get { return _{1}; } {2}set { _{1} = value; BindablePropertyChanged(nameof({1})); } }", generateType(mm.type, false), mm.name, mm.readonly ? "private ": string.init);
 	} else {
-		builder.appendLine("{0}public {1} {2} { get { return _{2}; } {3}set { _{2} = value; } }", generateTabs(tabLevel), generateType(mm.type, false), mm.name, mm.readonly ? "private ": string.init);
+		builder.tabs(tabLevel).appendLine("public {0} {1} { get { return _{1}; } {2}set { _{1} = value; } }", generateType(mm.type, false), mm.name, mm.readonly ? "private ": string.init);
 	}
 
 	builder.appendLine();

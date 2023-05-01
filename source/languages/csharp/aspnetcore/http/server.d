@@ -22,71 +22,71 @@ public void generateHttpServer(StringBuilder builder, HttpService s, ushort tabL
 	builder.appendLine();
 	foreach(m; s.methods) {
 		if (m.query.length == 0) continue;
-		builder.appendLine("{0}public class {1}Query", generateTabs(tabLevel), m.name);
-		builder.appendLine("{0}{", generateTabs(tabLevel));
+		builder.tabs(tabLevel).appendLine("public class {0}Query", m.name);
+		builder.tabs(tabLevel++).appendLine("{");
 		foreach(q; m.query) {
-			builder.appendLine("{0}public {2} {1} { get; }", generateTabs(tabLevel+1), q.name, generateType(q, false, true));
+			builder.tabs(tabLevel).appendLine("public {1} {0} { get; }", q.name, generateType(q, false, true));
 		}
 		builder.appendLine();
-		builder.appendLine("{0}internal {1}Query(Microsoft.AspNetCore.Http.IQueryCollection query) {", generateTabs(tabLevel+1), m.name);
+		builder.tabs(tabLevel++).appendLine("internal {0}Query(Microsoft.AspNetCore.Http.IQueryCollection query) {", m.name);
 		foreach (smp; m.query) {
 			if (smp.type.mode == TypeMode.Collection) {
-				builder.appendLine("{0}if (query.TryGetValue(\"{1}\", out StringValues values)) this.{1} = values.Select(a => {2}).ToList();", generateTabs(tabLevel+2), smp.name, getStringConversion(smp, "a"));
+				builder.tabs(tabLevel).appendLine("if (query.TryGetValue(\"{0}\", out StringValues values)) this.{0} = values.Select(a => {1}).ToList();", smp.name, getStringConversion(smp, "a"));
 			} else if (smp.type.mode == TypeMode.Primitive) {
-				builder.appendLine("{0}if (query.TryGetValue(\"{1}\", out StringValues values)) this.{1} = {2};", generateTabs(tabLevel+2), smp.name, getStringConversion(smp, "values.First()"));
+				builder.tabs(tabLevel).appendLine("if (query.TryGetValue(\"{0}\", out StringValues values)) this.{0} = {1};", smp.name, getStringConversion(smp, "values.First()"));
 			}
 		}
-		builder.appendLine("{0}}", generateTabs(tabLevel+1));
-		builder.appendLine("{0}}", generateTabs(tabLevel));
+		builder.tabs(--tabLevel).appendLine("}");
+		builder.tabs(--tabLevel).appendLine("}");
 	}
 
 	//Generate Header classes
 	builder.appendLine();
 	foreach(m; s.methods) {
 		if (m.header.length == 0) continue;
-		builder.appendLine("{0}public class {1}Headers", generateTabs(tabLevel), m.name);
-		builder.appendLine("{0}{", generateTabs(tabLevel));
+		builder.tabs(tabLevel).appendLine("public class {0}Headers", m.name);
+		builder.tabs(tabLevel++).appendLine("{");
 		foreach(q; m.header) {
-			builder.appendLine("{0}public {2} {1} { get; }", generateTabs(tabLevel+1), q.name, generateType(q, false, true));
+			builder.tabs(tabLevel).appendLine("public {1} {0} { get; }", q.name, generateType(q, false, true));
 		}
 		builder.appendLine();
-		builder.appendLine("{0}internal {1}Headers(Microsoft.AspNetCore.Http.IHeaderDictionary headers) {", generateTabs(tabLevel+1), m.name);
+		builder.tabs(tabLevel++).appendLine("internal {0}Headers(Microsoft.AspNetCore.Http.IHeaderDictionary headers) {", m.name);
 		foreach (smp; m.header) {
 			if (smp.type.mode == TypeMode.Collection) {
-				builder.appendLine("{0}if (headers.TryGetValue(\"{1}\", out StringValues values)) this.{1} = values.Select(a => {2}).ToList();", generateTabs(tabLevel+2), smp.name, getStringConversion(smp, "a"));
+				builder.tabs(tabLevel).appendLine("if (headers.TryGetValue(\"{0}\", out StringValues values)) this.{0} = values.Select(a => {1}).ToList();", smp.name, getStringConversion(smp, "a"));
 			} else if (smp.type.mode == TypeMode.Primitive) {
-				builder.appendLine("{0}if (headers.TryGetValue(\"{1}\", out StringValues values)) this.{1} = {2};", generateTabs(tabLevel+2), smp.name, getStringConversion(smp, "values.First()"));
+				builder.tabs(tabLevel).appendLine("if (headers.TryGetValue(\"{0}\", out StringValues values)) this.{0} = {1};", smp.name, getStringConversion(smp, "values.First()"));
 			}
 		}
-		builder.appendLine("{0}}", generateTabs(tabLevel+1));
-		builder.appendLine("{0}}", generateTabs(tabLevel));
+		builder.tabs(--tabLevel).appendLine("}");
+		builder.tabs(--tabLevel).appendLine("}");
 	}
 
 	builder.appendLine();
-	builder.appendLine("{0}public interface I{1}", generateTabs(tabLevel), s.name);
-	builder.appendLine("{0}{", generateTabs(tabLevel));
+	builder.tabs(tabLevel).appendLine("public interface I{0}", s.name);
+	builder.tabs(tabLevel++).appendLine("{");
 	foreach(m; s.methods) {
-		builder.append("{0}Task<IActionResult> {1}(", generateTabs(tabLevel+1), m.name);
+		builder.tabs(tabLevel).append("Task<IActionResult> {0}(", m.name);
 		generateServerMethodParams(builder, m, true);
 		builder.appendLine(");");
 	}
-	builder.appendLine("{0}}", generateTabs(tabLevel));
+	builder.tabs(--tabLevel).appendLine("}");
 	builder.appendLine();
 	if (ext !is null && ext.hasArea()) {
-		builder.appendLine("{0}[Area(\"{1}\")]", generateTabs(tabLevel), ext.area);
+		builder.tabs(tabLevel).appendLine("[Area(\"{0}\")]", ext.area);
 	}
 	if (s.route != string.init) {
-		builder.appendLine("{0}[Route(\"{1}\")]", generateTabs(tabLevel), s.route);
+		builder.tabs(tabLevel).appendLine("[Route(\"{0}\")]", s.route);
 	}
 	generateAuthorization(builder, ext !is null ? ext.getAuthorization() : null, s.authenticate, false, tabLevel);
-	builder.appendLine("{0}public abstract partial class {1}Base : HotwireControllerBase, I{1}", generateTabs(tabLevel), s.name);
-	builder.appendLine("{0}{", generateTabs(tabLevel));
-	builder.appendLine("{0}protected {1}Base(IEnumerable<IHotwireSerializer> serializers) : base(serializers) {}", generateTabs(tabLevel+1), s.name);
+	builder.tabs(tabLevel).appendLine("public abstract partial class {0}Base : HotwireControllerBase, I{0}", s.name);
+	builder.tabs(tabLevel++).appendLine("{");
+	builder.tabs(tabLevel).appendLine("protected {0}Base(IEnumerable<IHotwireSerializer> serializers) : base(serializers) {}", s.name);
 	builder.appendLine();
 	foreach(sm; s.methods) {
-		generateMethodServer(builder, sm, cast(ushort)(tabLevel+1));
+		generateMethodServer(builder, sm, cast(ushort)(tabLevel));
 	}
-	builder.appendLine("{0}}", generateTabs(tabLevel));
+	builder.tabs(--tabLevel).appendLine("}");
 }
 
 public void generateMethodServer(StringBuilder builder, HttpServiceMethod sm, ushort tabLevel) {
@@ -94,30 +94,28 @@ public void generateMethodServer(StringBuilder builder, HttpServiceMethod sm, us
 	builder.appendLine();
 	auto routeTemplate = generateServerRoute(sm.route);
 	if (routeTemplate == string.init) {
-		builder.appendLine("{0}[Http{1}]",
-			generateTabs(tabLevel),
-			to!string(sm.verb));
+		builder.tabs(tabLevel).appendLine("[Http{0}]", to!string(sm.verb));
 	}
 	else {
-		builder.appendLine("{0}[Http{1}(\"{2}\")]", generateTabs(tabLevel), to!string(sm.verb), routeTemplate);
+		builder.tabs(tabLevel).appendLine("[Http{0}(\"{1}\")]", to!string(sm.verb), routeTemplate);
 	}
 
 	auto ext = sm.getAspNetCoreHttpExtension();
 	generateAuthorization(builder, ext !is null ? ext.getAuthorization() : null, sm.authenticate, sm.parent.authenticate, tabLevel);
 
 	if (ext !is null && ext.hasArea) {
-		builder.appendLine("{0}[Area(\"{1}\")]", generateTabs(tabLevel), ext.area);
+		builder.tabs(tabLevel).appendLine("[Area(\"{0}\")]", ext.area);
 	}
 
-	builder.append("{0}public Task<IActionResult> {1}Base(", generateTabs(tabLevel), cleanName(sm.name));
+	builder.tabs(tabLevel).append("public Task<IActionResult> {0}Base(", cleanName(sm.name));
 	generateServerMethodParams(builder, sm, false);
 	builder.appendLine(")");
-	builder.appendLine("{0}{", generateTabs(tabLevel));
+	builder.tabs(tabLevel++).appendLine("{");
 
-	if (sm.query.length != 0) builder.appendLine("{0}var query = new {1}Query(HttpContext.Request.Query);", generateTabs(tabLevel+1), cleanName(sm.name));
-	if (sm.header.length != 0) builder.appendLine("{0}var headers = new {1}Headers(HttpContext.Request.Headers);", generateTabs(tabLevel+1), cleanName(sm.name));
+	if (sm.query.length != 0) builder.tabs(tabLevel).appendLine("var query = new {0}Query(HttpContext.Request.Query);", cleanName(sm.name));
+	if (sm.header.length != 0) builder.tabs(tabLevel).appendLine("var headers = new {0}Headers(HttpContext.Request.Headers);", cleanName(sm.name));
 
-	builder.append("{0}return {1}(", generateTabs(tabLevel+1), cleanName(sm.name));
+	builder.tabs(tabLevel).append("return {0}(", cleanName(sm.name));
 
 	// Generate required parameters
 	foreach (smp; sm.route) {
@@ -155,9 +153,9 @@ public void generateMethodServer(StringBuilder builder, HttpServiceMethod sm, us
 
 	if ((sm.route.length + sm.query.length + sm.header.length + sm.content.length) > 0) builder.removeRight(2);
 	builder.appendLine(");");
-	builder.appendLine("{0}}", generateTabs(tabLevel));
+	builder.tabs(--tabLevel).appendLine("}");
 
-	builder.append("{0}public abstract Task<IActionResult> {1}(", generateTabs(tabLevel), sm.name);
+	builder.tabs(tabLevel).append("public abstract Task<IActionResult> {0}(", sm.name);
 	generateServerMethodParams(builder, sm, true);
 	builder.appendLine(");");
 }

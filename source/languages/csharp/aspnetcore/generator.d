@@ -98,22 +98,22 @@ private void generateNamespace(StringBuilder builder, Namespace ns)
 
 public void generateAuthorization(StringBuilder builder, immutable(AspNetCoreAuthorizationExtension) auth, bool authenticate, bool hasControllerAuth, int tabLevel) {
 	if (!authenticate) {
-		builder.appendLine("{0}[AllowAnonymous]", generateTabs(tabLevel));
+		builder.tabs(tabLevel).appendLine("[AllowAnonymous]");
 	} else if (authenticate && !hasControllerAuth && auth is null) {
-		builder.appendLine("{0}[Authorize]", generateTabs(tabLevel));
+		builder.tabs(tabLevel).appendLine("[Authorize]");
 	} else if (authenticate && auth !is null) {
 		if (auth.requireAllRoles) {
 			foreach(r; auth.roles) {
-				builder.appendLine("{0}[Authorize(Roles = \"{1}\")]", generateTabs(tabLevel), r);
+				builder.tabs(tabLevel).appendLine("[Authorize(Roles = \"{0}\")]", r);
 			}
 		} else if (auth.roles.length > 0) {
-			builder.appendLine("{0}[Authorize(Roles = \"{1}\")]", generateTabs(tabLevel), auth.roles.join(","));
+			builder.tabs(tabLevel).appendLine("[Authorize(Roles = \"{0}\")]", auth.roles.join(","));
 		}
 		if (auth.schemes.length > 0) {
-			builder.appendLine("{0}[Authorize(AuthenticationSchemes = \"{1}\")]", generateTabs(tabLevel), auth.schemes.join(","));
+			builder.tabs(tabLevel).appendLine("[Authorize(AuthenticationSchemes = \"{0}\")]", auth.schemes.join(","));
 		}
 		if (auth.policy != string.init) {
-			builder.appendLine("{0}[Authorize(Policy = \"{1}\")]", generateTabs(tabLevel), auth.policy);
+			builder.tabs(tabLevel).appendLine("[Authorize(Policy = \"{0}\")]", auth.policy);
 		}
 	}
 }

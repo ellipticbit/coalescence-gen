@@ -23,87 +23,87 @@ public void generateHttpClient(StringBuilder builder, HttpService s, ushort tabL
 	builder.appendLine();
 	foreach(m; s.methods) {
 		if (m.query.length == 0) continue;
-		builder.appendLine("{0}public class {1}Query : IHotwireParameters", generateTabs(tabLevel), m.name);
-		builder.appendLine("{0}{", generateTabs(tabLevel));
+		builder.tabs(tabLevel).appendLine("public class {0}Query : IHotwireParameters", m.name);
+		builder.tabs(tabLevel++).appendLine("{");
 		foreach(smp; m.query) {
-			builder.appendLine("{0}public {2} {1} { get; }", generateTabs(tabLevel+1), smp.name, generateType(smp, false, true));
+			builder.tabs(tabLevel).appendLine("public {1} {0} { get; }", smp.name, generateType(smp, false, true));
 		}
 		builder.appendLine();
-		builder.appendLine("{0}public {1}Query() {", generateTabs(tabLevel+1), m.name);
+		builder.tabs(tabLevel++).appendLine("public {0}Query() {", m.name);
 		foreach (smp; m.query) {
 			if (smp.type.mode != TypeMode.Collection) continue;
-			builder.appendLine("{0}{1} = new {2}();", generateTabs(tabLevel+2), smp.name, generateType(smp, false, true));
+			builder.appendLine("{0} = new {1}();", smp.name, generateType(smp, false, true));
 		}
-		builder.appendLine("{0}}", generateTabs(tabLevel+1));
+		builder.tabs(--tabLevel).appendLine("}");
 		builder.appendLine();
-		builder.appendLine("{0}IDictionary<string, IEnumerable<string>> IHotwireParameters.GetParameters() {", generateTabs(tabLevel+1));
-		builder.appendLine("{0}var rl = new Dictionary<string, IEnumerable<string>>();", generateTabs(tabLevel+2));
+		builder.tabs(tabLevel++).appendLine("IDictionary<string, IEnumerable<string>> IHotwireParameters.GetParameters() {");
+		builder.tabs(tabLevel).appendLine("var rl = new Dictionary<string, IEnumerable<string>>();");
 		foreach(smp; m.query) {
 			if (smp.type.mode == TypeMode.Collection) {
-				builder.appendLine("{0}rl.Add(\"{1}\", {1}.Select(a => Convert.ToString(a)));", generateTabs(tabLevel+2), smp.name);
+				builder.tabs(tabLevel).appendLine("rl.Add(\"{0}\", {0}.Select(a => Convert.ToString(a)));", smp.name);
 			} else if (smp.type.mode == TypeMode.Primitive) {
-				builder.appendLine("{0}rl.Add(\"{1}\", new[] { Convert.ToString({1}) });", generateTabs(tabLevel+2), smp.name);
+				builder.tabs(tabLevel).appendLine("rl.Add(\"{0}\", new[] { Convert.ToString({0}) });", smp.name);
 			}
 		}
-		builder.appendLine("{0}return rl;", generateTabs(tabLevel+2));
-		builder.appendLine("{0}}", generateTabs(tabLevel+1));
-		builder.appendLine("{0}}", generateTabs(tabLevel));
+		builder.tabs(tabLevel).appendLine("return rl;");
+		builder.tabs(--tabLevel).appendLine("}");
+		builder.tabs(--tabLevel).appendLine("}");
 	}
 
 	// Generate Header classes
 	builder.appendLine();
 	foreach(m; s.methods) {
 		if (m.header.length == 0) continue;
-		builder.appendLine("{0}public class {1}Header : IHotwireParameters", generateTabs(tabLevel), m.name);
-		builder.appendLine("{0}{", generateTabs(tabLevel));
+		builder.tabs(tabLevel).appendLine("public class {0}Header : IHotwireParameters", m.name);
+		builder.tabs(tabLevel++).appendLine("{");
 		foreach(smp; m.header) {
-			builder.appendLine("{0}public {2} {1} { get; }", generateTabs(tabLevel+1), smp.name, generateType(smp, false, true));
+			builder.tabs(tabLevel).appendLine("public {1} {0} { get; }", smp.name, generateType(smp, false, true));
 		}
 		builder.appendLine();
-		builder.appendLine("{0}public {1}Header() {", generateTabs(tabLevel+1), m.name);
+		builder.tabs(tabLevel++).appendLine("public {0}Header() {", m.name);
 		foreach (smp; m.header) {
 			if (smp.type.mode != TypeMode.Collection) continue;
-			builder.appendLine("{0}{1} = new {2}();", generateTabs(tabLevel+2), smp.name, generateType(smp, false, true));
+			builder.tabs(tabLevel).appendLine("{0} = new {1}();", smp.name, generateType(smp, false, true));
 		}
-		builder.appendLine("{0}}", generateTabs(tabLevel+1));
+		builder.tabs(--tabLevel).appendLine("}");
 		builder.appendLine();
-		builder.appendLine("{0}IDictionary<string, IEnumerable<string>> IHotwireParameters.GetParameters() {", generateTabs(tabLevel+1));
-		builder.appendLine("{0}var rl = new Dictionary<string, IEnumerable<string>>();", generateTabs(tabLevel+2));
+		builder.tabs(tabLevel++).appendLine("IDictionary<string, IEnumerable<string>> IHotwireParameters.GetParameters() {");
+		builder.tabs(tabLevel).appendLine("var rl = new Dictionary<string, IEnumerable<string>>();");
 		foreach(smp; m.header) {
 			if (smp.type.mode == TypeMode.Collection) {
-				builder.appendLine("{0}rl.Add(\"{1}\", {1}.Select(a => Convert.ToString(a)));", generateTabs(tabLevel+2), smp.name);
+				builder.tabs(tabLevel).appendLine("rl.Add(\"{0}\", {0}.Select(a => Convert.ToString(a)));", smp.name);
 			} else if (smp.type.mode == TypeMode.Primitive) {
-				builder.appendLine("{0}rl.Add(\"{1}\", new[] { Convert.ToString({1}) });", generateTabs(tabLevel+2), smp.name);
+				builder.tabs(tabLevel).appendLine("rl.Add(\"{0}\", new[] { Convert.ToString({0}) });", smp.name);
 			}
 		}
-		builder.appendLine("{0}return rl;", generateTabs(tabLevel+2));
-		builder.appendLine("{0}}", generateTabs(tabLevel+1));
-		builder.appendLine("{0}}", generateTabs(tabLevel));
+		builder.tabs(tabLevel).appendLine("return rl;");
+		builder.tabs(--tabLevel).appendLine("}");
+		builder.tabs(--tabLevel).appendLine("}");
 	}
 
 	builder.appendLine();
-	builder.appendLine("{0}{2} interface I{1}", generateTabs(tabLevel), s.name, s.isPublic ? "public" : "internal");
-	builder.appendLine("{0}{", generateTabs(tabLevel));
+	builder.tabs(tabLevel).appendLine("{1} interface I{0}", s.name, s.isPublic ? "public" : "internal");
+	builder.tabs(tabLevel++).appendLine("{");
 	foreach(m; s.methods) {
-		generateClientInterfaceMethod(builder, m, cast(ushort)(tabLevel+1));
+		generateClientInterfaceMethod(builder, m, cast(ushort)(tabLevel));
 	}
-	builder.appendLine("{0}}", generateTabs(tabLevel));
+	builder.tabs(--tabLevel).appendLine("}");
 	builder.appendLine();
-	builder.appendLine("{0}{2} sealed partial class {1} : I{1}", generateTabs(tabLevel), s.name, s.isPublic ? "public" : "internal");
-	builder.appendLine("{0}{", generateTabs(tabLevel));
-	builder.appendLine("{0}private readonly IHotwireRequestFactory requests;", generateTabs(tabLevel+1));
-	if (s.scheme != string.init) builder.appendLine("{0}private readonly string defaultAuthenticationScheme = \"{1}\";", generateTabs(tabLevel+1), s.scheme);
+	builder.tabs(tabLevel).appendLine("{1} sealed partial class {0} : I{0}", s.name, s.isPublic ? "public" : "internal");
+	builder.tabs(tabLevel++).appendLine("{");
+	builder.tabs(tabLevel).appendLine("private readonly IHotwireRequestFactory requests;");
+	if (s.scheme != string.init) builder.tabs(tabLevel).appendLine("private readonly string defaultAuthenticationScheme = \"{0}\";", s.scheme);
 	builder.appendLine();
-	builder.appendLine("{0}public {1}(IHotwireRequestFactory requests)", generateTabs(tabLevel+1), s.name);
-	builder.appendLine("{0}{", generateTabs(tabLevel+1));
-	builder.appendLine("{0}this.requests = requests;", generateTabs(tabLevel+2));
-	builder.appendLine("{0}}", generateTabs(tabLevel+1));
+	builder.tabs(tabLevel).appendLine("public {0}(IHotwireRequestFactory requests)", s.name);
+	builder.tabs(tabLevel++).appendLine("{");
+	builder.tabs(tabLevel).appendLine("this.requests = requests;");
+	builder.tabs(--tabLevel).appendLine("}");
 	builder.appendLine();
 
 	foreach(m; s.methods) {
-		generateClientMethod(builder, s, m, cast(ushort)(tabLevel+1));
+		generateClientMethod(builder, s, m, cast(ushort)(tabLevel));
 	}
-	builder.appendLine("{0}}", generateTabs(tabLevel));
+	builder.tabs(--tabLevel).appendLine("}");
 }
 
 private void generateClientInterfaceMethod(StringBuilder builder, HttpServiceMethod sm, ushort tabLevel)
@@ -112,7 +112,7 @@ private void generateClientInterfaceMethod(StringBuilder builder, HttpServiceMet
 	bool isSync = (ext !is null && ext.sync);
 
 	if(!isSync) {
-		builder.append("{0}Task", generateTabs(tabLevel));
+		builder.tabs(tabLevel).append("Task");
 		if(sm.returns.length == 1) {
 			builder.append("<{0}>", generateType(sm.returns[0]));
 		} else if (sm.returns.length > 1) {
@@ -126,9 +126,9 @@ private void generateClientInterfaceMethod(StringBuilder builder, HttpServiceMet
 	}
 	else {
 		if (sm.returns.length == 1) {
-			builder.append("{0}{1}", generateTabs(tabLevel), generateType(sm.returns[0], false));
+			builder.tabs(tabLevel).append(generateType(sm.returns[0], false));
 		} else if (sm.returns.length > 1) {
-			builder.append("{0}(", generateTabs(tabLevel));
+			builder.tabs(tabLevel).append("(");
 			foreach (rp; sm.returns) {
 				builder.append("{0} {1}, ", generateType(rp), cleanName(rp.name));
 			}
@@ -148,7 +148,7 @@ private void generateClientMethod(StringBuilder builder, HttpService s, HttpServ
 
 	builder.appendLine();
 	if(!isSync) {
-		builder.append("{0}public async Task", generateTabs(tabLevel));
+		builder.tabs(tabLevel).append("public async Task");
 		if (sm.returns.length == 1) {
 			builder.append("<{0}>", generateType(sm.returns[0]));
 		} else if (sm.returns.length > 1) {
@@ -161,7 +161,7 @@ private void generateClientMethod(StringBuilder builder, HttpService s, HttpServ
 		}
 	}
 	else {
-		builder.append("{0}public", generateTabs(tabLevel));
+		builder.tabs(tabLevel).append("public");
 		if (sm.returns.length == 1) {
 			builder.append(" {0}", generateType(sm.returns[0], false));
 		} else if (sm.returns.length > 1) {
@@ -176,118 +176,119 @@ private void generateClientMethod(StringBuilder builder, HttpService s, HttpServ
 	builder.append(" {0}(", cleanName(sm.name));
 	generateClientMethodParams(builder, sm);
 	builder.appendLine(")");
-	builder.appendLine("{0}{", generateTabs(tabLevel++));
-	builder.appendLine("{0}var response = await requests.CreateRequest({1}).{2}()", generateTabs(tabLevel), s.getRequest(), to!string(sm.verb).capitalize());
+	builder.tabs(tabLevel++).appendLine("{");
+	builder.tabs(tabLevel++).appendLine("var response = await requests.CreateRequest({0}).{1}()", s.getRequest(), to!string(sm.verb).capitalize());
 
 	if (sm.routeParts.length > 0) {
 		if (sm.route.length > 0) {
 			foreach(pp; sm.routeParts) {
 				auto ptc = sm.getRouteType(pp);
 				if (ptc is null) {
-					builder.appendLine("{0}.Path(\"{1}\")", generateTabs(tabLevel+1), pp);
+					builder.tabs(tabLevel).appendLine(".Path(\"{0}\")", pp);
 				} else {
-					builder.appendLine("{0}.Path({1})", generateTabs(tabLevel+1), pp);
+					builder.tabs(tabLevel).appendLine(".Path({0})", pp);
 				}
 			}
 		} else {
-			builder.appendLine("{0}.Path(\"{1}\")", generateTabs(tabLevel+1), sm.routeParts.join("\", \""));
+			builder.tabs(tabLevel).appendLine(".Path(\"{0}\")", sm.routeParts.join("\", \""));
 		}
 	}
 
 	if (sm.query.length > 0) {
-		builder.appendLine("{0}.Query(query)", generateTabs(tabLevel+1));
+		builder.tabs(tabLevel).appendLine(".Query(query)");
 	}
 
 	if (sm.header.length > 0) {
-		builder.appendLine("{0}.Header(headers)", generateTabs(tabLevel+1));
+		builder.tabs(tabLevel).appendLine(".Header(headers)");
 	}
 
 	if (sm.authenticate && sm.scheme != string.init) {
-		builder.appendLine("{0}.Authentication(\"{1}\")", generateTabs(tabLevel+1), sm.scheme);
+		builder.tabs(tabLevel).appendLine(".Authentication(\"{0}\")", sm.scheme);
 	} else if (sm.authenticate && s.scheme != string.init) {
-		builder.appendLine("{0}.Authentication(defaultAuthenticationScheme)", generateTabs(tabLevel+1), sm.scheme);
+		builder.tabs(tabLevel).appendLine(".Authentication(defaultAuthenticationScheme)", sm.scheme);
 	}
 
-	if (sm.timeout > 0) builder.append("{0}.Timeout(TimeSpan.FromSeconds({1}))", generateTabs(tabLevel+1), to!string(sm.timeout));
+	if (sm.timeout > 0) builder.tabs(tabLevel).append(".Timeout(TimeSpan.FromSeconds({0}))", to!string(sm.timeout));
 
-	if (!sm.retry) builder.append("{0}.NoRetry()", generateTabs(tabLevel+1));
+	if (!sm.retry) builder.tabs(tabLevel).append(".NoRetry()");
 
 	if (sm.content.length == 1) {
 		TypeComplex tc = sm.content[0];
 		if (typeid(tc.type) == typeid(TypeByteArray)) {
-			builder.appendLine("{0}.ByteArray({1})", generateTabs(tabLevel+1), tc.name);
+			builder.tabs(tabLevel).appendLine(".ByteArray({0})", tc.name);
 		}
 		else if (typeid(tc.type) == typeid(TypeStream)) {
-			builder.appendLine("{0}.Stream({1})", generateTabs(tabLevel+1), tc.name);
+			builder.tabs(tabLevel).appendLine(".Stream({0})", tc.name);
 		}
 		else if (typeid(tc.type) == typeid(TypeContent)) {
-			builder.appendLine("{0}.Content({1})", generateTabs(tabLevel+1), tc.name);
+			builder.tabs(tabLevel).appendLine(".Content({0})", tc.name);
 		}
 		else if (typeid(tc.type) == typeid(TypePrimitive) && (cast(TypePrimitive)tc.type).primitive == TypePrimitives.String) {
-			builder.appendLine("{0}.Text({1})", generateTabs(tabLevel+1), tc.name);
+			builder.tabs(tabLevel).appendLine(".Text({0})", tc.name);
 		}
 		else if (typeid(tc.type) == typeid(TypeFormUrlEncoded)) {
-			builder.appendLine("{0}.FormUrlEncoded({1})", generateTabs(tabLevel+1), tc.name);
+			builder.tabs(tabLevel).appendLine(".FormUrlEncoded({0})", tc.name);
 		}
 		else {
-			builder.appendLine("{0}.Serialized({1})", generateTabs(tabLevel+1), tc.name);
+			builder.tabs(tabLevel).appendLine(".Serialized({0})", tc.name);
 		}
 	} else if (sm.content.length > 1) {
-		builder.appendLine("{0}.Multipart{1}()", generateTabs(tabLevel+1), sm.bodyForm ? "Form" : string.init);
-		if (sm.bodySubtype != string.init) builder.appendLine("{0}.Subtype(\"{1}\")", generateTabs(tabLevel+2), sm.bodySubtype);
-		if (sm.bodySubtype != string.init) builder.appendLine("{0}.Boundary(\"{1}\")", generateTabs(tabLevel+2), sm.bodyBoundary);
+		builder.tabs(tabLevel++).appendLine(".Multipart{0}()", sm.bodyForm ? "Form" : string.init);
+		if (sm.bodySubtype != string.init) builder.tabs(tabLevel).appendLine(".Subtype(\"{0}\")", sm.bodySubtype);
+		if (sm.bodySubtype != string.init) builder.tabs(tabLevel).appendLine(".Boundary(\"{0}\")", sm.bodyBoundary);
 		foreach (tc; sm.content) {
 			if (typeid(tc.type) == typeid(TypeByteArray) || typeid(tc.type) == typeid(TypeStream)) {
-				builder.appendLine("{0}.File({1})", generateTabs(tabLevel+2), tc.name);
+				builder.tabs(tabLevel).appendLine(".File({0})", tc.name);
 			}
 			else if (typeid(tc.type) == typeid(TypeContent)) {
-				builder.appendLine("{0}.Content({1})", generateTabs(tabLevel+2), tc.name);
+				builder.tabs(tabLevel).appendLine(".Content({0})", tc.name);
 			}
 			else if (typeid(tc.type) == typeid(TypePrimitive) && (cast(TypePrimitive)tc.type).primitive == TypePrimitives.String) {
-				builder.appendLine("{0}.Text({1})", generateTabs(tabLevel+2), tc.name);
+				builder.tabs(tabLevel).appendLine(".Text({0})", tc.name);
 			}
 			else if (typeid(tc.type) == typeid(TypeFormUrlEncoded)) {
-				builder.appendLine("{0}.FormUrlEncoded({1})", generateTabs(tabLevel+2), tc.name);
+				builder.tabs(tabLevel).appendLine(".FormUrlEncoded({0})", tc.name);
 			}
 			else {
-				builder.appendLine("{0}.Serialized({1})", generateTabs(tabLevel+2), tc.name);
+				builder.tabs(tabLevel).appendLine(".Serialized({0})", tc.name);
 			}
 		}
-		builder.appendLine("{0}.Compile()", generateTabs(tabLevel+2));
+		builder.tabs(tabLevel).appendLine(".Compile()");
+		tabLevel--;
 	}
 
-	builder.appendLine("{0}.Send();", generateTabs(tabLevel+1));
+	builder.tabs(--tabLevel).appendLine(".Send();");
 
 	if (sm.returns.length > 0) {
 		builder.appendLine();
 		if (sm.returns.length == 1) {
 			TypeComplex tc = sm.returns[0];
-			builder.append("{0}return await response", generateTabs(tabLevel));
-			if (!sm.retry) builder.appendLine(".ThrowOnFailureResponse()", generateTabs(tabLevel));
+			builder.tabs(tabLevel++).append("return await response");
+			if (!sm.retry) builder.tabs(tabLevel).appendLine(".ThrowOnFailureResponse()");
 			if (typeid(tc.type) == typeid(TypeByteArray)) {
-				builder.appendLine(".AsByteArray();");
+				builder.tabs(tabLevel--).appendLine(".AsByteArray();");
 			}
 			else if (typeid(tc.type) == typeid(TypeStream)) {
-				builder.appendLine(".AsStream();");
+				builder.tabs(tabLevel--).appendLine(".AsStream();");
 			}
 			else if (typeid(tc.type) == typeid(TypeContent)) {
-				builder.appendLine(".AsContent();");
+				builder.tabs(tabLevel--).appendLine(".AsContent();");
 			}
 			else if (typeid(tc.type) == typeid(TypePrimitive) && (cast(TypePrimitive)tc.type).primitive == TypePrimitives.String) {
-				builder.appendLine(".AsText();");
+				builder.tabs(tabLevel--).appendLine(".AsText();");
 			}
 			else if (typeid(tc.type) == typeid(TypeFormUrlEncoded)) {
-				builder.appendLine(".AsFormUrlEncoded();");
+				builder.tabs(tabLevel--).appendLine(".AsFormUrlEncoded();");
 			}
 			else {
-				builder.appendLine(".AsObject<{0}>();", generateType(tc));
+				builder.tabs(tabLevel--).appendLine(".AsObject<{0}>();", generateType(tc));
 			}
 		} else {
 			//TODO: Multipart returns not implemented in client library.
 		}
 	}
 
-	builder.appendLine("{0}}", generateTabs(--tabLevel));
+	builder.tabs(--tabLevel).appendLine("}");
 }
 
 private void generateClientMethodParams(StringBuilder builder, HttpServiceMethod sm)
