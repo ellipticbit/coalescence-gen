@@ -1,7 +1,7 @@
-module restforge.types;
-import restforge.model;
-import restforge.globals;
-import restforge.generator;
+module hwgen.types;
+import hwgen.model;
+import hwgen.globals;
+import hwgen.generator;
 
 import sdlang;
 

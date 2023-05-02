@@ -1,12 +1,12 @@
-module restforge.languages.csharp.aspnetcore.signalr.server;
+module hwgen.languages.csharp.signalr.server;
 
-import restforge.types;
-import restforge.model;
-import restforge.globals;
-import restforge.stringbuilder;
+import hwgen.types;
+import hwgen.model;
+import hwgen.globals;
+import hwgen.stringbuilder;
 
-import restforge.languages.csharp.aspnetcore.generator;
-import restforge.languages.csharp.aspnetcore.extensions;
+import hwgen.languages.csharp.generator;
+import hwgen.languages.csharp.extensions;
 
 import std.algorithm.iteration;
 import std.algorithm.searching;

@@ -1,7 +1,7 @@
-import restforge.globals;
-import restforge.model;
-import restforge.generator;
-import restforge.analyser;
+import hwgen.globals;
+import hwgen.model;
+import hwgen.generator;
+import hwgen.analyser;
 
 import std.algorithm.iteration;
 import std.conv;

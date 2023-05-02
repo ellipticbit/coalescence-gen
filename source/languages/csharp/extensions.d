@@ -1,6 +1,6 @@
-module restforge.languages.csharp.aspnetcore.extensions;
+module hwgen.languages.csharp.extensions;
 
-import restforge.model;
+import hwgen.model;
 
 import std.algorithm.iteration;
 import std.algorithm.searching;

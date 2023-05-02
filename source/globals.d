@@ -1,7 +1,7 @@
-module restforge.globals;
+module hwgen.globals;
 
-import restforge.model;
-import restforge.types;
+import hwgen.model;
+import hwgen.types;
 
 import std.conv;
 import std.file;

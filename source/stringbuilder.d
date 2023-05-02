@@ -1,4 +1,4 @@
-module restforge.stringbuilder;
+module hwgen.stringbuilder;
 
 import core.vararg;
 import std.conv;

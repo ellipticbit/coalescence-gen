@@ -1,8 +1,8 @@
-module restforge.generator;
+module hwgen.generator;
 
-import restforge.model;
-import restforge.globals;
-import restforge.languages.csharp.aspnetcore.generator;
+import hwgen.model;
+import hwgen.globals;
+import hwgen.languages.csharp.generator;
 
 import std.stdio;
 import std.uni;
@@ -21,7 +21,7 @@ public bool isValidLanguage(string lang)
 
 public void displayUsage()
 {
-    writeln("Usage: lexicon <server/client> <input file/directory> <output file/directory> [options]");
+    writeln("Usage: hwgen <server/client> <input file/directory> <output file/directory> [options]");
     writeln();
     displayCSharpOptions();
 }

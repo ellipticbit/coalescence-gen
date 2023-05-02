@@ -1,9 +1,9 @@
-module restforge.analyser;
+module hwgen.analyser;
 
-import restforge.types;
-import restforge.model;
-import restforge.globals;
-import restforge.generator;
+import hwgen.types;
+import hwgen.model;
+import hwgen.globals;
+import hwgen.generator;
 
 import std.algorithm.searching;
 import std.algorithm.sorting;

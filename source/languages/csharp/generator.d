@@ -1,17 +1,17 @@
-module restforge.languages.csharp.aspnetcore.generator;
+module hwgen.languages.csharp.generator;
 
-import restforge.globals;
-import restforge.types;
-import restforge.model;
-import restforge.stringbuilder;
+import hwgen.globals;
+import hwgen.types;
+import hwgen.model;
+import hwgen.stringbuilder;
 
-import restforge.languages.csharp.aspnetcore.enums;
-import restforge.languages.csharp.aspnetcore.model;
-import restforge.languages.csharp.aspnetcore.http.client;
-import restforge.languages.csharp.aspnetcore.http.server;
-import restforge.languages.csharp.aspnetcore.signalr.server;
-import restforge.languages.csharp.aspnetcore.signalr.client;
-import restforge.languages.csharp.aspnetcore.extensions;
+import hwgen.languages.csharp.enums;
+import hwgen.languages.csharp.model;
+import hwgen.languages.csharp.aspnetcore.client;
+import hwgen.languages.csharp.aspnetcore.server;
+import hwgen.languages.csharp.signalr.server;
+import hwgen.languages.csharp.signalr.client;
+import hwgen.languages.csharp.extensions;
 
 import std.stdio;
 import std.uni;

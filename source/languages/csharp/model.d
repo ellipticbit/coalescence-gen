@@ -1,11 +1,11 @@
-module restforge.languages.csharp.aspnetcore.model;
+module hwgen.languages.csharp.model;
 
-import restforge.types;
-import restforge.model;
-import restforge.globals;
-import restforge.stringbuilder;
+import hwgen.types;
+import hwgen.model;
+import hwgen.globals;
+import hwgen.stringbuilder;
 
-import restforge.languages.csharp.aspnetcore.generator;
+import hwgen.languages.csharp.generator;
 
 import std.array;
 import std.algorithm.iteration;

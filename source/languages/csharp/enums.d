@@ -1,10 +1,10 @@
-module restforge.languages.csharp.aspnetcore.enums;
+module hwgen.languages.csharp.enums;
 
-import restforge.model;
-import restforge.globals;
-import restforge.stringbuilder;
+import hwgen.model;
+import hwgen.globals;
+import hwgen.stringbuilder;
 
-import restforge.languages.csharp.aspnetcore.generator;
+import hwgen.languages.csharp.generator;
 
 import std.conv;
 import std.stdio;
