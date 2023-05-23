@@ -1,9 +1,13 @@
 import hwgen.globals;
-import hwgen.model;
+import hwgen.schema;
 import hwgen.generator;
 import hwgen.analyser;
+import hwgen.utility;
+
+import sdlang;
 
 import std.algorithm.iteration;
+import std.algorithm.searching;
 import std.conv;
 import std.file;
 import std.path;
@@ -27,79 +31,111 @@ int main(string[] args)
         displayUsage();
         return 0;
     }
-    if(args.length < 4) {
-        displayUsage();
-        return 1;
-    }
 
-    //Determine if client or server run
-    if(args[1].toLower() != "server" && args[1].toLower() != "client") {
-        writefln("Encountered invalid argument '%s'. Expected 'server' or 'client'", args[1]);
-        return 1;
-    }
-    if(args[1].toLower() == "server") serverGen = true;
-    else if(args[1].toLower() == "client") clientGen = true;
+	string projectPath = string.init;
+	string rootDir = getcwd();
+	string dbdriver = string.init;
+	string dbserver = string.init;
+	string dbname = string.init;
+	string dbuser = string.init;
+	string dbpassword = string.init;
 
-    //Parse input path
-    inputPath = buildNormalizedPath(getcwd(), args[2]);
-    if(exists(inputPath)) {
-        try {
-            if(isDir(inputPath)) pathIsDir = true;
-        } catch(Throwable) { }
-    }
-    else {
-        writefln("Encountered invalid argument '%s'. Expected a valid local path. Attempted: %s", args[3], inputPath);
-        return 1;
-    }
+	//Read args
+	for(int i = 1; i < args.length; i++) {
+		if (args[i].toUpper() == "--root-directory".toUpper() || args[i].toUpper() == "-rd".toUpper()) rootDir = args[++i];
+		if (args[i].toUpper() == "--project-file".toUpper() || args[i].toUpper() == "-pf".toUpper()) projectPath = args[++i];
+		if (args[i].toUpper() == "--db-mssql".toUpper()) dbdriver = "ODBC Driver 17 for SQL Server";
+		if (args[i].toUpper() == "--db-server".toUpper()) dbserver = args[++i];
+		if (args[i].toUpper() == "--db-name".toUpper()) dbname = args[++i];
+		if (args[i].toUpper() == "--db-user".toUpper()) dbuser = args[++i];
+		if (args[i].toUpper() == "--db-password".toUpper()) dbpassword = args[++i];
+	}
 
-    //Parse output path
-    outputPath = args[3];
-    outputPath = buildNormalizedPath(getcwd(), outputPath);
+	//Get project directory
+	if (!isAbsolute(rootDir)) {
+		rootDir = buildNormalizedPath(getcwd(), rootDir);
+	}
+	if (!exists(rootDir)) {
+		writeln("ERROR: Unable to locate project source directory: " ~ rootDir);
+		return 2;
+	}
 
-    //Parse options
-    language = "CSharp"; //TODO: Hardwiring for now until other languages get added.
-    if (args.length > 4)
-    {
-        auto opts = parseOptions(args[4..$]);
-        if(opts is null)
-        {
-            writeln("opts is null");
-            return 1;
-        }
+	//Get project file path
+	if (!projectPath.isNullOrWhitespace() && !isAbsolute(projectPath)) {
+		projectPath = buildNormalizedPath(getcwd(), projectPath);
+		if (!exists(projectPath)) {
+			writeln("ERROR: Unable to locate project file: " ~ projectPath);
+			return 2;
+		}
+	} else {
+		projectPath = buildNormalizedPath(getcwd(), ".hotwire.sdl");
+		if (!exists(projectPath)) {
+			writeln("ERROR: Unable to locate project file: " ~ projectPath);
+			return 2;
+		}
+	}
 
-        options = opts;
-    }
+	// Load the project file.
+	Tag projectTag = parseFile(projectPath).expectTag("project");
+	if (projectTag is null) {
+		writeln("ERROR: Invalid project file specified. No top-level project node was found.");
+		return 3;
+	}
 
-    //Load files
-    loadFiles();
+	// Load schema from database if connection info is present.
+	Schema[] dbSchema;
+	if (dbdriver != string.init && dbserver != string.init && dbname != string.init && dbuser != string.init && dbpassword != string.init)  {
 
-    //Do semantic analysis
-    if(analyse()) {
-        writeln("Analysis failed.");
+	}
+
+	//Load files
+	auto mergedSchema = loadFiles(rootDir, dbSchema);
+
+	//Load project tag
+	Project project = new Project(projectTag, mergedSchema, dbname, dirName(projectPath));
+
+    //Do type analysis
+    if(analyse(project)) {
+        writeln("Type Analysis Failed.");
         return 1;
     }
 
     //Generate code and write it to the correct file
-    generate();
+    generate(project);
 
     return 0;
 }
 
-private void loadFiles()
+private Schema[] loadFiles(string rootDir, Schema[] dbSchema)
 {
-    if (pathIsDir)
-    {
-        auto rfFiles = dirEntries(inputPath, SpanMode.depth).filter!(f => f.name.endsWith(".sdl"));
-        foreach(rf; rfFiles)
-        {
-            auto fqn = buildNormalizedPath(inputPath, rf.name);
-			writeln("Input: " ~ fqn);
-            string ofp = to!string(buildNormalizedPath(outputPath, to!string(asRelativePath(fqn, inputPath))));
-            projectFiles ~= new ProjectFile(fqn, ofp);
-        }
-    }
-    else
-    {
-        projectFiles ~= new ProjectFile(inputPath, outputPath);
-    }
+	Schema[] tsl = dbSchema;
+	auto rfFiles = dirEntries(rootDir, SpanMode.depth).filter!(f => f.name.endsWith(".sdl"));
+	foreach(rf; rfFiles) {
+		if (baseName(rf.name).toUpper() == ".hotwire.sdl".toUpper()) continue;
+		writeln("Input: " ~ rf.name);
+		Tag frt = parseFile(rf.name);
+		foreach (t; frt.maybe.tags) {
+			if (t.name.toUpper() == "project".toUpper()) continue;
+			if (t.name.toUpper() != "namespace".toUpper()) {
+				writeParseWarning("Found unrecognized root tag '" ~ t.name ~ "' in file '" ~ rf.name ~ "'. Skipping.", t.location);
+				continue;
+			}
+			auto sn = t.expectValue!string();
+			if (tsl.any!(a => a.name == sn)) {
+				foreach (s; tsl) {
+					if (s.name == sn) {
+						s.merge(t);
+						break;
+					}
+				}
+			} else {
+				tsl ~= new Schema(t);
+			}
+		}
+	}
+	return tsl;
+}
+
+private void displayUsage() {
+
 }

@@ -41,8 +41,10 @@ public:
 		this.tabSpaces = tabSpaces;
     }
 
-    @safe this(size_t initialCapacity) {
+    @safe this(size_t initialCapacity, bool useSpaces = false, int tabSpaces = 4) {
         chars.reserve(initialCapacity);
+		this.useSpaces = useSpaces;
+		this.tabSpaces = tabSpaces;
     }
 
     @trusted override string toString() {

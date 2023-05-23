@@ -1,23 +1,23 @@
-namespace "Service.Network" {
+namespace "Service" {
 	enum "TestEnum" packed=false {
 		value1
 		value2 100
-		value3 "Service.Network.TestEnum.value1" "Service.Network.TestEnum.value2"
+		value3 "Service.TestEnum.value1" "Service.TestEnum.value2"
 	}
 
 	model "TestModel" database="Service.Database.TestModel" {
-		tenantId type="int32" readonly=true database="tenantId"
-		Member1 type="uint8" readonly=true database="Member1"
-		Member2 type="double?" database="Member2" tansport="m2"
-		Member3 type="Service.Network.TestEnum" transport="m3"
+		tenantId type="int32" readonly=true
+		Member1 type="uint8" readonly=true
+		Member2 type="double?" tansport="m2"
+		Member3 type="Service.TestEnum" transport="m3"
 		IntCollectionTest type="[int32]" transport="intt"
 		ModelCollectionTest type="[SubModel]" transport="mt" modelbind=true
-		NamespaceModelTest type="[NamespaceTest]" transport="nt" database="NMT" modelbind=true
+		NamespaceModelTest type="[NamespaceTest]" transport="nt" modelbind=true
 	}
 
 	model "SubModel" {
-		Id readonly=true type="int32" primarykey=true database="Id"
-		testData type="string" database="test"
+		Id readonly=true type="int32" primarykey=true
+		testData type="string"
 
 		Parent type="TestModel" modelbind=true
 	}

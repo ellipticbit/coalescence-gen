@@ -1,5 +1,5 @@
 module hwgen.types;
-import hwgen.model;
+import hwgen.schema;
 import hwgen.globals;
 import hwgen.generator;
 
@@ -113,7 +113,7 @@ public final class TypeEnum : TypeUser
 	{
 		super(refType.name, loc);
 		_definition = refType;
-		this.name = refType.getFqn();
+		this.name = refType.fullName;
 	}
 }
 
@@ -121,20 +121,20 @@ public final class TypeModel : TypeUser
 {
 	public override @property TypeMode mode() { return TypeMode.Model; }
 
-	private Model _definition;
-	public @property Model definition() { return _definition; }
-	public @property Model definition(Model value) { return _definition = value; }
+	private DataObject _definition;
+	public @property DataObject definition() { return _definition; }
+	public @property DataObject definition(DataObject value) { return _definition = value; }
 
 	public this(Location loc) {
 		super(string.init, loc);
 		this._definition = null;
 	}
 
-	public this(Model refType, Location loc)
+	public this(DataObject refType, Location loc)
 	{
 		super(refType.name, loc);
 		_definition = refType;
-		super.name = refType.getFqn();
+		super.name = refType.fullName;
 	}
 }
 

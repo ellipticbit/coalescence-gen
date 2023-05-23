@@ -1,9 +1,10 @@
 module hwgen.languages.csharp.aspnetcore.server;
 
 import hwgen.types;
-import hwgen.model;
+import hwgen.schema;
 import hwgen.globals;
 import hwgen.stringbuilder;
+import hwgen.utility;
 
 import hwgen.languages.csharp.extensions;
 import hwgen.languages.csharp.generator;

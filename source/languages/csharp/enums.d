@@ -1,8 +1,9 @@
 module hwgen.languages.csharp.enums;
 
-import hwgen.model;
+import hwgen.schema;
 import hwgen.globals;
 import hwgen.stringbuilder;
+import hwgen.utility;
 
 import hwgen.languages.csharp.generator;
 
@@ -37,7 +38,7 @@ public void generateEnum(StringBuilder builder, Enumeration en, ushort tabLevel)
             for(int i = 0; i < env.aggregate.length; i++)
             {
                 //writeln(env.name);
-                builder.append(env.aggregate[i].type.getFqn() ~ "." ~ env.aggregate[i].value.name);
+                builder.append(env.aggregate[i].parent.parent.name ~ "." ~ env.aggregate[i].value.name);
                 if(i < env.aggregate.length - 1)
                     builder.append(" | ");
             }
@@ -47,5 +48,5 @@ public void generateEnum(StringBuilder builder, Enumeration en, ushort tabLevel)
             builder.tabs(tabLevel).appendLine("[EnumMember()] {0},", env.name);
         }
     }
-    builder.tabs(tabLevel).appendLine("}");
+    builder.tabs(--tabLevel).appendLine("}");
 }

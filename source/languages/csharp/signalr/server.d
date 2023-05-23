@@ -1,9 +1,10 @@
 module hwgen.languages.csharp.signalr.server;
 
 import hwgen.types;
-import hwgen.model;
+import hwgen.schema;
 import hwgen.globals;
 import hwgen.stringbuilder;
+import hwgen.utility;
 
 import hwgen.languages.csharp.generator;
 import hwgen.languages.csharp.extensions;
@@ -44,9 +45,9 @@ public void generateWebsocketServer(StringBuilder builder, WebsocketService s, u
 	generateAuthorization(builder, ext !is null ? ext.getAuthorization() : null, s.authenticate, false, tabLevel);
 
     if (s.hasClient()) {
-        builder.tabs(tabLevel).appendLine("{1} abstract class {0}HubBase : Hub<I{0}{2}>, I{0}{3}", s.name, s.isPublic ? "public" : "internal", serverGen ? "Client" : "Server", serverGen ? "Server" : "Client");
+        builder.tabs(tabLevel).appendLine("{1} abstract class {0}HubBase : Hub<I{0}Client>, I{0}Server", s.name, s.isPublic ? "public" : "internal");
     } else {
-        builder.tabs(tabLevel).appendLine("{1} abstract class {0}HubBase : Hub, I{0}{2}", s.name, s.isPublic ? "public" : "internal", serverGen ? "Server" : "Client");
+        builder.tabs(tabLevel).appendLine("{1} abstract class {0}HubBase : Hub, I{0}Server", s.name, s.isPublic ? "public" : "internal");
     }
 	builder.tabs(tabLevel++).appendLine("{");
 	foreach(ns; s.namespaces) {

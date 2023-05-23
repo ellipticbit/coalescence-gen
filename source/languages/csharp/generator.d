@@ -2,98 +2,352 @@ module hwgen.languages.csharp.generator;
 
 import hwgen.globals;
 import hwgen.types;
-import hwgen.model;
+import hwgen.schema;
 import hwgen.stringbuilder;
+import hwgen.utility;
 
 import hwgen.languages.csharp.enums;
-import hwgen.languages.csharp.model;
+import hwgen.languages.csharp.data;
+import hwgen.languages.csharp.extensions;
 import hwgen.languages.csharp.aspnetcore.client;
 import hwgen.languages.csharp.aspnetcore.server;
 import hwgen.languages.csharp.signalr.server;
 import hwgen.languages.csharp.signalr.client;
-import hwgen.languages.csharp.extensions;
 
+import std.algorithm.searching;
+import std.path;
 import std.stdio;
 import std.uni;
 import std.string;
 
-public void generateCSharp(ProjectFile file)
+public void generateCSharp(Project prj, CSharpProjectOptions opts)
 {
-	foreach(ns; file.namespaces)
-		generateNamespace(file.builder, ns);
+	if (opts.outputMode == CSharpOutputMode.SingleFile) {
+		auto serverBuilder = new StringBuilder(8_388_608);
+		serverBuilder.generateUsingsServerComplete(prj, opts);
+		foreach(ns; prj.serverSchema) {
+			ns.generateSchemaServer(serverBuilder, prj, opts);
+		}
 
-	writeFile(file, "cs");
+		auto clientBuilder = new StringBuilder(8_388_608);
+		clientBuilder.generateUsingsClientComplete(prj, opts);
+		foreach(ns; prj.clientSchema) {
+			ns.generateSchemaClient(clientBuilder, prj, opts);
+		}
+
+		opts.writeFileServer(serverBuilder, opts.contextName);
+		opts.writeFileClient(clientBuilder, opts.contextName);
+	} else if (opts.outputMode == CSharpOutputMode.FilePerSchema) {
+		foreach(ns; prj.serverSchema) {
+			auto serverBuilder = new StringBuilder(1_048_576);
+			serverBuilder.generateUsingsServerComplete(prj, opts);
+			ns.generateSchemaServer(serverBuilder, prj, opts);
+			opts.writeFileServer(serverBuilder, ns.name);
+		}
+
+		foreach(ns; prj.clientSchema) {
+			auto clientBuilder = new StringBuilder(1_048_576);
+			clientBuilder.generateUsingsClientComplete(prj, opts);
+			ns.generateSchemaClient(clientBuilder, prj, opts);
+			opts.writeFileClient(clientBuilder, ns.name);
+		}
+	} else if (opts.outputMode == CSharpOutputMode.FilePerObject) {
+		foreach(ns; prj.serverSchema) {
+			ns.generateSchemaServer(null, prj, opts);
+		}
+
+		foreach(ns; prj.clientSchema) {
+			ns.generateSchemaClient(null, prj, opts);
+		}
+	}
 }
 
-private void generateNamespace(StringBuilder builder, Namespace ns)
+private void generateSchemaServer(Schema ns, StringBuilder schemaBuilder, Project prj, CSharpProjectOptions opts)
 {
-	uint c = 0;
+	if (opts.outputMode != CSharpOutputMode.FilePerObject) {
+		schemaBuilder.appendLine("namespace {0}", ns.getCSharpFqn(opts, false));
+		schemaBuilder.appendLine("{");
+		foreach(e; ns.enums.values) {
+			generateEnum(schemaBuilder, e, 1);
+		}
+		foreach(d; ns.data.values) {
+			if (typeid(d) == typeid(Network)) generateDataNetwork(cast(Network)d, schemaBuilder, opts, true, 1);
+		}
+		foreach(s; ns.services.values) {
+			generateHttpServer(schemaBuilder, s, 1);
+		}
+		foreach(s; ns.sockets.values) {
+			generateWebsocketServer(schemaBuilder, s, 1);
+		}
+		schemaBuilder.appendLine("}");
+	} else {
+		foreach(e; ns.enums.values) {
+			auto builder = new StringBuilder(4_096);
+			builder.appendLine("namespace {0}", ns.getCSharpFqn(opts, false));
+			builder.appendLine("{");
+			generateEnum(builder, e, 1);
+			builder.appendLine("}");
+			builder.appendLine();
+			opts.writeFileServer(builder, ns.name, e.name);
+		}
+		foreach(d; ns.data.values) {
+			auto builder = new StringBuilder(16_384);
+			builder.generateUsingsServerData(opts);
+			builder.appendLine("namespace {0}", ns.getCSharpFqn(opts, false));
+			builder.appendLine("{");
+			if (typeid(d) == typeid(Network)) generateDataNetwork(cast(Network)d, builder, opts, true, 1);
+			builder.appendLine("}");
+			builder.appendLine();
+			opts.writeFileServer(builder, ns.name, d.name);
+		}
+		foreach(s; ns.services.values) {
+			auto builder = new StringBuilder(32_768);
+			builder.generateUsingsServerHttp();
+			builder.appendLine("namespace {0}", ns.getCSharpFqn(opts, false));
+			builder.appendLine("{");
+			generateHttpServer(builder, s, 1);
+			builder.appendLine("}");
+			builder.appendLine();
+			opts.writeFileServer(builder, ns.name, s.name);
+		}
+		foreach(s; ns.sockets.values) {
+			auto builder = new StringBuilder(32_768);
+			builder.generateUsingsServerSocket();
+			builder.appendLine("namespace {0}", ns.getCSharpFqn(opts, false));
+			builder.appendLine("{");
+			generateWebsocketServer(builder, s, 1);
+			builder.appendLine("}");
+			builder.appendLine();
+			opts.writeFileServer(builder, ns.name, s.name);
+		}
+	}
+}
+
+private void generateSchemaClient(Schema ns, StringBuilder schemaBuilder, Project prj, CSharpProjectOptions opts)
+{
+	if (opts.outputMode != CSharpOutputMode.FilePerObject) {
+		schemaBuilder.appendLine("namespace {0}", ns.getCSharpFqn(opts, true));
+		schemaBuilder.appendLine("{");
+		foreach(e; ns.enums.values) {
+			generateEnum(schemaBuilder, e, 1);
+		}
+		foreach(d; ns.data.values) {
+			if (typeid(d) == typeid(Network)) generateDataNetwork(cast(Network)d, schemaBuilder, opts, false, 1);
+		}
+		foreach(s; ns.services.values) {
+			generateHttpClient(schemaBuilder, s, 1);
+		}
+		foreach(s; ns.sockets.values) {
+			generateWebsocketClient(schemaBuilder, s, 1);
+		}
+		schemaBuilder.appendLine("}");
+	} else {
+		foreach(e; ns.enums.values) {
+			auto builder = new StringBuilder(4_096);
+			builder.appendLine("namespace {0}", ns.getCSharpFqn(opts, true));
+			builder.appendLine("{");
+			generateEnum(builder, e, 1);
+			builder.appendLine("}");
+			builder.appendLine();
+			opts.writeFileClient(builder, ns.name, e.name);
+		}
+		foreach(d; ns.data.values) {
+			auto builder = new StringBuilder(16_384);
+			builder.generateUsingsClientData(opts);
+			builder.appendLine("namespace {0}", ns.getCSharpFqn(opts, true));
+			builder.appendLine("{");
+			if (typeid(d) == typeid(Network)) generateDataNetwork(cast(Network)d, builder, opts, false, 1);
+			builder.appendLine("}");
+			builder.appendLine();
+			opts.writeFileClient(builder, ns.name, d.name);
+		}
+		foreach(s; ns.services.values) {
+			auto builder = new StringBuilder(32_768);
+			builder.generateUsingsClientHttp();
+			builder.appendLine("namespace {0}", ns.getCSharpFqn(opts, true));
+			builder.appendLine("{");
+			generateHttpClient(builder, s, 1);
+			builder.appendLine("}");
+			builder.appendLine();
+			opts.writeFileClient(builder, ns.name, s.name);
+		}
+		foreach(s; ns.sockets.values) {
+			auto builder = new StringBuilder(32_768);
+			builder.generateUsingsClientSocket();
+			builder.appendLine("namespace {0}", ns.getCSharpFqn(opts, true));
+			builder.appendLine("{");
+			generateWebsocketClient(builder, s, 1);
+			builder.appendLine("}");
+			builder.appendLine();
+			opts.writeFileClient(builder, ns.name, s.name);
+		}
+	}
+}
+
+private void generateUsingsServerComplete(StringBuilder builder, Project prj, CSharpProjectOptions opts) {
 	builder.appendLine("using System;");
 	builder.appendLine("using System.Collections.Generic;");
-	if(hasOption("xaml") && clientGen) {
+	if (opts.serverUIBindings) {
 		builder.appendLine("using System.ComponentModel;");
 	}
 	builder.appendLine("using System.Linq;");
 	builder.appendLine("using System.IO;");
-	builder.appendLine("using System.Runtime.Serialization;");
-	if(!hasOption("useNewtonsoft")) {
+	if (opts.serializers.any!(a => a == CSharpSerializers.DataContract)) {
+		builder.appendLine("using System.Runtime.Serialization;");
+	}
+	if (opts.serializers.any!(a => a == CSharpSerializers.SystemTextJson)) {
 		builder.appendLine("using System.Text.Json.Serialization;");
 	}
-	builder.appendLine("using System.Threading.Tasks;");
-	if(clientGen)
-	{
-		builder.appendLine("using System.Net;");
-		builder.appendLine("using System.Net.Http;");
-		builder.appendLine("using System.Net.Http.Headers;");
-		builder.appendLine("using System.Text;");
-		builder.appendLine("using System.Windows;");
-		if (ns.sockets.length>0) {
-			builder.appendLine("using Microsoft.AspNetCore.SignalR.Client;");
-			builder.appendLine("using Microsoft.Extensions.DependencyInjection;");
-			builder.appendLine("using Microsoft.Extensions.DependencyInjection.Extensions;");
-			builder.appendLine("using EllipticBit.Hotwire.SignalR;");
-		}
-		builder.appendLine("using EllipticBit.Hotwire.Request;");
+	if (opts.serializers.any!(a => a == CSharpSerializers.NewtonsoftJson)) {
+		builder.appendLine("using Newtonsoft.Json;");
 	}
-	if (serverGen)
-	{
-		builder.appendLine("using Microsoft.Extensions.Primitives;");
-		builder.appendLine("using Microsoft.AspNetCore.Mvc;");
-		builder.appendLine("using Microsoft.AspNetCore.Authorization;");
-		if (ns.sockets.length>0) {
-			builder.appendLine("using Microsoft.AspNetCore.SignalR;");
-			builder.appendLine("using EllipticBit.Hotwire.SignalR;");
-		}
-		builder.appendLine("using EllipticBit.Hotwire.Shared;");
+	builder.appendLine("using System.Threading.Tasks;");
+	builder.appendLine("using Microsoft.Extensions.Primitives;");
+	builder.appendLine("using Microsoft.AspNetCore.Mvc;");
+	builder.appendLine("using Microsoft.AspNetCore.Authorization;");
+	if (prj.hasSocketServices) {
+		builder.appendLine("using Microsoft.AspNetCore.SignalR;");
+		builder.appendLine("using EllipticBit.Hotwire.SignalR;");
+	}
+	builder.appendLine("using EllipticBit.Hotwire.Shared;");
+	if (prj.hasHttpServices) {
 		builder.appendLine("using EllipticBit.Hotwire.AspNetCore;");
 	}
 	builder.appendLine();
-	builder.append("namespace ");
-	builder.append(ns.getFqn());
+}
+
+private void generateUsingsClientComplete(StringBuilder builder, Project prj, CSharpProjectOptions opts) {
+	builder.appendLine("using System;");
+	builder.appendLine("using System.Collections.Generic;");
+	if (opts.clientUIBindings) {
+		builder.appendLine("using System.ComponentModel;");
+	}
+	builder.appendLine("using System.Linq;");
+	builder.appendLine("using System.IO;");
+	if (opts.serializers.any!(a => a == CSharpSerializers.DataContract)) {
+		builder.appendLine("using System.Runtime.Serialization;");
+	}
+	if (opts.serializers.any!(a => a == CSharpSerializers.SystemTextJson)) {
+		builder.appendLine("using System.Text.Json.Serialization;");
+	}
+	if (opts.serializers.any!(a => a == CSharpSerializers.NewtonsoftJson)) {
+		builder.appendLine("using Newtonsoft.Json;");
+	}
+	builder.appendLine("using System.Threading.Tasks;");
+	builder.appendLine("using System.Net;");
+	builder.appendLine("using System.Net.Http;");
+	builder.appendLine("using System.Net.Http.Headers;");
+	builder.appendLine("using System.Text;");
+	if (prj.hasSocketServices) {
+		builder.appendLine("using Microsoft.AspNetCore.SignalR.Client;");
+		builder.appendLine("using Microsoft.Extensions.DependencyInjection;");
+		builder.appendLine("using Microsoft.Extensions.DependencyInjection.Extensions;");
+		builder.appendLine("using EllipticBit.Hotwire.SignalR;");
+	}
+	if (prj.hasHttpServices) {
+		builder.appendLine("using EllipticBit.Hotwire.Request;");
+	}
 	builder.appendLine();
-	builder.appendLine("{");
-	foreach(e; ns.enums)
-		generateEnum(builder, e, 1);
-	foreach(m; ns.models)
-		generateModel(builder, m, 1);
+}
 
-	if(serverGen) {
-		foreach(s; ns.services)
-			generateHttpServer(builder, s, 1);
-	} else {
-		foreach(s; ns.services)
-			generateHttpClient(builder, s, 1);
+private void generateUsingsServerData(StringBuilder builder, CSharpProjectOptions opts) {
+	builder.appendLine("using System;");
+	builder.appendLine("using System.Collections.Generic;");
+	if (opts.serverUIBindings) {
+		builder.appendLine("using System.ComponentModel;");
 	}
-
-	if(serverGen) {
-		foreach(s; ns.sockets)
-			generateWebsocketServer(builder, s, 1);
-	} else {
-		foreach(s; ns.sockets)
-			generateWebsocketClient(builder, s, 1);
+	builder.appendLine("using System.Linq;");
+	builder.appendLine("using System.IO;");
+	if (opts.serializers.any!(a => a == CSharpSerializers.DataContract)) {
+		builder.appendLine("using System.Runtime.Serialization;");
 	}
+	if (opts.serializers.any!(a => a == CSharpSerializers.SystemTextJson)) {
+		builder.appendLine("using System.Text.Json.Serialization;");
+	}
+	if (opts.serializers.any!(a => a == CSharpSerializers.NewtonsoftJson)) {
+		builder.appendLine("using Newtonsoft.Json;");
+	}
+	builder.appendLine();
+}
 
-	builder.appendLine("}");
+private void generateUsingsClientData(StringBuilder builder, CSharpProjectOptions opts) {
+	builder.appendLine("using System;");
+	builder.appendLine("using System.Collections.Generic;");
+	if (opts.clientUIBindings) {
+		builder.appendLine("using System.ComponentModel;");
+	}
+	builder.appendLine("using System.Linq;");
+	builder.appendLine("using System.IO;");
+	if (opts.serializers.any!(a => a == CSharpSerializers.DataContract)) {
+		builder.appendLine("using System.Runtime.Serialization;");
+	}
+	if (opts.serializers.any!(a => a == CSharpSerializers.SystemTextJson)) {
+		builder.appendLine("using System.Text.Json.Serialization;");
+	}
+	if (opts.serializers.any!(a => a == CSharpSerializers.NewtonsoftJson)) {
+		builder.appendLine("using Newtonsoft.Json;");
+	}
+	builder.appendLine();
+}
+
+private void generateUsingsServerHttp(StringBuilder builder) {
+	builder.appendLine("using System;");
+	builder.appendLine("using System.Collections.Generic;");
+	builder.appendLine("using System.Linq;");
+	builder.appendLine("using System.IO;");
+	builder.appendLine("using System.Threading.Tasks;");
+	builder.appendLine("using Microsoft.Extensions.Primitives;");
+	builder.appendLine("using Microsoft.AspNetCore.Mvc;");
+	builder.appendLine("using Microsoft.AspNetCore.Authorization;");
+	builder.appendLine("using EllipticBit.Hotwire.Shared;");
+	builder.appendLine("using EllipticBit.Hotwire.AspNetCore;");
+	builder.appendLine();
+}
+
+private void generateUsingsClientHttp(StringBuilder builder) {
+	builder.appendLine("using System;");
+	builder.appendLine("using System.Collections.Generic;");
+	builder.appendLine("using System.Linq;");
+	builder.appendLine("using System.IO;");
+	builder.appendLine("using System.Threading.Tasks;");
+	builder.appendLine("using System.Net;");
+	builder.appendLine("using System.Net.Http;");
+	builder.appendLine("using System.Net.Http.Headers;");
+	builder.appendLine("using System.Text;");
+	builder.appendLine("using EllipticBit.Hotwire.Request;");
+	builder.appendLine();
+}
+
+private void generateUsingsServerSocket(StringBuilder builder) {
+	builder.appendLine("using System;");
+	builder.appendLine("using System.Collections.Generic;");
+	builder.appendLine("using System.Linq;");
+	builder.appendLine("using System.IO;");
+	builder.appendLine("using System.Threading.Tasks;");
+	builder.appendLine("using Microsoft.Extensions.Primitives;");
+	builder.appendLine("using Microsoft.AspNetCore.Mvc;");
+	builder.appendLine("using Microsoft.AspNetCore.Authorization;");
+	builder.appendLine("using Microsoft.AspNetCore.SignalR;");
+	builder.appendLine("using EllipticBit.Hotwire.SignalR;");
+	builder.appendLine("using EllipticBit.Hotwire.Shared;");
+	builder.appendLine();
+}
+
+private void generateUsingsClientSocket(StringBuilder builder) {
+	builder.appendLine("using System;");
+	builder.appendLine("using System.Collections.Generic;");
+	builder.appendLine("using System.Linq;");
+	builder.appendLine("using System.IO;");
+	builder.appendLine("using System.Threading.Tasks;");
+	builder.appendLine("using System.Net;");
+	builder.appendLine("using System.Net.Http;");
+	builder.appendLine("using System.Net.Http.Headers;");
+	builder.appendLine("using System.Text;");
+	builder.appendLine("using Microsoft.AspNetCore.SignalR.Client;");
+	builder.appendLine("using Microsoft.Extensions.DependencyInjection;");
+	builder.appendLine("using Microsoft.Extensions.DependencyInjection.Extensions;");
+	builder.appendLine("using EllipticBit.Hotwire.SignalR;");
+	builder.appendLine();
 }
 
 public void generateAuthorization(StringBuilder builder, immutable(AspNetCoreAuthorizationExtension) auth, bool authenticate, bool hasControllerAuth, int tabLevel) {
@@ -170,12 +424,14 @@ public string generateType(TypeComplex type, bool base64external = false, bool f
 
 	else if(typeid(type.type) == typeid(TypeEnum)) {
 		TypeEnum t = cast(TypeEnum)(type.type);
-		return t.definition.getFqn() ~ (type.nullable ? "?" : "");
+		return t.definition.parent.name ~ "." ~ t.definition.name ~ (type.nullable ? "?" : "");
+		//return t.definition.getCSharpFqn() ~ (type.nullable ? "?" : "");
 	}
 
 	else if(typeid(type.type) == typeid(TypeModel)) {
 		TypeModel t = cast(TypeModel)(type.type);
-		return t.definition.getFqn();
+		return t.definition.parent.name ~ "." ~ t.definition.name;
+		//return t.definition.getCSharpFqn();
 	}
 
 	return string.init;
@@ -264,48 +520,18 @@ public string getDefaultValue(TypeComplex type) {
 	return string.init;
 }
 
-public string getFqn(Namespace n) {
-	string fqn = string.init;
-	foreach (s; n.segments) {
-		fqn ~= s ~ ".";
+public string getCSharpFqn(Schema n, CSharpProjectOptions opts, bool isClient) {
+	if (isClient) {
+		return opts.clientNamespace ~ "." ~ n.name;
+	} else {
+		return opts.serverNamespace ~ "." ~ n.name;
 	}
-	return fqn[0..$-1];
 }
 
-public string getFqn(Enumeration e) {
-	return e.parent.getFqn() ~ "." ~ e.name;
+public string getCSharpFqn(Enumeration e, CSharpProjectOptions opts, bool isClient) {
+	return e.parent.getCSharpFqn(opts, isClient) ~ "." ~ e.name;
 }
 
-public string getFqn(Model m) {
-	return m.parent.getFqn() ~ "." ~ m.name;
-}
-
-public bool isCSharpLang(string language)
-{
-	return language.toLower() == "CS".toLower() || language.toLower() == "CSharp".toLower();
-}
-
-public void displayCSharpOptions()
-{
-	writeln("C# Code Generation Options:");
-	writeln("    -xaml                       Generate XAML/WinForms compatible bindings for the generated models.");
-	writeln("    -useTabs                    Use tabs instead of spaces in the generated code.");
-}
-
-public string[string] parseCSharpOptions(string[] args)
-{
-	string[string] opts;
-	opts = opts.init;
-
-	for(int i = 0; i < args.length; i++)
-	{
-		if(args[i] == "-xaml")
-			opts["xaml"] = "true";
-		if(args[i] == "-useTabs") {
-			opts["useSpaces"] = "false";
-			useSpaces = false;
-		}
-	}
-
-	return opts.rehash;
+public string getCSharpFqn(DataObject m, CSharpProjectOptions opts, bool isClient) {
+	return m.parent.getCSharpFqn(opts, isClient) ~ "." ~ m.name;
 }

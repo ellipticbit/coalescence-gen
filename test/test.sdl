@@ -1,4 +1,4 @@
-namespace "Service.Network" {
+namespace "Service" {
 	model "NamespaceTest" {
 		TenantId type="int64"
 	}

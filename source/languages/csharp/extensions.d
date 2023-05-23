@@ -1,16 +1,111 @@
 module hwgen.languages.csharp.extensions;
 
-import hwgen.model;
+import hwgen.schema;
+import hwgen.stringbuilder;
 
 import std.algorithm.iteration;
 import std.algorithm.searching;
 import std.array;
 import std.conv;
+import std.file;
+import std.path;
 import std.typecons;
 import std.stdio;
 import std.string;
 
 import sdlang;
+
+public enum CSharpSerializers {
+	SystemTextJson,
+	NewtonsoftJson,
+	DataContract,
+/*	Currently Unsupported - Planned
+	MessagePack,
+	Protobuf,
+*/
+}
+
+public enum CSharpOutputMode {
+	FilePerObject,
+	FilePerSchema,
+	SingleFile,
+}
+
+public enum CSharpCompatibility {
+	NETCore31,
+	NET60,
+}
+
+public final class CSharpProjectOptions {
+	public CSharpOutputMode outputMode;
+	public string[] clientOutputPaths;
+	public string[] serverOutputPaths;
+	public string contextName;
+	public string serverNamespace;
+	public string clientNamespace;
+	public bool serverUIBindings;
+	public bool clientUIBindings;
+	public CSharpCompatibility compatibility;
+	public CSharpSerializers[] serializers;
+
+	public this (Tag root, string databaseName, string projectRoot) {
+		this.outputMode = to!CSharpOutputMode(root.getAttribute!string("output", "FilePerObject"));
+		this.contextName = root.getAttribute!string("contextName", databaseName);
+		this.clientNamespace = root.getAttribute!string("clientNamespace", databaseName);
+		this.serverNamespace = root.getAttribute!string("serverNamespace", databaseName);
+		this.clientUIBindings = root.getAttribute!bool("clientBindings", false);
+		this.serverUIBindings = root.getAttribute!bool("serverBindings", false);
+		foreach(cop; root.getTagValues("clientPaths")){
+			this.clientOutputPaths ~= buildNormalizedPath(projectRoot, cop.get!string());
+		}
+		foreach(sop; root.getTagValues("serverPaths")) {
+			this.serverOutputPaths ~= buildNormalizedPath(projectRoot, sop.get!string());
+		}
+		this.compatibility = to!CSharpCompatibility(root.getAttribute!string("compatibility", "NET60"));
+		foreach(sop; root.getTagValues("serializers")) {
+			this.serializers ~= to!CSharpSerializers(sop.get!string());
+		}
+	}
+
+	public bool hasSerializer(CSharpSerializers serializer) {
+		return serializers.any!(a => a == serializer);
+	}
+
+	public void writeFileServer(StringBuilder builder, string schemaName, string objectName = string.init) {
+		writeFiles(builder, serverOutputPaths, schemaName, objectName);
+	}
+
+	public void writeFileClient(StringBuilder builder, string schemaName, string objectName = string.init) {
+		writeFiles(builder, clientOutputPaths, schemaName, objectName);
+	}
+
+	private void writeFiles(StringBuilder builder, string[] outputDirs, string schemaName, string fileName) {
+		foreach (op; outputDirs) {
+			if (outputMode == CSharpOutputMode.FilePerObject) {
+				string outDir = buildNormalizedPath(op, schemaName);
+				if(!exists(outDir)) {
+					mkdirRecurse(outDir);
+				}
+				writeFile(builder, outDir, fileName);
+			} else {
+				string outDir = buildNormalizedPath(op);
+				if(!exists(outDir)) {
+					mkdirRecurse(outDir);
+				}
+				writeFile(builder, outDir, schemaName);
+			}
+		}
+	}
+
+	//Write generated code to disk
+	private void writeFile(StringBuilder builder, string outputDir, string fileName) {
+		string outputPath = setExtension(buildNormalizedPath(outputDir, fileName), ".cs");
+		writeln("Output File: " ~ outputPath);
+		auto fsfile = File(outputPath, "w");
+		fsfile.write(builder);
+		fsfile.close();
+	}
+}
 
 public final class AspNetCoreHttpExtension : LanguageExtensionBase
 {
