@@ -70,8 +70,17 @@ private void generateSchemaServer(Schema ns, StringBuilder schemaBuilder, Projec
 		foreach(e; ns.enums.values) {
 			generateEnum(schemaBuilder, e, 1);
 		}
-		foreach(d; ns.data.values) {
-			if (typeid(d) == typeid(Network)) generateDataNetwork(cast(Network)d, schemaBuilder, opts, true, 1);
+		foreach(d; ns.network.values) {
+			generateDataNetwork(d, schemaBuilder, opts, false, 1);
+		}
+		foreach(d; ns.tables.values) {
+			generateDataTable(d, schemaBuilder, opts, prj, false, 1);
+		}
+		foreach(d; ns.views.values) {
+			generateDataView(d, schemaBuilder, opts, 1);
+		}
+		foreach(d; ns.udts.values) {
+			generateDataUdt(d, schemaBuilder, opts, 1);
 		}
 		foreach(s; ns.services.values) {
 			generateHttpServer(schemaBuilder, s, 1);
@@ -90,12 +99,42 @@ private void generateSchemaServer(Schema ns, StringBuilder schemaBuilder, Projec
 			builder.appendLine();
 			opts.writeFileServer(builder, ns.name, e.name);
 		}
-		foreach(d; ns.data.values) {
+		foreach(d; ns.network.values) {
 			auto builder = new StringBuilder(16_384);
 			builder.generateUsingsServerData(opts);
-			builder.appendLine("namespace {0}", ns.getCSharpFqn(opts, false));
+			builder.appendLine("namespace {0}", ns.getCSharpFqn(opts, true));
 			builder.appendLine("{");
-			if (typeid(d) == typeid(Network)) generateDataNetwork(cast(Network)d, builder, opts, true, 1);
+			generateDataNetwork(d, builder, opts, false, 1);
+			builder.appendLine("}");
+			builder.appendLine();
+			opts.writeFileServer(builder, ns.name, d.name);
+		}
+		foreach(d; ns.tables.values) {
+			auto builder = new StringBuilder(16_384);
+			builder.generateUsingsServerData(opts);
+			builder.appendLine("namespace {0}", ns.getCSharpFqn(opts, true));
+			builder.appendLine("{");
+			generateDataTable(d, builder, opts, prj, false, 1);
+			builder.appendLine("}");
+			builder.appendLine();
+			opts.writeFileServer(builder, ns.name, d.name);
+		}
+		foreach(d; ns.views.values) {
+			auto builder = new StringBuilder(16_384);
+			builder.generateUsingsServerData(opts);
+			builder.appendLine("namespace {0}", ns.getCSharpFqn(opts, true));
+			builder.appendLine("{");
+			generateDataView(d, builder, opts, 1);
+			builder.appendLine("}");
+			builder.appendLine();
+			opts.writeFileServer(builder, ns.name, d.name);
+		}
+		foreach(d; ns.udts.values) {
+			auto builder = new StringBuilder(16_384);
+			builder.generateUsingsServerData(opts);
+			builder.appendLine("namespace {0}", ns.getCSharpFqn(opts, true));
+			builder.appendLine("{");
+			generateDataUdt(d, builder, opts, 1);
 			builder.appendLine("}");
 			builder.appendLine();
 			opts.writeFileServer(builder, ns.name, d.name);
@@ -131,8 +170,17 @@ private void generateSchemaClient(Schema ns, StringBuilder schemaBuilder, Projec
 		foreach(e; ns.enums.values) {
 			generateEnum(schemaBuilder, e, 1);
 		}
-		foreach(d; ns.data.values) {
-			if (typeid(d) == typeid(Network)) generateDataNetwork(cast(Network)d, schemaBuilder, opts, false, 1);
+		foreach(d; ns.network.values) {
+			generateDataNetwork(d, schemaBuilder, opts, true, 1);
+		}
+		foreach(d; ns.tables.values) {
+			generateDataTable(d, schemaBuilder, opts, prj, true, 1);
+		}
+		foreach(d; ns.views.values) {
+			generateDataView(d, schemaBuilder, opts, 1);
+		}
+		foreach(d; ns.udts.values) {
+			generateDataUdt(d, schemaBuilder, opts, 1);
 		}
 		foreach(s; ns.services.values) {
 			generateHttpClient(schemaBuilder, s, 1);
@@ -151,12 +199,42 @@ private void generateSchemaClient(Schema ns, StringBuilder schemaBuilder, Projec
 			builder.appendLine();
 			opts.writeFileClient(builder, ns.name, e.name);
 		}
-		foreach(d; ns.data.values) {
+		foreach(d; ns.network.values) {
 			auto builder = new StringBuilder(16_384);
 			builder.generateUsingsClientData(opts);
 			builder.appendLine("namespace {0}", ns.getCSharpFqn(opts, true));
 			builder.appendLine("{");
-			if (typeid(d) == typeid(Network)) generateDataNetwork(cast(Network)d, builder, opts, false, 1);
+			generateDataNetwork(d, builder, opts, false, 1);
+			builder.appendLine("}");
+			builder.appendLine();
+			opts.writeFileClient(builder, ns.name, d.name);
+		}
+		foreach(d; ns.tables.values) {
+			auto builder = new StringBuilder(16_384);
+			builder.generateUsingsClientData(opts);
+			builder.appendLine("namespace {0}", ns.getCSharpFqn(opts, true));
+			builder.appendLine("{");
+			generateDataTable(d, builder, opts, prj, false, 1);
+			builder.appendLine("}");
+			builder.appendLine();
+			opts.writeFileClient(builder, ns.name, d.name);
+		}
+		foreach(d; ns.views.values) {
+			auto builder = new StringBuilder(16_384);
+			builder.generateUsingsClientData(opts);
+			builder.appendLine("namespace {0}", ns.getCSharpFqn(opts, true));
+			builder.appendLine("{");
+			generateDataView(d, builder, opts, 1);
+			builder.appendLine("}");
+			builder.appendLine();
+			opts.writeFileClient(builder, ns.name, d.name);
+		}
+		foreach(d; ns.udts.values) {
+			auto builder = new StringBuilder(16_384);
+			builder.generateUsingsClientData(opts);
+			builder.appendLine("namespace {0}", ns.getCSharpFqn(opts, true));
+			builder.appendLine("{");
+			generateDataUdt(d, builder, opts, 1);
 			builder.appendLine("}");
 			builder.appendLine();
 			opts.writeFileClient(builder, ns.name, d.name);
@@ -213,6 +291,7 @@ private void generateUsingsServerComplete(StringBuilder builder, Project prj, CS
 	if (prj.hasHttpServices) {
 		builder.appendLine("using EllipticBit.Hotwire.AspNetCore;");
 	}
+	if (opts.enableEFExtensions) builder.appendLine("using EllipticBit.Services.Database;");
 	builder.appendLine();
 }
 
@@ -267,6 +346,7 @@ private void generateUsingsServerData(StringBuilder builder, CSharpProjectOption
 	if (opts.serializers.any!(a => a == CSharpSerializers.NewtonsoftJson)) {
 		builder.appendLine("using Newtonsoft.Json;");
 	}
+	if (opts.enableEFExtensions) builder.appendLine("using EllipticBit.Services.Database;");
 	builder.appendLine();
 }
 
@@ -522,16 +602,24 @@ public string getDefaultValue(TypeComplex type) {
 
 public string getCSharpFqn(Schema n, CSharpProjectOptions opts, bool isClient) {
 	if (isClient) {
-		return opts.clientNamespace ~ "." ~ n.name;
+		return opts.clientNamespace ~ "." ~ n.name.uppercaseFirst();
 	} else {
-		return opts.serverNamespace ~ "." ~ n.name;
+		return opts.serverNamespace ~ "." ~ n.name.uppercaseFirst();
 	}
 }
 
 public string getCSharpFqn(Enumeration e, CSharpProjectOptions opts, bool isClient) {
-	return e.parent.getCSharpFqn(opts, isClient) ~ "." ~ e.name;
+	return e.parent.getCSharpFqn(opts, isClient) ~ "." ~ e.name.uppercaseFirst();
 }
 
 public string getCSharpFqn(DataObject m, CSharpProjectOptions opts, bool isClient) {
-	return m.parent.getCSharpFqn(opts, isClient) ~ "." ~ m.name;
+	return m.parent.getCSharpFqn(opts, isClient) ~ "." ~ m.name.uppercaseFirst();
+}
+
+public string getCSharpFullName(Enumeration e) {
+	return e.parent.name.uppercaseFirst() ~ "." ~ e.name.uppercaseFirst();
+}
+
+public string getCSharpFullName(DataObject m) {
+	return m.parent.name.uppercaseFirst() ~ "." ~ m.name.uppercaseFirst();
 }

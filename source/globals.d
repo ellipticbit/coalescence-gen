@@ -47,3 +47,9 @@ public void writeAnalyserError(string message, Location loc)
 	errorCount++;
     writefln("%s(%d,%d) ERROR: %s", loc.file, loc.line, loc.col, message);
 }
+
+public void writeError(string message)
+{
+	errorCount++;
+    writefln("ERROR: %s", message);
+}

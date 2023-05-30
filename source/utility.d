@@ -3,6 +3,7 @@ module hwgen.utility;
 import hwgen.types;
 
 import std.array;
+import std.conv;
 import std.string;
 
 public string cleanName(string name) {
@@ -32,4 +33,18 @@ public bool isNullOrEmpty(string str) {
 
 public bool isNullOrWhitespace(string str) {
 	return (str is null || str.strip() == string.init);
+}
+
+public string uppercaseFirst(string str) {
+	if (isNullOrEmpty(str)) return string.init;
+	dchar[] a = str.array;
+	a[0] = toUpper(a[0]);
+	return to!string(a);
+}
+
+public string lowercaseFirst(string str) {
+	if (isNullOrEmpty(str)) return string.init;
+	dchar[] a = str.array;
+	a[0] = toLower(a[0]);
+	return to!string(a);
 }

@@ -26,7 +26,22 @@ public bool analyse(Project prj)
 			if(analyseEnum(e))
 				hasErrors = true;
 		}
-		foreach(m; ns.data.values)
+		foreach(m; ns.network.values)
+		{
+			if(analyseData(prj, m))
+				hasErrors = true;
+		}
+		foreach(m; ns.tables.values)
+		{
+			if(analyseData(prj, m))
+				hasErrors = true;
+		}
+		foreach(m; ns.views.values)
+		{
+			if(analyseData(prj, m))
+				hasErrors = true;
+		}
+		foreach(m; ns.udts.values)
 		{
 			if(analyseData(prj, m))
 				hasErrors = true;
@@ -249,7 +264,22 @@ private DataObject searchData(Project prj, string name, string namespace = strin
 		if (namespace != string.init && ns.name.toLower() != namespace.toLower())
 			continue;
 
-		foreach(m; ns.data)
+		foreach(m; ns.network)
+		{
+			if (m.name == name)
+				matches ~= m;
+		}
+		foreach(m; ns.tables)
+		{
+			if (m.name == name)
+				matches ~= m;
+		}
+		foreach(m; ns.views)
+		{
+			if (m.name == name)
+				matches ~= m;
+		}
+		foreach(m; ns.udts)
 		{
 			if (m.name == name)
 				matches ~= m;
@@ -271,7 +301,28 @@ private void searchSuggest(Project prj, TypeUser type, string name)
 			if (m.name.toLower() == name.toLower() || s1 == s2)
 				writeTypeErrorSuggest(type, m.fullName());
 		}
-		foreach(m; ns.data)
+		foreach(m; ns.network)
+		{
+			auto s1 = to!string(m.name.toLower().dup().array().sort());
+			auto s2 = to!string(name.toLower().dup().array().sort());
+			if (m.name.toLower() == name.toLower() || s1 == s2)
+				writeTypeErrorSuggest(type, m.fullName());
+		}
+		foreach(m; ns.tables)
+		{
+			auto s1 = to!string(m.name.toLower().dup().array().sort());
+			auto s2 = to!string(name.toLower().dup().array().sort());
+			if (m.name.toLower() == name.toLower() || s1 == s2)
+				writeTypeErrorSuggest(type, m.fullName());
+		}
+		foreach(m; ns.views)
+		{
+			auto s1 = to!string(m.name.toLower().dup().array().sort());
+			auto s2 = to!string(name.toLower().dup().array().sort());
+			if (m.name.toLower() == name.toLower() || s1 == s2)
+				writeTypeErrorSuggest(type, m.fullName());
+		}
+		foreach(m; ns.udts)
 		{
 			auto s1 = to!string(m.name.toLower().dup().array().sort());
 			auto s2 = to!string(name.toLower().dup().array().sort());

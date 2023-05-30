@@ -6,6 +6,8 @@ license "BSL-1.0"
 targetType "executable"
 
 dependency "sdlang-d" version="0.10.6"
+dependency "ddbc" version="~>0.5.7"
+subConfiguration "ddbc" "ODBC"
 
 buildType "plain" {
 	buildOptions "debugMode" "debugInfo" "alwaysStackFrame" "stackStomping"

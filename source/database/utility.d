@@ -16,10 +16,8 @@ public string cleanForeignKeyName(string name) {
 public ForeignKey[] getForeignKeysTargetTable(int oid, Schema[] schemata) {
 	ForeignKey[] fkl;
 	foreach (s; schemata) {
-		foreach (t; s.data) {
-			if (typeid(t) == typeid(Table)) {
-				fkl ~= (cast(Table)t).foreignKeys.filter!(a => a.targetTable.sqlId == oid)().array;
-			}
+		foreach (t; s.tables) {
+			fkl ~= (cast(Table)t).foreignKeys.filter!(a => a.targetTable.sqlId == oid)().array;
 		}
 	}
 	return fkl;
@@ -28,10 +26,8 @@ public ForeignKey[] getForeignKeysTargetTable(int oid, Schema[] schemata) {
 public ForeignKey[] getForeignKeysSourceTable(int oid, Schema[] schemata) {
 	ForeignKey[] fkl;
 	foreach (s; schemata) {
-		foreach (t; s.data) {
-			if (typeid(t) == typeid(Table)) {
-				fkl ~= (cast(Table)t).foreignKeys.filter!(a => a.sourceTable.sqlId == oid)().array;
-			}
+		foreach (t; s.tables) {
+			fkl ~= (cast(Table)t).foreignKeys.filter!(a => a.sourceTable.sqlId == oid)().array;
 		}
 	}
 	return fkl;

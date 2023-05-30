@@ -45,6 +45,7 @@ public final class CSharpProjectOptions {
 	public string clientNamespace;
 	public bool serverUIBindings;
 	public bool clientUIBindings;
+	public bool enableEFExtensions;
 	public CSharpCompatibility compatibility;
 	public CSharpSerializers[] serializers;
 
@@ -55,6 +56,7 @@ public final class CSharpProjectOptions {
 		this.serverNamespace = root.getAttribute!string("serverNamespace", databaseName);
 		this.clientUIBindings = root.getAttribute!bool("clientBindings", false);
 		this.serverUIBindings = root.getAttribute!bool("serverBindings", false);
+		this.enableEFExtensions = root.getAttribute!bool("enableEFExtensions", false);
 		foreach(cop; root.getTagValues("clientPaths")){
 			this.clientOutputPaths ~= buildNormalizedPath(projectRoot, cop.get!string());
 		}

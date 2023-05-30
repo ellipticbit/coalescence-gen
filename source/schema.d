@@ -11,6 +11,7 @@ import hwgen.languages.csharp.extensions;
 
 import std.algorithm.iteration;
 import std.algorithm.searching;
+import std.algorithm.sorting;
 import std.array;
 import std.conv;
 import std.typecons;
@@ -52,6 +53,16 @@ public enum SqlDbType {
 	VarChar,
 	Variant,
 	Xml,
+}
+
+public bool isVariableLengthType(SqlDbType type)
+{
+	return type == SqlDbType.Binary || type == SqlDbType.VarBinary || type == SqlDbType.Char || type == SqlDbType.VarChar || type == SqlDbType.NChar || type == SqlDbType.NVarChar;
+}
+
+public bool isScalarType(SqlDbType type)
+{
+	return !(type == SqlDbType.Binary || type == SqlDbType.VarBinary || type == SqlDbType.Char || type == SqlDbType.VarChar || type == SqlDbType.NChar || type == SqlDbType.NVarChar || type == SqlDbType.Image || type == SqlDbType.Text || type == SqlDbType.NText || type == SqlDbType.Timestamp || type == SqlDbType.Variant);
 }
 
 public abstract class LanguageExtensionBase
@@ -126,23 +137,46 @@ public final class Project {
 
 public final class Schema
 {
-	public int oid;
+	public int sqlId;
 	public string name;
 	public string sqlName;
 
+	public Table[] getTables() {
+		return tables.values.sort!((a, b) => a.name.toUpper() < b.name.toUpper()).array;
+	}
+
+	public View[] getViews() {
+		return views.values.sort!((a, b) => a.name.toUpper() < b.name.toUpper()).array;
+	}
+
+	public Udt[] getUdts() {
+		return udts.values.sort!((a, b) => a.name.toUpper() < b.name.toUpper()).array;
+	}
+
+	public Procedure[] getProcedures() {
+		return procedures.values.sort!((a, b) => a.name.toUpper() < b.name.toUpper()).array;
+	}
+
+	public @property bool hasDatabaseItems() {
+		return tables.length > 0 || views.length > 0 || udts.length > 0 || procedures.length > 0;
+	}
+
 	public Enumeration[string] enums;
-	public DataObject[string] data;
+	public Network[string] network;
+	public Table[string] tables;
+	public View[string] views;
+	public Udt[string] udts;
 	public Procedure[string] procedures;
 	public HttpService[string] services;
 	public WebsocketService[string] sockets;
 
 	public this(int objectId, string name) {
-		this.oid = objectId;
+		this.sqlId = objectId;
 		this.name = this.sqlName = name;
 	}
 
 	public this(Tag root) {
-		this.oid = -1;
+		this.sqlId = -1;
 		this.name = this.sqlName = root.expectValue!string();
 		merge(root);
 	}
@@ -159,26 +193,23 @@ public final class Schema
 			}
 			else if (t.name.toUpper() == "model".toUpper()) {
 				auto mn = t.expectValue!string();
-				if ((mn in services) != null) {
+				if ((mn in network) != null) {
 					writeParseError("Data Model '" ~ mn ~ "' alreadys exists in schema '" ~ name ~ "'", t.location);
 				} else {
-					data[mn] = new Network(this, t);
+					network[mn] = new Network(this, t);
 				}
 			}
 			else if (t.name.toUpper() == "database".toUpper()) {
 				auto dn = t.expectValue!string();
-				if ((dn in services) == null) {
+				if ((dn in tables) is null && (dn in views) is null && (dn in udts) is null) {
 					writeParseError("Unable to locate Database Model '" ~ dn ~ "' in schema '" ~ name ~ "'", t.location);
 				} else {
-					if (data[dn].objectType == DataObjectType.Table) {
-						auto db = cast(Table)data[dn];
-						db.modifications = new Database(db, t);
-					} else if (data[dn].objectType == DataObjectType.View) {
-						auto db = cast(View)data[dn];
-						db.modifications = new Database(db, t);
-					} else if (data[dn].objectType == DataObjectType.Udt) {
-						auto db = cast(Udt)data[dn];
-						db.modifications = new Database(db, t);
+					if ((dn in tables) !is null) {
+						tables[dn].modifications = new Database(tables[dn], t);
+					} else if ((dn in views) is null) {
+						views[dn].modifications = new Database(views[dn], t);
+					} else if ((dn in udts) is null) {
+						udts[dn].modifications = new Database(udts[dn], t);
 					}
 				}
 			}
@@ -202,6 +233,15 @@ public final class Schema
 				writeParseWarning("Found unrecognized tag '" ~ t.name ~ "'. Skipping.", t.location);
 			}
 		}
+
+		enums.rehash();
+		network.rehash();
+		tables.rehash();
+		views.rehash();
+		udts.rehash();
+		procedures.rehash();
+		services.rehash();
+		sockets.rehash();
 	}
 }
 
@@ -507,6 +547,7 @@ public class ForeignKey
 	private int sourceColumnId;
 
 	public string name;
+	public string sqlName;
 	public Table sourceTable;
 	public Table targetTable;
 	private DataMember sourceColumn() {
@@ -521,7 +562,7 @@ public class ForeignKey
 	{
 		this.sourceColumnId = sourceColumnId;
 
-		this.name = name;
+		this.name = this.sqlName = name;
 		this.sourceTable = source;
 		this.targetTable = target;
 		this.direction = direction;
@@ -549,16 +590,16 @@ public class ForeignKey
 public class Procedure
 {
 	public Schema parent;
-	public int objectId;
+	public int sqlId;
 	public string name;
 	public string sqlName;
 
 	public Parameter[] parameters;
 
-	public this(Schema parent, int objectId, string name)
+	public this(Schema parent, int sqlId, string name)
 	{
 		this.parent = parent;
-		this.objectId = objectId;
+		this.sqlId = sqlId;
 		this.name = name;
 		this.sqlName = name;
 	}

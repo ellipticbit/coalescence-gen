@@ -4,7 +4,10 @@ import hwgen.generator;
 import hwgen.analyser;
 import hwgen.utility;
 
+import hwgen.database.mssql.schemareader;
+
 import sdlang;
+import ddbc;
 
 import std.algorithm.iteration;
 import std.algorithm.searching;
@@ -34,7 +37,7 @@ int main(string[] args)
 
 	string projectPath = string.init;
 	string rootDir = getcwd();
-	string dbdriver = string.init;
+	bool dbmssql = false;
 	string dbserver = string.init;
 	string dbname = string.init;
 	string dbuser = string.init;
@@ -44,7 +47,7 @@ int main(string[] args)
 	for(int i = 1; i < args.length; i++) {
 		if (args[i].toUpper() == "--root-directory".toUpper() || args[i].toUpper() == "-rd".toUpper()) rootDir = args[++i];
 		if (args[i].toUpper() == "--project-file".toUpper() || args[i].toUpper() == "-pf".toUpper()) projectPath = args[++i];
-		if (args[i].toUpper() == "--db-mssql".toUpper()) dbdriver = "ODBC Driver 17 for SQL Server";
+		if (args[i].toUpper() == "--db-mssql".toUpper()) dbmssql = true;
 		if (args[i].toUpper() == "--db-server".toUpper()) dbserver = args[++i];
 		if (args[i].toUpper() == "--db-name".toUpper()) dbname = args[++i];
 		if (args[i].toUpper() == "--db-user".toUpper()) dbuser = args[++i];
@@ -84,8 +87,16 @@ int main(string[] args)
 
 	// Load schema from database if connection info is present.
 	Schema[] dbSchema;
-	if (dbdriver != string.init && dbserver != string.init && dbname != string.init && dbuser != string.init && dbpassword != string.init)  {
+	if (dbserver != string.init && dbname != string.init && dbuser != string.init && dbpassword != string.init)  {
+		if (dbmssql) {
+			string connectionStr = (dbname != string.init) ?
+				"ddbc:odbc://" ~ dbserver ~ "?database=" ~ dbname ~ ",user=" ~ dbuser ~ ",password=" ~ dbpassword ~ ",ssl=true,driver=ODBC Driver 17 for SQL Server" :
+				"ddbc:odbc://" ~ dbserver ~ "?user=" ~ dbuser ~ ",password=" ~ dbpassword ~ ",ssl=true,driver=ODBC Driver 17 for SQL Server";
+			auto connection = createConnection(connectionStr);
+			scope(exit) connection.close();
 
+			dbSchema = readMssqlSchemata(connection);
+		}
 	}
 
 	//Load files
