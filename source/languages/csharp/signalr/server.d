@@ -19,6 +19,8 @@ import std.string;
 public void generateWebsocketServer(StringBuilder builder, WebsocketService s, ushort tabLevel)
 {
 	builder.appendLine();
+	builder.tabs(tabLevel).appendLine("[GeneratedCodeAttribute(\"EllipticBit.Hotwire.Generator\", \"2.0.0.0\")]");
+	builder.tabs(tabLevel).appendLine("[DebuggerNonUserCodeAttribute()]");
 	builder.tabs(tabLevel).appendLine("{1} interface I{0}Server", s.name, s.isPublic ? "public" : "internal");
 	builder.tabs(tabLevel++).appendLine("{");
 	foreach(ns; s.namespaces) {
@@ -30,6 +32,8 @@ public void generateWebsocketServer(StringBuilder builder, WebsocketService s, u
 
     if (s.hasClient()) {
 		builder.appendLine();
+		builder.tabs(tabLevel).appendLine("[GeneratedCodeAttribute(\"EllipticBit.Hotwire.Generator\", \"2.0.0.0\")]");
+		builder.tabs(tabLevel).appendLine("[DebuggerNonUserCodeAttribute()]");
         builder.tabs(tabLevel).appendLine("{1} interface I{0}Client", s.name, s.isPublic ? "public" : "internal");
         builder.tabs(tabLevel++).appendLine("{");
 		foreach(ns; s.namespaces) {
@@ -44,6 +48,8 @@ public void generateWebsocketServer(StringBuilder builder, WebsocketService s, u
 	auto ext = s.getAspNetCoreWebsocketExtension();
 	generateAuthorization(builder, ext !is null ? ext.getAuthorization() : null, s.authenticate, false, tabLevel);
 
+	builder.tabs(tabLevel).appendLine("[GeneratedCodeAttribute(\"EllipticBit.Hotwire.Generator\", \"2.0.0.0\")]");
+	builder.tabs(tabLevel).appendLine("[DebuggerNonUserCodeAttribute()]");
     if (s.hasClient()) {
         builder.tabs(tabLevel).appendLine("{1} abstract class {0}HubBase : Hub<I{0}Client>, I{0}Server", s.name, s.isPublic ? "public" : "internal");
     } else {

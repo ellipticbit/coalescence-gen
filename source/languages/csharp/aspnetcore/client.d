@@ -24,6 +24,8 @@ public void generateHttpClient(StringBuilder builder, HttpService s, ushort tabL
 	builder.appendLine();
 	foreach(m; s.methods) {
 		if (m.query.length == 0) continue;
+		builder.tabs(tabLevel).appendLine("[GeneratedCodeAttribute(\"EllipticBit.Hotwire.Generator\", \"2.0.0.0\")]");
+		builder.tabs(tabLevel).appendLine("[DebuggerNonUserCodeAttribute()]");
 		builder.tabs(tabLevel).appendLine("public class {0}Query : IHotwireParameters", m.name);
 		builder.tabs(tabLevel++).appendLine("{");
 		foreach(smp; m.query) {
@@ -55,6 +57,8 @@ public void generateHttpClient(StringBuilder builder, HttpService s, ushort tabL
 	builder.appendLine();
 	foreach(m; s.methods) {
 		if (m.header.length == 0) continue;
+		builder.tabs(tabLevel).appendLine("[GeneratedCodeAttribute(\"EllipticBit.Hotwire.Generator\", \"2.0.0.0\")]");
+		builder.tabs(tabLevel).appendLine("[DebuggerNonUserCodeAttribute()]");
 		builder.tabs(tabLevel).appendLine("public class {0}Header : IHotwireParameters", m.name);
 		builder.tabs(tabLevel++).appendLine("{");
 		foreach(smp; m.header) {
@@ -83,6 +87,8 @@ public void generateHttpClient(StringBuilder builder, HttpService s, ushort tabL
 	}
 
 	builder.appendLine();
+	builder.tabs(tabLevel).appendLine("[GeneratedCodeAttribute(\"EllipticBit.Hotwire.Generator\", \"2.0.0.0\")]");
+	builder.tabs(tabLevel).appendLine("[DebuggerNonUserCodeAttribute()]");
 	builder.tabs(tabLevel).appendLine("{1} interface I{0}", s.name, s.isPublic ? "public" : "internal");
 	builder.tabs(tabLevel++).appendLine("{");
 	foreach(m; s.methods) {
@@ -90,6 +96,7 @@ public void generateHttpClient(StringBuilder builder, HttpService s, ushort tabL
 	}
 	builder.tabs(--tabLevel).appendLine("}");
 	builder.appendLine();
+	builder.tabs(tabLevel).appendLine("[GeneratedCodeAttribute(\"EllipticBit.Hotwire.Generator\", \"2.0.0.0\")]");
 	builder.tabs(tabLevel).appendLine("{1} sealed partial class {0} : I{0}", s.name, s.isPublic ? "public" : "internal");
 	builder.tabs(tabLevel++).appendLine("{");
 	builder.tabs(tabLevel).appendLine("private readonly IHotwireRequestFactory requests;");

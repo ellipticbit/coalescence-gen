@@ -135,7 +135,7 @@ public final class Project {
 	}
 
 	public @property bool hasDatabaseItems() {
-		return serverSchema.any!(a => a.tables.length > 0 || a.views.length > 0 || a.udts.length > 0 || a.procedures.length > 0)();
+		return serverSchema.any!(a => a.hasDatabaseItems)();
 	}
 }
 

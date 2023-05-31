@@ -44,9 +44,9 @@ public void generateEFContext(CSharpProjectOptions opts, Schema[] schemata) {
 	sb.tabs(tabLevel++).appendLine("{");
 	sb.tabs(tabLevel).appendLine("private readonly string _connectionString;");
 	foreach (s; schemata.filter!(a => a.hasDatabaseItems)) {
-		foreach (t; s.tables)
+		foreach (t; s.getTables())
 			sb.tabs(tabLevel).appendLine("internal virtual DbSet<{1}.{0}> {1}_{0} { get; set; }", t.name, s.name);
-		foreach (t; s.views)
+		foreach (t; s.getViews())
 			sb.tabs(tabLevel).appendLine("internal virtual DbSet<{1}.{0}> {1}_{0} { get; set; }", t.name, s.name);
 	}
 	sb.appendLine();
@@ -74,7 +74,7 @@ public void generateEFContext(CSharpProjectOptions opts, Schema[] schemata) {
 	sb.tabs(tabLevel).appendLine("protected override void OnModelCreating(ModelBuilder modelBuilder)");
 	sb.tabs(tabLevel++).appendLine("{");
 	foreach (s; schemata.filter!(a => a.hasDatabaseItems)) {
-		foreach (t; s.tables) {
+		foreach (t; s.getTables()) {
 			sb.tabs(tabLevel).appendLine("modelBuilder.Entity<{0}.{1}>(entity =>", t.name, s.name);
 			sb.tabs(tabLevel++).appendLine("{");
 			sb.tabs(tabLevel).appendLine("entity.ToTable(\"{0}\", \"{1}\");", t.name, s.name);
@@ -84,7 +84,7 @@ public void generateEFContext(CSharpProjectOptions opts, Schema[] schemata) {
 			generateForeignKeyModel(sb, t, tabLevel + 1);
 			sb.tabs(--tabLevel).appendLine("});");
 		}
-		foreach (t; s.views) {
+		foreach (t; s.getViews()) {
 			sb.tabs(tabLevel).appendLine("modelBuilder.{0}<{1}.{2}>(entity =>", (opts.compatibility == CSharpCompatibility.NET60 ? "Entity" : "Query"), t.name, s.name);
 			sb.tabs(tabLevel++).appendLine("{");
 			sb.tabs(tabLevel).appendLine("entity.HasNoKey().ToView(\"{0}\", \"{1}\");", t.name, s.name);
@@ -117,7 +117,7 @@ private void generateSchemaModel(CSharpProjectOptions opts, StringBuilder sb, Sc
 	sb.tabs(tabLevel++).appendLine("{");
 	sb.tabs(tabLevel).appendLine("this._parent = parent;");
 	sb.tabs(--tabLevel).appendLine("}");
-	foreach (p; s.procedures) {
+	foreach (p; s.getProcedures()) {
 		if (toUpper(s.name) == toUpper("dbo") && !toUpper(p.name).startsWith(toUpper("dt_"))) {
 			generateStoredProcedure(sb, p, tabLevel);
 		} else if (toUpper(s.name) != toUpper("dbo")) {
