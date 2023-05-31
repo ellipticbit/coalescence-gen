@@ -77,10 +77,10 @@ private void generateSchemaServer(Schema ns, StringBuilder schemaBuilder, Projec
 			generateDataTable(d, schemaBuilder, opts, prj, false, 1);
 		}
 		foreach(d; ns.views.values) {
-			generateDataView(d, schemaBuilder, opts, 1);
+			generateDataView(d, schemaBuilder, opts, false, 1);
 		}
 		foreach(d; ns.udts.values) {
-			generateDataUdt(d, schemaBuilder, opts, 1);
+			generateDataUdt(d, schemaBuilder, opts, false, 1);
 		}
 		foreach(s; ns.services.values) {
 			generateHttpServer(schemaBuilder, s, 1);
@@ -102,7 +102,7 @@ private void generateSchemaServer(Schema ns, StringBuilder schemaBuilder, Projec
 		foreach(d; ns.network.values) {
 			auto builder = new StringBuilder(16_384);
 			builder.generateUsingsServerData(opts);
-			builder.appendLine("namespace {0}", ns.getCSharpFqn(opts, true));
+			builder.appendLine("namespace {0}", ns.getCSharpFqn(opts, false));
 			builder.appendLine("{");
 			generateDataNetwork(d, builder, opts, false, 1);
 			builder.appendLine("}");
@@ -112,7 +112,7 @@ private void generateSchemaServer(Schema ns, StringBuilder schemaBuilder, Projec
 		foreach(d; ns.tables.values) {
 			auto builder = new StringBuilder(16_384);
 			builder.generateUsingsServerData(opts);
-			builder.appendLine("namespace {0}", ns.getCSharpFqn(opts, true));
+			builder.appendLine("namespace {0}", ns.getCSharpFqn(opts, false));
 			builder.appendLine("{");
 			generateDataTable(d, builder, opts, prj, false, 1);
 			builder.appendLine("}");
@@ -122,9 +122,9 @@ private void generateSchemaServer(Schema ns, StringBuilder schemaBuilder, Projec
 		foreach(d; ns.views.values) {
 			auto builder = new StringBuilder(16_384);
 			builder.generateUsingsServerData(opts);
-			builder.appendLine("namespace {0}", ns.getCSharpFqn(opts, true));
+			builder.appendLine("namespace {0}", ns.getCSharpFqn(opts, false));
 			builder.appendLine("{");
-			generateDataView(d, builder, opts, 1);
+			generateDataView(d, builder, opts, false, 1);
 			builder.appendLine("}");
 			builder.appendLine();
 			opts.writeFileServer(builder, ns.name, d.name);
@@ -132,9 +132,9 @@ private void generateSchemaServer(Schema ns, StringBuilder schemaBuilder, Projec
 		foreach(d; ns.udts.values) {
 			auto builder = new StringBuilder(16_384);
 			builder.generateUsingsServerData(opts);
-			builder.appendLine("namespace {0}", ns.getCSharpFqn(opts, true));
+			builder.appendLine("namespace {0}", ns.getCSharpFqn(opts, false));
 			builder.appendLine("{");
-			generateDataUdt(d, builder, opts, 1);
+			generateDataUdt(d, builder, opts, false, 1);
 			builder.appendLine("}");
 			builder.appendLine();
 			opts.writeFileServer(builder, ns.name, d.name);
@@ -177,10 +177,10 @@ private void generateSchemaClient(Schema ns, StringBuilder schemaBuilder, Projec
 			generateDataTable(d, schemaBuilder, opts, prj, true, 1);
 		}
 		foreach(d; ns.views.values) {
-			generateDataView(d, schemaBuilder, opts, 1);
+			generateDataView(d, schemaBuilder, opts, true, 1);
 		}
 		foreach(d; ns.udts.values) {
-			generateDataUdt(d, schemaBuilder, opts, 1);
+			generateDataUdt(d, schemaBuilder, opts, true, 1);
 		}
 		foreach(s; ns.services.values) {
 			generateHttpClient(schemaBuilder, s, 1);
@@ -204,7 +204,7 @@ private void generateSchemaClient(Schema ns, StringBuilder schemaBuilder, Projec
 			builder.generateUsingsClientData(opts);
 			builder.appendLine("namespace {0}", ns.getCSharpFqn(opts, true));
 			builder.appendLine("{");
-			generateDataNetwork(d, builder, opts, false, 1);
+			generateDataNetwork(d, builder, opts, true, 1);
 			builder.appendLine("}");
 			builder.appendLine();
 			opts.writeFileClient(builder, ns.name, d.name);
@@ -214,7 +214,7 @@ private void generateSchemaClient(Schema ns, StringBuilder schemaBuilder, Projec
 			builder.generateUsingsClientData(opts);
 			builder.appendLine("namespace {0}", ns.getCSharpFqn(opts, true));
 			builder.appendLine("{");
-			generateDataTable(d, builder, opts, prj, false, 1);
+			generateDataTable(d, builder, opts, prj, true, 1);
 			builder.appendLine("}");
 			builder.appendLine();
 			opts.writeFileClient(builder, ns.name, d.name);
@@ -224,7 +224,7 @@ private void generateSchemaClient(Schema ns, StringBuilder schemaBuilder, Projec
 			builder.generateUsingsClientData(opts);
 			builder.appendLine("namespace {0}", ns.getCSharpFqn(opts, true));
 			builder.appendLine("{");
-			generateDataView(d, builder, opts, 1);
+			generateDataView(d, builder, opts, true, 1);
 			builder.appendLine("}");
 			builder.appendLine();
 			opts.writeFileClient(builder, ns.name, d.name);
@@ -234,7 +234,7 @@ private void generateSchemaClient(Schema ns, StringBuilder schemaBuilder, Projec
 			builder.generateUsingsClientData(opts);
 			builder.appendLine("namespace {0}", ns.getCSharpFqn(opts, true));
 			builder.appendLine("{");
-			generateDataUdt(d, builder, opts, 1);
+			generateDataUdt(d, builder, opts, true, 1);
 			builder.appendLine("}");
 			builder.appendLine();
 			opts.writeFileClient(builder, ns.name, d.name);

@@ -142,8 +142,8 @@ public bool analyseData(Project prj, DataObject m)
 	if (typeid(m) == typeid(Table)) {
 		auto x = cast(Table)m;
 		foreach(idx; x.indexes) {
-			if (idx.columns.any!(a => a.type.mode != TypeMode.Primitive)()) {
-				writeAnalyserError(format("Primary Key for type '%s' must be a primitive type.", x.name), x.sourceLocation);
+			if (idx.columns.any!(a => a.type.type.mode != TypeMode.Primitive && a.type.type.mode != TypeMode.ByteArray)()) {
+				writeAnalyserError(format("Primary Key index '%s' for data object '%s' must be a primitive type.", idx.name, x.name), x.sourceLocation);
 				hasErrors = true;
 			}
 		}

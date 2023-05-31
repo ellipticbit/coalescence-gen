@@ -347,3 +347,23 @@ public final class TypeComplex : TypeBase {
 		ProcessOptions(typeStr, true);
 	}
 }
+
+public TypeComplex getTypeComplexFromSqlDbType(SqlDbType dbType, bool isNullable, string name) {
+	if (dbType == SqlDbType.Bit) return new TypeComplex(name, "bool" ~ (isNullable ? "?" : string.init), Location(-1,-1,-1));
+	if (dbType == SqlDbType.TinyInt) return new TypeComplex(name, "uint8" ~ (isNullable ? "?" : string.init), Location(-1,-1,-1));
+	if (dbType == SqlDbType.SmallInt) return new TypeComplex(name, "int16" ~ (isNullable ? "?" : string.init), Location(-1,-1,-1));
+	if (dbType == SqlDbType.Int) return new TypeComplex(name, "int32" ~ (isNullable ? "?" : string.init), Location(-1,-1,-1));
+	if (dbType == SqlDbType.BigInt) return new TypeComplex(name, "int64" ~ (isNullable ? "?" : string.init), Location(-1,-1,-1));
+	if (dbType == SqlDbType.Binary || dbType == SqlDbType.VarBinary || dbType == SqlDbType.Image) return new TypeComplex(name, "[uint8]" ~ (isNullable ? "?" : string.init), Location(-1,-1,-1));
+	if (dbType == SqlDbType.Char || dbType == SqlDbType.VarChar || dbType == SqlDbType.NChar || dbType == SqlDbType.NVarChar || dbType == SqlDbType.Text || dbType == SqlDbType.NText) return new TypeComplex(name, "string" ~ (isNullable ? "?" : string.init), Location(-1,-1,-1));
+	if (dbType == SqlDbType.Time) return new TypeComplex(name, "timespan" ~ (isNullable ? "?" : string.init), Location(-1,-1,-1));
+	if (dbType == SqlDbType.Date || dbType == SqlDbType.SmallDateTime || dbType == SqlDbType.DateTime || dbType == SqlDbType.DateTime2) return new TypeComplex(name, "datetime" ~ (isNullable ? "?" : string.init), Location(-1,-1,-1));
+	if (dbType == SqlDbType.DateTimeOffset) return new TypeComplex(name, "datetimetz" ~ (isNullable ? "?" : string.init), Location(-1,-1,-1));
+	if (dbType == SqlDbType.Money || dbType == SqlDbType.SmallMoney || dbType == SqlDbType.Decimal) return new TypeComplex(name, "fixed" ~ (isNullable ? "?" : string.init), Location(-1,-1,-1));
+	if (dbType == SqlDbType.Float) return new TypeComplex(name, "double" ~ (isNullable ? "?" : string.init), Location(-1,-1,-1));
+	if (dbType == SqlDbType.Real) return new TypeComplex(name, "float" ~ (isNullable ? "?" : string.init), Location(-1,-1,-1));
+	if (dbType == SqlDbType.UniqueIdentifier) return new TypeComplex(name, "guid" ~ (isNullable ? "?" : string.init), Location(-1,-1,-1));
+	if (dbType == SqlDbType.Timestamp) return new TypeComplex(name, "[uint8]" ~ (isNullable ? "?" : string.init), Location(-1,-1,-1));
+	if (dbType == SqlDbType.Variant) return new TypeComplex(name, "stream" ~ (isNullable ? "?" : string.init), Location(-1,-1,-1));
+	return null;
+}

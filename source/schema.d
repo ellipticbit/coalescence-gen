@@ -471,6 +471,7 @@ public final class DataMember
 		this.isIdentity = isIdentity;
 		this.isComputed = isComputed;
 		this.isReadOnly = isComputed || isIdentity;
+		this.type = getTypeComplexFromSqlDbType(this.sqlType, this.isNullable, this.name);
 	}
 
 	public this (DataObject parent, Tag root) {

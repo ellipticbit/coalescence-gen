@@ -65,13 +65,13 @@ int main(string[] args)
 
 	//Get project file path
 	if (!projectPath.isNullOrWhitespace() && !isAbsolute(projectPath)) {
-		projectPath = buildNormalizedPath(getcwd(), projectPath);
+		projectPath = buildNormalizedPath(rootDir, projectPath);
 		if (!exists(projectPath)) {
 			writeln("ERROR: Unable to locate project file: " ~ projectPath);
 			return 2;
 		}
 	} else {
-		projectPath = buildNormalizedPath(getcwd(), ".hotwire.sdl");
+		projectPath = buildNormalizedPath(rootDir, ".hotwire.sdl");
 		if (!exists(projectPath)) {
 			writeln("ERROR: Unable to locate project file: " ~ projectPath);
 			return 2;
@@ -87,7 +87,7 @@ int main(string[] args)
 
 	// Load schema from database if connection info is present.
 	Schema[] dbSchema;
-	if (dbserver != string.init && dbname != string.init && dbuser != string.init && dbpassword != string.init)  {
+	if (dbserver != string.init && dbuser != string.init && dbpassword != string.init)  {
 		if (dbmssql) {
 			string connectionStr = (dbname != string.init) ?
 				"ddbc:odbc://" ~ dbserver ~ "?database=" ~ dbname ~ ",user=" ~ dbuser ~ ",password=" ~ dbpassword ~ ",ssl=true,driver=ODBC Driver 17 for SQL Server" :
