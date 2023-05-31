@@ -8,6 +8,7 @@ import std.string;
 
 public string cleanName(string name) {
 	return name.replace(" ", "_")
+			.replace("-", "_")
 			.replace("[", string.init)
             .replace("]", string.init)
             .replace("{", string.init)

@@ -133,6 +133,10 @@ public final class Project {
 	public @property bool hasSocketServices() {
 		return serverSchema.any!(a => a.sockets.length > 0)();
 	}
+
+	public @property bool hasDatabaseItems() {
+		return serverSchema.any!(a => a.tables.length > 0 || a.views.length > 0 || a.udts.length > 0 || a.procedures.length > 0)();
+	}
 }
 
 public final class Schema
@@ -487,6 +491,7 @@ public final class DataMember
 		this.isComputed = false;
 		this.isIdentity = false;
 		this.isReadOnly = root.getAttribute!bool("readonly", false);
+		this.isNullable = this.type.nullable;
 	}
 
 	public this(DataMember copy) {

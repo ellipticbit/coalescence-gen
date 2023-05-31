@@ -16,7 +16,7 @@ import hwgen.languages.csharp.extensions;
 import hwgen.languages.csharp.language;
 
 public void generateEFContext(CSharpProjectOptions opts, Schema[] schemata) {
-	auto sb = new StringBuilder();
+	auto sb = new StringBuilder(8_388_608);
 	int tabLevel = 1;
 
 	sb.appendLine("namespace {0}", opts.serverNamespace);
@@ -34,11 +34,12 @@ public void generateEFContext(CSharpProjectOptions opts, Schema[] schemata) {
 	sb.tabs(tabLevel).appendLine("using Microsoft.EntityFrameworkCore.Metadata;");
 	sb.tabs(tabLevel).appendLine("using EllipticBit.Services.Database;");
 	sb.appendLine();
+	sb.tabs(tabLevel).appendLine("[GeneratedCodeAttribute(\"EllipticBit.Hotwire.Generator\", \"2.0.0.0\")]");
 	if (opts.enableEFExtensions) {
-		sb.tabs(tabLevel).appendLine("public class {0} : EfCoreDatabaseService<{0}>, IDatabaseService<{0}>", opts.contextName);
+		sb.tabs(tabLevel).appendLine("public class {0} : EfCoreDatabaseService<{0}>, IDatabaseService<{0}>", opts.contextName.cleanName());
 	}
 	else {
-		sb.tabs(tabLevel).appendLine("public class {0} : DbContext", opts.contextName);
+		sb.tabs(tabLevel).appendLine("public class {0} : DbContext", opts.contextName.cleanName());
 	}
 	sb.tabs(tabLevel++).appendLine("{");
 	sb.tabs(tabLevel).appendLine("private readonly string _connectionString;");
@@ -55,14 +56,14 @@ public void generateEFContext(CSharpProjectOptions opts, Schema[] schemata) {
 		generateSchemaModel(opts, sb, s, tabLevel);
 	sb.appendLine();
 	if (opts.enableEFExtensions) {
-		sb.tabs(tabLevel).appendLine("public {0}() : base() { }", opts.contextName);
+		sb.tabs(tabLevel).appendLine("public {0}() : base() { }", opts.contextName.cleanName());
 		sb.appendLine();
-		sb.tabs(tabLevel).appendLine("{0} IDatabaseService<{0}>.GetDatabase(IDatabaseServiceOptions options, IDatabaseConflictDetection detector, IDatabaseConflictResolver resolver) => new {0}(options, detector, resolver);", opts.contextName);
+		sb.tabs(tabLevel).appendLine("{0} IDatabaseService<{0}>.GetDatabase(IDatabaseServiceOptions options, IDatabaseConflictDetection detector, IDatabaseConflictResolver resolver) => new {0}(options, detector, resolver);", opts.contextName.cleanName());
 		sb.appendLine();
-		sb.tabs(tabLevel).appendLine("private {0}(IDatabaseServiceOptions options, IDatabaseConflictDetection detector, IDatabaseConflictResolver resolver) : base(options, detector, resolver)", opts.contextName);
+		sb.tabs(tabLevel).appendLine("private {0}(IDatabaseServiceOptions options, IDatabaseConflictDetection detector, IDatabaseConflictResolver resolver) : base(options, detector, resolver)", opts.contextName.cleanName());
 	}
 	else {
-		sb.tabs(tabLevel).appendLine("public {0}(DbContextOptions<{0}> options) : base(options)", opts.contextName);
+		sb.tabs(tabLevel).appendLine("public {0}(DbContextOptions<{0}> options) : base(options)", opts.contextName.cleanName());
 	}
 	sb.tabs(tabLevel++).appendLine("{");
 	foreach (s; schemata.filter!(a => a.hasDatabaseItems))
@@ -97,14 +98,14 @@ public void generateEFContext(CSharpProjectOptions opts, Schema[] schemata) {
 	sb.tabs(--tabLevel).appendLine("}");
 	sb.appendLine("}");
 
-	opts.writeFileServer(sb, opts.contextName);
+	opts.writeFileServer(sb, opts.contextName.cleanName());
 }
 
 private void generateSchemaModel(CSharpProjectOptions opts, StringBuilder sb, Schema s, int tabLevel) {
 	sb.appendLine();
 	sb.tabs(tabLevel).appendLine("public class {0}Schema", s.name);
 	sb.tabs(tabLevel++).appendLine("{");
-	sb.tabs(tabLevel).appendLine("private readonly {0} _parent;", opts.contextName);
+	sb.tabs(tabLevel).appendLine("private readonly {0} _parent;", opts.contextName.cleanName());
 	sb.appendLine();
 	foreach (t; s.tables)
 		sb.tabs(tabLevel).appendLine("public DbSet<{0}.{1}> {1} => _parent.{0}_{1};", s.name, t.name);
@@ -112,7 +113,7 @@ private void generateSchemaModel(CSharpProjectOptions opts, StringBuilder sb, Sc
 		sb.tabs(tabLevel).appendLine("public DbSet<{0}.{1}> {1} => _parent.{0}_{1};", s.name, t.name);
 	}
 	sb.appendLine();
-	sb.tabs(tabLevel).appendLine("internal {0}Schema({1} parent)", s.name, opts.contextName);
+	sb.tabs(tabLevel).appendLine("internal {0}Schema({1} parent)", s.name, opts.contextName.cleanName());
 	sb.tabs(tabLevel++).appendLine("{");
 	sb.tabs(tabLevel).appendLine("this._parent = parent;");
 	sb.tabs(--tabLevel).appendLine("}");

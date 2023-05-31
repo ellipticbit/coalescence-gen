@@ -13,6 +13,7 @@ import hwgen.languages.csharp.aspnetcore.client;
 import hwgen.languages.csharp.aspnetcore.server;
 import hwgen.languages.csharp.signalr.server;
 import hwgen.languages.csharp.signalr.client;
+import hwgen.languages.csharp.efcore.dbcontext;
 
 import std.algorithm.searching;
 import std.path;
@@ -22,6 +23,10 @@ import std.string;
 
 public void generateCSharp(Project prj, CSharpProjectOptions opts)
 {
+	if (prj.hasDatabaseItems) {
+		generateEFContext(opts, prj.serverSchema);
+	}
+
 	if (opts.outputMode == CSharpOutputMode.SingleFile) {
 		auto serverBuilder = new StringBuilder(8_388_608);
 		serverBuilder.generateUsingsServerComplete(prj, opts);

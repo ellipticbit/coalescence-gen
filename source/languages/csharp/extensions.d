@@ -83,7 +83,7 @@ public final class CSharpProjectOptions {
 
 	private void writeFiles(StringBuilder builder, string[] outputDirs, string schemaName, string fileName) {
 		foreach (op; outputDirs) {
-			if (outputMode == CSharpOutputMode.FilePerObject) {
+			if (outputMode == CSharpOutputMode.FilePerObject && fileName != string.init) {
 				string outDir = buildNormalizedPath(op, schemaName);
 				if(!exists(outDir)) {
 					mkdirRecurse(outDir);

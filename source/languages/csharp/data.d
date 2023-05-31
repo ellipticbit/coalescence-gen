@@ -40,6 +40,9 @@ public void generateDataNetwork(Network m, StringBuilder builder, CSharpProjectO
 	}
 
     builder.appendLine();
+	if (opts.hasSerializer(CSharpSerializers.SystemTextJson)) {
+		builder.tabs(tabLevel).appendLine("[JsonConstructor]");
+	}
     builder.tabs(tabLevel).appendLine("public {0}() { }", m.name);
     builder.appendLine();
 
@@ -76,7 +79,7 @@ private void generateDataNetworkMember(DataMember mm, StringBuilder builder, CSh
 
 	builder.appendLine();
 	builder.tabs(tabLevel).appendLine("private {0} _{1};", generateType(mm.type, false), mm.name);
-	builder.generateBindingMetadata(mm.transport.isNullOrWhitespace() ? mm.name : mm.transport, mm.isNullable, opts, tabLevel);
+	builder.generateBindingMetadata(mm.transport.isNullOrWhitespace() ? mm.name : mm.transport, !mm.isNullable, opts, tabLevel);
 	if ((!isClient && opts.serverUIBindings) || (isClient && opts.clientUIBindings)) {
 		builder.tabs(tabLevel).appendLine("public {0} {1} { get { return _{1}; } {2}set { _{1} = value; BindablePropertyChanged(nameof({1})); } }", generateType(mm.type, false), mm.name, mm.isReadOnly ? "private " : string.init);
 	} else {
@@ -114,7 +117,7 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 	foreach (c; table.members) {
 		builder.appendLine();
 		builder.tabs(2).appendLine("private {0} _{1};", getTypeFromSqlType(c.sqlType, c.isNullable), c.name);
-		builder.generateBindingMetadata(c.transport.isNullOrWhitespace() ? c.name : c.transport, c.isNullable, opts, tabLevel);
+		builder.generateBindingMetadata(c.transport.isNullOrWhitespace() ? c.name : c.transport, !c.isNullable, opts, tabLevel);
 		builder.tabs(2).appendLine("public {0} {1} { get { return _{1}; } set { {2} } }", getTypeFromSqlType(c.sqlType, c.isNullable), c.name, generateSetter(c.name, ((!isClient && opts.serverUIBindings) || (isClient && opts.clientUIBindings))));
 	}
 
@@ -203,7 +206,7 @@ private void generateDataSqlMember(DataMember mm, StringBuilder builder, CSharpP
 
 	builder.appendLine();
 	builder.tabs(tabLevel).appendLine("private {0} _{1};", getTypeFromSqlType(mm.sqlType, mm.isNullable), mm.name);
-	builder.generateBindingMetadata(mm.transport.isNullOrWhitespace() ? mm.name : mm.transport, mm.isNullable, opts, tabLevel);
+	builder.generateBindingMetadata(mm.transport.isNullOrWhitespace() ? mm.name : mm.transport, !mm.isNullable, opts, tabLevel);
 	if ((!isClient && opts.serverUIBindings) || (isClient && opts.clientUIBindings)) {
 		builder.tabs(tabLevel).appendLine("public {0} {1} { get { return _{1}; } {2}set { _{1} = value; BindablePropertyChanged(nameof({1})); } }", getTypeFromSqlType(mm.sqlType, mm.isNullable), mm.name, mm.isReadOnly ? "private " : string.init);
 	} else {
