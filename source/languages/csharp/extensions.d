@@ -107,6 +107,23 @@ public final class CSharpProjectOptions {
 		fsfile.write(builder);
 		fsfile.close();
 	}
+
+	public void cleanFiles() {
+		cleanFiles(serverOutputPaths);
+		cleanFiles(clientOutputPaths);
+	}
+
+	private void cleanFiles(string[] outputDirs) {
+		foreach(od; outputDirs) {
+			writeln("Cleaning previously generated files in directory: " ~ od);
+			auto rfFiles = dirEntries(od, SpanMode.depth).filter!(f => f.name.endsWith(".cs"));
+			foreach(rf; rfFiles) {
+				if (readText(rf).canFind("[GeneratedCodeAttribute(\"EllipticBit.Hotwire.Generator\", ")) {
+					std.file.remove(rf);
+				}
+			}
+		}
+	}
 }
 
 public final class AspNetCoreHttpExtension : LanguageExtensionBase

@@ -23,6 +23,8 @@ import std.string;
 
 public void generateCSharp(Project prj, CSharpProjectOptions opts)
 {
+	opts.cleanFiles();
+
 	if (prj.hasDatabaseItems) {
 		generateEFContext(opts, prj.serverSchema);
 	}
