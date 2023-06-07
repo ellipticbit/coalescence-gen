@@ -77,7 +77,7 @@ public void generateEFContext(CSharpProjectOptions opts, Schema[] schemata) {
 		foreach (t; s.getTables()) {
 			sb.tabs(tabLevel).appendLine("modelBuilder.Entity<{0}.{1}>(entity =>", t.name, s.name.uppercaseFirst());
 			sb.tabs(tabLevel++).appendLine("{");
-			sb.tabs(tabLevel).appendLine("entity.ToTable(\"{0}\", \"{1}\");", t.name, s.name.uppercaseFirst());
+			sb.tabs(tabLevel).appendLine("entity.ToTable(\"{0}\", \"{1}\");", t.name, s.name);
 			generateIndexModel(opts, sb, t, tabLevel + 1);
 			foreach (c; t.members)
 				generatePropertyModel(opts, sb, c, tabLevel + 1);
@@ -87,7 +87,7 @@ public void generateEFContext(CSharpProjectOptions opts, Schema[] schemata) {
 		foreach (t; s.getViews()) {
 			sb.tabs(tabLevel).appendLine("modelBuilder.{0}<{1}.{2}>(entity =>", (opts.compatibility == CSharpCompatibility.NET60 ? "Entity" : "Query"), t.name, s.name.uppercaseFirst());
 			sb.tabs(tabLevel++).appendLine("{");
-			sb.tabs(tabLevel).appendLine("entity.HasNoKey().ToView(\"{0}\", \"{1}\");", t.name, s.name.uppercaseFirst());
+			sb.tabs(tabLevel).appendLine("entity.HasNoKey().ToView(\"{0}\", \"{1}\");", t.name, s.name);
 			foreach (c; t.members)
 				generatePropertyModel(opts, sb, c, tabLevel + 1);
 			sb.tabs(--tabLevel).appendLine("});");

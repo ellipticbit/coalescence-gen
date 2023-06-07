@@ -24,7 +24,7 @@ public void generateDataNetwork(Network m, StringBuilder builder, CSharpProjectO
     if (opts.hasSerializer(CSharpSerializers.NewtonsoftJson) || opts.hasSerializer(CSharpSerializers.DataContract)) {
         builder.tabs(tabLevel).appendLine("[DataContract]");
     }
-	else if (!opts.enableEFExtensions && ((!isClient && opts.serverUIBindings) || (isClient && opts.clientUIBindings))) {
+	else if ((!isClient && opts.serverUIBindings) || (isClient && opts.clientUIBindings)) {
 		builder.tabs(tabLevel).appendLine("public sealed partial class {0} : BindingObject", m.name);
 	}
 	else {
@@ -92,13 +92,13 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
         builder.tabs(tabLevel).appendLine("[DataContract]");
     }
 	if (!isClient && opts.enableEFExtensions) {
-		builder.tabs(tabLevel).appendLine("public sealed partial class {0} : {1}IDatabaseMergeable<{0}>", table.name, ((!isClient && opts.serverUIBindings) || (isClient && opts.clientUIBindings)) ? "BindingObject, " : string.init);
+		builder.tabs(tabLevel).appendLine("public partial class {0} : {1}IDatabaseMergeable<{0}>", table.name, ((!isClient && opts.serverUIBindings) || (isClient && opts.clientUIBindings)) ? "BindingObject, " : string.init);
 	}
-	else if (!opts.enableEFExtensions && ((!isClient && opts.serverUIBindings) || (isClient && opts.clientUIBindings))) {
-		builder.tabs(tabLevel).appendLine("public sealed partial class {0} : BindingObject", table.name);
+	else if ((!isClient && opts.serverUIBindings) || (isClient && opts.clientUIBindings)) {
+		builder.tabs(tabLevel).appendLine("public partial class {0} : BindingObject", table.name);
 	}
 	else {
-		builder.tabs(tabLevel).appendLine("public sealed partial class {0}", table.name);
+		builder.tabs(tabLevel).appendLine("public partial class {0}", table.name);
 	}
 
 	builder.tabs(tabLevel++).appendLine("{");

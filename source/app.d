@@ -123,7 +123,7 @@ private Schema[] loadFiles(string rootDir, Schema[] dbSchema)
 	auto rfFiles = dirEntries(rootDir, SpanMode.depth).filter!(f => f.name.endsWith(".sdl"));
 	foreach(rf; rfFiles) {
 		if (baseName(rf.name).toUpper() == ".hotwire.sdl".toUpper()) continue;
-		writeln("Input: " ~ rf.name);
+		writeln("Input:\t" ~ rf.name);
 		Tag frt = parseFile(rf.name);
 		foreach (t; frt.maybe.tags) {
 			if (t.name.toUpper() == "project".toUpper()) continue;
