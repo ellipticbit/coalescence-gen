@@ -24,7 +24,7 @@ public void generateWebsocketServer(StringBuilder builder, WebsocketService s, u
 	builder.tabs(tabLevel++).appendLine("{");
 	foreach(ns; s.namespaces) {
 		foreach(m; ns.server) {
-			generateInterfaceMethod(builder, m, ns.name, cast(ushort)(tabLevel));
+			generateInterfaceMethod(builder, m, ns.name, tabLevel);
 		}
 	}
 	builder.tabs(--tabLevel).appendLine("}");
@@ -36,7 +36,7 @@ public void generateWebsocketServer(StringBuilder builder, WebsocketService s, u
         builder.tabs(tabLevel++).appendLine("{");
 		foreach(ns; s.namespaces) {
 			foreach(m; ns.client) {
-				generateInterfaceMethod(builder, m, ns.name, cast(ushort)(tabLevel));
+				generateInterfaceMethod(builder, m, ns.name, tabLevel);
 			}
 		}
         builder.tabs(--tabLevel).appendLine("}");
@@ -56,7 +56,7 @@ public void generateWebsocketServer(StringBuilder builder, WebsocketService s, u
 	builder.tabs(tabLevel++).appendLine("{");
 	foreach(ns; s.namespaces) {
 		foreach(m; ns.server) {
-			generateMethod(builder, m, ns.name, cast(ushort)(tabLevel));
+			generateMethod(builder, m, ns.name, tabLevel);
 		}
 	}
 	builder.tabs(--tabLevel).appendLine("}");

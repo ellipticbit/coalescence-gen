@@ -85,7 +85,7 @@ public void generateEFContext(CSharpProjectOptions opts, Schema[] schemata) {
 			sb.tabs(--tabLevel).appendLine("});");
 		}
 		foreach (t; s.getViews()) {
-			sb.tabs(tabLevel).appendLine("modelBuilder.{0}<{1}.{2}>(entity =>", (opts.compatibility == CSharpCompatibility.NET60 ? "Entity" : "Query"), t.name, s.name.uppercaseFirst());
+			sb.tabs(tabLevel).appendLine("modelBuilder.{0}<{2}.{1}>(entity =>", (opts.compatibility == CSharpCompatibility.NET60 ? "Entity" : "Query"), t.name, s.name.uppercaseFirst());
 			sb.tabs(tabLevel++).appendLine("{");
 			sb.tabs(tabLevel).appendLine("entity.HasNoKey().ToView(\"{0}\", \"{1}\");", t.name, s.name);
 			foreach (c; t.members)
@@ -171,7 +171,7 @@ private void generateForeignKeyModel(StringBuilder sb, Table t, int tabLevel) {
 		if (fk.direction == ForeignKeyDirection.OneToOne) {
 			sb.tabs(tabLevel - 1).appendLine("entity.HasOne(d => d.{0})", fkSrcId);
 			sb.tabs(tabLevel).appendLine(".WithOne(p => p.{0})", fkTgtId);
-			sb.tabs(tabLevel).append(".HasForeignKey<{0}.{1}>(d => new { ", t.parent.name, t.name);
+			sb.tabs(tabLevel).append(".HasForeignKey<{0}.{1}>(d => new { ", t.parent.name.uppercaseFirst(), t.name);
 		}
 		if (fk.direction == ForeignKeyDirection.OneToMany) {
 			sb.tabs(tabLevel - 1).appendLine("entity.HasOne(d => d.{0})", fkSrcId);

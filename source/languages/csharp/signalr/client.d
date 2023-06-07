@@ -27,7 +27,7 @@ public void generateWebsocketClient(StringBuilder builder, WebsocketService s, u
 			builder.tabs(tabLevel).appendLine("{2} interface I{0}{1}Server", cleanName(s.name), cleanName(ns.name), s.isPublic ? "public" : "internal");
 			builder.tabs(tabLevel++).appendLine("{");
 			foreach(m; ns.server) {
-				generateInterfaceMethod(builder, m, cast(ushort)(tabLevel+1));
+				generateInterfaceMethod(builder, m, tabLevel);
 			}
 			builder.tabs(--tabLevel).appendLine("}");
 			builder.appendLine();
@@ -47,7 +47,7 @@ public void generateWebsocketClient(StringBuilder builder, WebsocketService s, u
 			builder.tabs(--tabLevel).appendLine("}");
 			builder.appendLine();
 			foreach(m; ns.server) {
-				generateServerMethod(builder, m, ns.name, cast(ushort)(tabLevel+1));
+				generateServerMethod(builder, m, ns.name, tabLevel);
 			}
 			builder.tabs(--tabLevel).appendLine("}");
 		}
@@ -58,7 +58,7 @@ public void generateWebsocketClient(StringBuilder builder, WebsocketService s, u
 			builder.tabs(tabLevel).appendLine("{2} interface I{0}{1}Client", cleanName(s.name), cleanName(ns.name), s.isPublic ? "public" : "internal");
 			builder.tabs(tabLevel++).appendLine("{");
 			foreach(m; ns.client) {
-				generateInterfaceMethod(builder, m, cast(ushort)(tabLevel+1));
+				generateInterfaceMethod(builder, m, tabLevel);
 			}
 			builder.tabs(--tabLevel).appendLine("}");
 		}
@@ -88,7 +88,7 @@ public void generateWebsocketClient(StringBuilder builder, WebsocketService s, u
 	builder.tabs(tabLevel++).appendLine("var rl = new List<IDisposable> {");
 	foreach(ns; s.namespaces) {
 		foreach(m; ns.client) {
-			generateClientMethod(builder, m, ns.name, cast(ushort)(tabLevel+3));
+			generateClientMethod(builder, m, ns.name, tabLevel);
 		}
 	}
 	builder.tabs(--tabLevel).appendLine("};");
@@ -182,7 +182,7 @@ public void generateClientMethod(StringBuilder builder, WebsocketServiceMethod s
 	}
 	if (sm.parameters.length > 0) builder.removeRight(2);
 	builder.appendLine(") => {");
-	builder.appendLine("var t = ActivatorUtilities.GetServiceOrCreateInstance<I{0}{1}Client>(services);", cleanName(sm.parent.name), cleanName(namespace));
+	builder.tabs(tabLevel).appendLine("var t = ActivatorUtilities.GetServiceOrCreateInstance<I{0}{1}Client>(services);", cleanName(sm.parent.name), cleanName(namespace));
 	builder.tabs(tabLevel).append("return t.{0}(", cleanName(sm.name));
 	foreach (smp; sm.parameters) {
 		builder.append("{0}, ", smp.name);
