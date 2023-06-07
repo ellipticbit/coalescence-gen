@@ -75,7 +75,7 @@ public void generateEFContext(CSharpProjectOptions opts, Schema[] schemata) {
 	sb.tabs(tabLevel++).appendLine("{");
 	foreach (s; schemata.filter!(a => a.hasDatabaseItems)) {
 		foreach (t; s.getTables()) {
-			sb.tabs(tabLevel).appendLine("modelBuilder.Entity<{0}.{1}>(entity =>", t.name, s.name.uppercaseFirst());
+			sb.tabs(tabLevel).appendLine("modelBuilder.Entity<{1}.{0}>(entity =>", t.name, s.name.uppercaseFirst());
 			sb.tabs(tabLevel++).appendLine("{");
 			sb.tabs(tabLevel).appendLine("entity.ToTable(\"{0}\", \"{1}\");", t.name, s.name);
 			generateIndexModel(opts, sb, t, tabLevel + 1);

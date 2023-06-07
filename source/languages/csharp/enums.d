@@ -5,16 +5,19 @@ import hwgen.globals;
 import hwgen.stringbuilder;
 import hwgen.utility;
 
+import hwgen.languages.csharp.extensions;
 import hwgen.languages.csharp.generator;
 
 import std.conv;
 import std.stdio;
 
-public void generateEnum(StringBuilder builder, Enumeration en, ushort tabLevel)
+public void generateEnum(Enumeration en, StringBuilder builder, CSharpProjectOptions opts, ushort tabLevel)
 {
     builder.appendLine();
 	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Hotwire.Generator\", \"2.0.0.0\")]");
-    builder.tabs(tabLevel).appendLine("[DataContract]");
+    if (opts.hasSerializer(CSharpSerializers.NewtonsoftJson) || opts.hasSerializer(CSharpSerializers.DataContract)) {
+        builder.tabs(tabLevel).appendLine("[DataContract]");
+    }
     if(en.packed)
     {
         builder.tabs(tabLevel).appendLine("[Flags]");
@@ -24,18 +27,18 @@ public void generateEnum(StringBuilder builder, Enumeration en, ushort tabLevel)
         builder.tabs(tabLevel).appendLine("public enum {0}", en.name);
     builder.tabs(tabLevel++).appendLine("{");
     if (en.packed)
-        builder.tabs(tabLevel).appendLine("[EnumMember()] None = 0,");
+        builder.tabs(tabLevel).appendLine("{0}} None = 0,", (opts.hasSerializer(CSharpSerializers.NewtonsoftJson) || opts.hasSerializer(CSharpSerializers.DataContract)) ? "[EnumMember()] " : string.init);
     ushort bsc = 0;
     foreach(env; en.values)
     {
         if(en.packed) {
-            builder.tabs(tabLevel).appendLine("[EnumMember()] {0} = 1 << {1},", env.name, to!string(bsc++));
+            builder.tabs(tabLevel).appendLine("{2}{0} = 1 << {1},", env.name, to!string(bsc++), (opts.hasSerializer(CSharpSerializers.NewtonsoftJson) || opts.hasSerializer(CSharpSerializers.DataContract)) ? "[EnumMember()] " : string.init);
         }
         else if(!env.value.isNull) {
-            builder.tabs(tabLevel).appendLine("[EnumMember()] {0} = {1},", env.name, to!string(env.value.get()));
+            builder.tabs(tabLevel).appendLine("{2} {0} = {1},", env.name, to!string(env.value.get()), (opts.hasSerializer(CSharpSerializers.NewtonsoftJson) || opts.hasSerializer(CSharpSerializers.DataContract)) ? "[EnumMember()] " : string.init);
         }
         else if(env.aggregate.length != 0) {
-            builder.tabs(tabLevel).append("[EnumMember()] {0} = ", env.name);
+            builder.tabs(tabLevel).append("{1} {0} = ", env.name, (opts.hasSerializer(CSharpSerializers.NewtonsoftJson) || opts.hasSerializer(CSharpSerializers.DataContract)) ? "[EnumMember()] " : string.init);
             for(int i = 0; i < env.aggregate.length; i++)
             {
                 //writeln(env.name);
@@ -46,7 +49,7 @@ public void generateEnum(StringBuilder builder, Enumeration en, ushort tabLevel)
             builder.appendLine(",");
         }
         else {
-            builder.tabs(tabLevel).appendLine("[EnumMember()] {0},", env.name);
+            builder.tabs(tabLevel).appendLine("{1} {0},", env.name, (opts.hasSerializer(CSharpSerializers.NewtonsoftJson) || opts.hasSerializer(CSharpSerializers.DataContract)) ? "[EnumMember()] " : string.init);
         }
     }
     builder.tabs(--tabLevel).appendLine("}");
