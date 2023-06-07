@@ -103,7 +103,7 @@ public final class CSharpProjectOptions {
 	//Write generated code to disk
 	private void writeFile(StringBuilder builder, string outputDir, string fileName) {
 		string outputPath = setExtension(buildNormalizedPath(outputDir, fileName.uppercaseFirst()), ".cs");
-		writeln("Output:\t" ~ outputPath);
+		writeln("Output:\t\t" ~ outputPath);
 		auto fsfile = File(outputPath, "w");
 		fsfile.write(builder);
 		fsfile.close();

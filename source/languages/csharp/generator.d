@@ -75,7 +75,7 @@ private void generateSchemaServer(Schema ns, StringBuilder schemaBuilder, Projec
 		schemaBuilder.appendLine("namespace {0}", ns.getCSharpFqn(opts, false));
 		schemaBuilder.appendLine("{");
 		foreach(e; ns.enums.values) {
-			generateEnum(schemaBuilder, e, 1);
+			generateEnum(e, schemaBuilder, opts, 1);
 		}
 		foreach(d; ns.network.values) {
 			generateDataNetwork(d, schemaBuilder, opts, false, 1);
@@ -101,7 +101,7 @@ private void generateSchemaServer(Schema ns, StringBuilder schemaBuilder, Projec
 			auto builder = new StringBuilder(4_096);
 			builder.appendLine("namespace {0}", ns.getCSharpFqn(opts, false));
 			builder.appendLine("{");
-			generateEnum(builder, e, 1);
+			generateEnum(e, builder, opts, 1);
 			builder.appendLine("}");
 			builder.appendLine();
 			opts.writeFileServer(builder, ns.name, e.name);
@@ -175,7 +175,7 @@ private void generateSchemaClient(Schema ns, StringBuilder schemaBuilder, Projec
 		schemaBuilder.appendLine("namespace {0}", ns.getCSharpFqn(opts, true));
 		schemaBuilder.appendLine("{");
 		foreach(e; ns.enums.values) {
-			generateEnum(schemaBuilder, e, 1);
+			generateEnum(e, schemaBuilder, opts, 1);
 		}
 		foreach(d; ns.network.values) {
 			generateDataNetwork(d, schemaBuilder, opts, true, 1);
@@ -201,7 +201,7 @@ private void generateSchemaClient(Schema ns, StringBuilder schemaBuilder, Projec
 			auto builder = new StringBuilder(4_096);
 			builder.appendLine("namespace {0}", ns.getCSharpFqn(opts, true));
 			builder.appendLine("{");
-			generateEnum(builder, e, 1);
+			generateEnum(e, builder, opts, 1);
 			builder.appendLine("}");
 			builder.appendLine();
 			opts.writeFileClient(builder, ns.name, e.name);
@@ -342,6 +342,7 @@ private void generateUsingsServerData(StringBuilder builder, CSharpProjectOption
 	builder.appendLine("using System;");
 	builder.appendLine("using System.Collections.Generic;");
 	if (opts.serverUIBindings) {
+		builder.appendLine("using System.Collections.ObjectModel;");
 		builder.appendLine("using System.ComponentModel;");
 	}
 	builder.appendLine("using System.Linq;");
@@ -363,6 +364,7 @@ private void generateUsingsClientData(StringBuilder builder, CSharpProjectOption
 	builder.appendLine("using System;");
 	builder.appendLine("using System.Collections.Generic;");
 	if (opts.clientUIBindings) {
+		builder.appendLine("using System.Collections.ObjectModel;");
 		builder.appendLine("using System.ComponentModel;");
 	}
 	builder.appendLine("using System.Linq;");

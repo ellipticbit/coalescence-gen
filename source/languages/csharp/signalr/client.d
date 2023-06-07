@@ -173,17 +173,17 @@ public void generateServerMethod(StringBuilder builder, WebsocketServiceMethod s
 
 public void generateClientMethod(StringBuilder builder, WebsocketServiceMethod sm, string namespace, ushort tabLevel) {
 	if (namespace !is null && namespace != string.init) {
-		builder.tabs(tabLevel++).append("connection.On(\"{1}.{2}\", (", cleanName(namespace), cleanName(sm.socketName));
+		builder.tabs(tabLevel++).append("connection.On(\"{0}.{1}\", (", cleanName(namespace), cleanName(sm.socketName));
 	} else {
-		builder.tabs(tabLevel++).append("connection.On(\"{1}\", (", cleanName(sm.socketName));
+		builder.tabs(tabLevel++).append("connection.On(\"{0}\", (", cleanName(sm.socketName));
 	}
 	foreach (smp; sm.parameters) {
 		builder.append("{0} {1}, ", generateType(smp, false), smp.name);
 	}
 	if (sm.parameters.length > 0) builder.removeRight(2);
 	builder.appendLine(") => {");
-	builder.appendLine("var t = ActivatorUtilities.GetServiceOrCreateInstance<I{1}{2}Client>(services);", cleanName(sm.parent.name), cleanName(namespace));
-	builder.tabs(tabLevel).append("return t.{1}(", cleanName(sm.name));
+	builder.appendLine("var t = ActivatorUtilities.GetServiceOrCreateInstance<I{0}{1}Client>(services);", cleanName(sm.parent.name), cleanName(namespace));
+	builder.tabs(tabLevel).append("return t.{0}(", cleanName(sm.name));
 	foreach (smp; sm.parameters) {
 		builder.append("{0}, ", smp.name);
 	}
