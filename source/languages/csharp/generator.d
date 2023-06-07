@@ -273,6 +273,7 @@ private void generateUsingsServerComplete(StringBuilder builder, Project prj, CS
 	builder.appendLine("using System;");
 	builder.appendLine("using System.Collections.Generic;");
 	if (opts.serverUIBindings) {
+		builder.appendLine("using System.Collections.ObjectModel;");
 		builder.appendLine("using System.ComponentModel;");
 	}
 	builder.appendLine("using System.Linq;");
@@ -306,6 +307,7 @@ private void generateUsingsClientComplete(StringBuilder builder, Project prj, CS
 	builder.appendLine("using System;");
 	builder.appendLine("using System.Collections.Generic;");
 	if (opts.clientUIBindings) {
+		builder.appendLine("using System.Collections.ObjectModel;");
 		builder.appendLine("using System.ComponentModel;");
 	}
 	builder.appendLine("using System.Linq;");

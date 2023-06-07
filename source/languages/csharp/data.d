@@ -24,16 +24,13 @@ public void generateDataNetwork(Network m, StringBuilder builder, CSharpProjectO
     if (opts.hasSerializer(CSharpSerializers.NewtonsoftJson) || opts.hasSerializer(CSharpSerializers.DataContract)) {
         builder.tabs(tabLevel).appendLine("[DataContract]");
     }
-    builder.tabs(tabLevel).appendLine("public sealed partial class {0}{1}", m.name, ((!isClient && opts.serverUIBindings) || (isClient && opts.clientUIBindings)) ? " : INotifyPropertyChanged" : string.init);
-    builder.tabs(tabLevel++).appendLine("{");
-
-	if ((!isClient && opts.serverUIBindings) || (isClient && opts.clientUIBindings))
-	{
-		builder.tabs(tabLevel).appendLine("public event PropertyChangedEventHandler PropertyChanged;");
-		builder.tabs(tabLevel++).appendLine("private void BindablePropertyChanged(string propertyName) {");
-		builder.tabs(tabLevel).appendLine("if (PropertyChanged != null) PropertyChanged(this, new PropertyChangedEventArgs(propertyName));");
-		builder.tabs(--tabLevel).appendLine("}");
+	else if (!opts.enableEFExtensions && ((!isClient && opts.serverUIBindings) || (isClient && opts.clientUIBindings))) {
+		builder.tabs(tabLevel).appendLine("public sealed partial class {0} : BindingObject", m.name);
 	}
+	else {
+		builder.tabs(tabLevel).appendLine("public sealed partial class {0}", m.name);
+	}
+    builder.tabs(tabLevel++).appendLine("{");
 
     foreach(v; m.members) {
         v.generateDataNetworkMember(builder, opts, isClient, tabLevel);
@@ -81,7 +78,7 @@ private void generateDataNetworkMember(DataMember mm, StringBuilder builder, CSh
 	builder.tabs(tabLevel).appendLine("private {0} _{1};", generateType(mm.type, false), mm.name);
 	builder.generateBindingMetadata(mm.transport.isNullOrWhitespace() ? mm.name : mm.transport, !mm.isNullable, opts, tabLevel);
 	if ((!isClient && opts.serverUIBindings) || (isClient && opts.clientUIBindings)) {
-		builder.tabs(tabLevel).appendLine("public {0} {1} { get { return _{1}; } {2}set { _{1} = value; BindablePropertyChanged(nameof({1})); } }", generateType(mm.type, false), mm.name, mm.isReadOnly ? "private " : string.init);
+		builder.tabs(tabLevel).appendLine("public {0} {1} { get { return _{1}; } {2}set { _{1} = value; {3}} }", generateType(mm.type, false), mm.name, mm.isReadOnly ? "private " : string.init, generateSetter(mm.name, ((!isClient && opts.serverUIBindings) || (isClient && opts.clientUIBindings))));
 	} else {
 		builder.tabs(tabLevel).appendLine("public {0} {1} { get { return _{1}; } {2}set { _{1} = value; } }", generateType(mm.type, false), mm.name, mm.isReadOnly ? "private " : string.init);
 	}
@@ -91,21 +88,24 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 	auto fkTarget = getForeignKeysTargetTable(table.sqlId, isClient ? prj.clientSchema : prj.serverSchema);
 	auto fkSource = getForeignKeysSourceTable(table.sqlId, isClient ? prj.clientSchema : prj.serverSchema);
 
-	if (opts.enableEFExtensions && !((!isClient && opts.serverUIBindings) || (isClient && opts.clientUIBindings))) {
-		builder.tabs(tabLevel).appendLine("public partial class {0} : IDatabaseMergeable<{0}>", table.name);
+    if (opts.hasSerializer(CSharpSerializers.NewtonsoftJson) || opts.hasSerializer(CSharpSerializers.DataContract)) {
+        builder.tabs(tabLevel).appendLine("[DataContract]");
+    }
+	if (!isClient && opts.enableEFExtensions) {
+		builder.tabs(tabLevel).appendLine("public sealed partial class {0} : {1}IDatabaseMergeable<{0}>", table.name, ((!isClient && opts.serverUIBindings) || (isClient && opts.clientUIBindings)) ? "BindingObject, " : string.init);
 	}
 	else if (!opts.enableEFExtensions && ((!isClient && opts.serverUIBindings) || (isClient && opts.clientUIBindings))) {
-		builder.tabs(tabLevel).appendLine("public partial class {0} : BindingObject", table.name);
-	}
-	else if (opts.enableEFExtensions && ((!isClient && opts.serverUIBindings) || (isClient && opts.clientUIBindings))) {
-		builder.tabs(tabLevel).appendLine("public partial class {0} : BindingObject, IDatabaseMergeable<{0}>", table.name);
+		builder.tabs(tabLevel).appendLine("public sealed partial class {0} : BindingObject", table.name);
 	}
 	else {
-		builder.tabs(tabLevel).appendLine("public partial class {0}", table.name);
+		builder.tabs(tabLevel).appendLine("public sealed partial class {0}", table.name);
 	}
 
 	builder.tabs(tabLevel++).appendLine("{");
 
+	if (opts.hasSerializer(CSharpSerializers.SystemTextJson)) {
+		builder.tabs(tabLevel).appendLine("[JsonConstructor]");
+	}
 	builder.tabs(tabLevel++).appendLine("public {0}() {", table.name);
 	foreach (fk; fkTarget.filter!(a => a.targetTable.sqlId == table.sqlId && a.direction != ForeignKeyDirection.OneToOne)) {
 		builder.tabs(tabLevel).appendLine("this.{0} = new {1}<{2}>();", fk.targetId(), (((!isClient && opts.serverUIBindings) || (isClient && opts.clientUIBindings)) ? "ThreadObservableCollection" : "HashSet"), fk.sourceTable.getCSharpFullName());
@@ -208,7 +208,7 @@ private void generateDataSqlMember(DataMember mm, StringBuilder builder, CSharpP
 	builder.tabs(tabLevel).appendLine("private {0} _{1};", getTypeFromSqlType(mm.sqlType, mm.isNullable), mm.name);
 	builder.generateBindingMetadata(mm.transport.isNullOrWhitespace() ? mm.name : mm.transport, !mm.isNullable, opts, tabLevel);
 	if ((!isClient && opts.serverUIBindings) || (isClient && opts.clientUIBindings)) {
-		builder.tabs(tabLevel).appendLine("public {0} {1} { get { return _{1}; } {2}set { _{1} = value; BindablePropertyChanged(nameof({1})); } }", getTypeFromSqlType(mm.sqlType, mm.isNullable), mm.name, mm.isReadOnly ? "private " : string.init);
+		builder.tabs(tabLevel).appendLine("public {0} {1} { get { return _{1}; } {2}set { _{1} = value; {3}} }", getTypeFromSqlType(mm.sqlType, mm.isNullable), mm.name, mm.isReadOnly ? "private " : string.init, generateSetter(mm.name, ((!isClient && opts.serverUIBindings) || (isClient && opts.clientUIBindings))));
 	} else {
 		builder.tabs(tabLevel).appendLine("public {0} {1} { get { return _{1}; } {2}set { _{1} = value; } }", getTypeFromSqlType(mm.sqlType, mm.isNullable), mm.name, mm.isReadOnly ? "private " : string.init);
 	}

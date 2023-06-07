@@ -45,13 +45,13 @@ public void generateEFContext(CSharpProjectOptions opts, Schema[] schemata) {
 	sb.tabs(tabLevel).appendLine("private readonly string _connectionString;");
 	foreach (s; schemata.filter!(a => a.hasDatabaseItems)) {
 		foreach (t; s.getTables())
-			sb.tabs(tabLevel).appendLine("internal virtual DbSet<{1}.{0}> {1}_{0} { get; set; }", t.name, s.name);
+			sb.tabs(tabLevel).appendLine("internal virtual DbSet<{1}.{0}> {1}_{0} { get; set; }", t.name, s.name.uppercaseFirst());
 		foreach (t; s.getViews())
-			sb.tabs(tabLevel).appendLine("internal virtual DbSet<{1}.{0}> {1}_{0} { get; set; }", t.name, s.name);
+			sb.tabs(tabLevel).appendLine("internal virtual DbSet<{1}.{0}> {1}_{0} { get; set; }", t.name, s.name.uppercaseFirst());
 	}
 	sb.appendLine();
 	foreach (s; schemata.filter!(a => a.hasDatabaseItems))
-		sb.tabs(tabLevel).appendLine("public {0}Schema {0} { get; }", s.name);
+		sb.tabs(tabLevel).appendLine("public {0}Schema {0} { get; }", s.name.uppercaseFirst());
 	foreach (s; schemata.filter!(a => a.hasDatabaseItems))
 		generateSchemaModel(opts, sb, s, tabLevel);
 	sb.appendLine();
@@ -67,7 +67,7 @@ public void generateEFContext(CSharpProjectOptions opts, Schema[] schemata) {
 	}
 	sb.tabs(tabLevel++).appendLine("{");
 	foreach (s; schemata.filter!(a => a.hasDatabaseItems))
-		sb.tabs(tabLevel).appendLine("this.{0} = new {0}Schema(this);", s.name);
+		sb.tabs(tabLevel).appendLine("this.{0} = new {0}Schema(this);", s.name.uppercaseFirst());
 	sb.tabs(tabLevel).appendLine("this._connectionString = this.Database.GetDbConnection().ConnectionString;");
 	sb.tabs(--tabLevel).appendLine("}");
 	sb.appendLine();
@@ -75,9 +75,9 @@ public void generateEFContext(CSharpProjectOptions opts, Schema[] schemata) {
 	sb.tabs(tabLevel++).appendLine("{");
 	foreach (s; schemata.filter!(a => a.hasDatabaseItems)) {
 		foreach (t; s.getTables()) {
-			sb.tabs(tabLevel).appendLine("modelBuilder.Entity<{0}.{1}>(entity =>", t.name, s.name);
+			sb.tabs(tabLevel).appendLine("modelBuilder.Entity<{0}.{1}>(entity =>", t.name, s.name.uppercaseFirst());
 			sb.tabs(tabLevel++).appendLine("{");
-			sb.tabs(tabLevel).appendLine("entity.ToTable(\"{0}\", \"{1}\");", t.name, s.name);
+			sb.tabs(tabLevel).appendLine("entity.ToTable(\"{0}\", \"{1}\");", t.name, s.name.uppercaseFirst());
 			generateIndexModel(opts, sb, t, tabLevel + 1);
 			foreach (c; t.members)
 				generatePropertyModel(opts, sb, c, tabLevel + 1);
@@ -85,9 +85,9 @@ public void generateEFContext(CSharpProjectOptions opts, Schema[] schemata) {
 			sb.tabs(--tabLevel).appendLine("});");
 		}
 		foreach (t; s.getViews()) {
-			sb.tabs(tabLevel).appendLine("modelBuilder.{0}<{1}.{2}>(entity =>", (opts.compatibility == CSharpCompatibility.NET60 ? "Entity" : "Query"), t.name, s.name);
+			sb.tabs(tabLevel).appendLine("modelBuilder.{0}<{1}.{2}>(entity =>", (opts.compatibility == CSharpCompatibility.NET60 ? "Entity" : "Query"), t.name, s.name.uppercaseFirst());
 			sb.tabs(tabLevel++).appendLine("{");
-			sb.tabs(tabLevel).appendLine("entity.HasNoKey().ToView(\"{0}\", \"{1}\");", t.name, s.name);
+			sb.tabs(tabLevel).appendLine("entity.HasNoKey().ToView(\"{0}\", \"{1}\");", t.name, s.name.uppercaseFirst());
 			foreach (c; t.members)
 				generatePropertyModel(opts, sb, c, tabLevel + 1);
 			sb.tabs(--tabLevel).appendLine("});");
@@ -103,17 +103,17 @@ public void generateEFContext(CSharpProjectOptions opts, Schema[] schemata) {
 
 private void generateSchemaModel(CSharpProjectOptions opts, StringBuilder sb, Schema s, int tabLevel) {
 	sb.appendLine();
-	sb.tabs(tabLevel).appendLine("public class {0}Schema", s.name);
+	sb.tabs(tabLevel).appendLine("public class {0}Schema", s.name.uppercaseFirst());
 	sb.tabs(tabLevel++).appendLine("{");
 	sb.tabs(tabLevel).appendLine("private readonly {0} _parent;", opts.contextName.cleanName());
 	sb.appendLine();
 	foreach (t; s.tables)
-		sb.tabs(tabLevel).appendLine("public DbSet<{0}.{1}> {1} => _parent.{0}_{1};", s.name, t.name);
+		sb.tabs(tabLevel).appendLine("public DbSet<{0}.{1}> {1} => _parent.{0}_{1};", s.name.uppercaseFirst(), t.name);
 	foreach (t; s.views) {
-		sb.tabs(tabLevel).appendLine("public DbSet<{0}.{1}> {1} => _parent.{0}_{1};", s.name, t.name);
+		sb.tabs(tabLevel).appendLine("public DbSet<{0}.{1}> {1} => _parent.{0}_{1};", s.name.uppercaseFirst(), t.name);
 	}
 	sb.appendLine();
-	sb.tabs(tabLevel).appendLine("internal {0}Schema({1} parent)", s.name, opts.contextName.cleanName());
+	sb.tabs(tabLevel).appendLine("internal {0}Schema({1} parent)", s.name.uppercaseFirst(), opts.contextName.cleanName());
 	sb.tabs(tabLevel++).appendLine("{");
 	sb.tabs(tabLevel).appendLine("this._parent = parent;");
 	sb.tabs(--tabLevel).appendLine("}");

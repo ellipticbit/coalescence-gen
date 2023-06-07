@@ -2,6 +2,7 @@ module hwgen.languages.csharp.extensions;
 
 import hwgen.schema;
 import hwgen.stringbuilder;
+import hwgen.utility;
 
 import std.algorithm.iteration;
 import std.algorithm.searching;
@@ -101,8 +102,8 @@ public final class CSharpProjectOptions {
 
 	//Write generated code to disk
 	private void writeFile(StringBuilder builder, string outputDir, string fileName) {
-		string outputPath = setExtension(buildNormalizedPath(outputDir, fileName), ".cs");
-		writeln("Output File: " ~ outputPath);
+		string outputPath = setExtension(buildNormalizedPath(outputDir, fileName.uppercaseFirst()), ".cs");
+		writeln("Output: " ~ outputPath);
 		auto fsfile = File(outputPath, "w");
 		fsfile.write(builder);
 		fsfile.close();
