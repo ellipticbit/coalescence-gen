@@ -13,7 +13,7 @@ import std.stdio;
 public void generateEnum(StringBuilder builder, Enumeration en, ushort tabLevel)
 {
     builder.appendLine();
-	builder.tabs(tabLevel).appendLine("[GeneratedCodeAttribute(\"EllipticBit.Hotwire.Generator\", \"2.0.0.0\")]");
+	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Hotwire.Generator\", \"2.0.0.0\")]");
     builder.tabs(tabLevel).appendLine("[DataContract]");
     if(en.packed)
     {

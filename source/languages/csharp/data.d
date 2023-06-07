@@ -174,8 +174,8 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 
 public void generateDataView(View table, StringBuilder builder, CSharpProjectOptions opts, bool isClient, ushort tabLevel)
 {
-	builder.tabs(tabLevel).appendLine("[GeneratedCodeAttribute()]");
-	builder.tabs(tabLevel).appendLine("[DebuggerNonUserCodeAttribute()]");
+	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Hotwire.Generator\", \"2.0.0.0\")]");
+	builder.tabs(tabLevel).appendLine("[System.Diagnostics.DebuggerNonUserCode()]");
 	builder.tabs(tabLevel).appendLine("public class {0}{1}", table.name, ((!isClient && opts.serverUIBindings) || (isClient && opts.clientUIBindings)) ? " : BindingObject" : string.init);
 	builder.tabs(tabLevel++).appendLine("{");
 	builder.tabs(tabLevel).appendLine("public {0}() { }", table.name);
@@ -215,8 +215,8 @@ private void generateDataSqlMember(DataMember mm, StringBuilder builder, CSharpP
 }
 
 private void generateBindingMetadata(StringBuilder builder, string transport, bool isRequired, CSharpProjectOptions opts, ushort tabLevel) {
-	builder.tabs(tabLevel).appendLine("[GeneratedCodeAttribute(\"EllipticBit.Hotwire.Generator\", \"2.0.0.0\")]");
-	builder.tabs(tabLevel).appendLine("[DebuggerNonUserCodeAttribute()]");
+	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Hotwire.Generator\", \"2.0.0.0\")]");
+	builder.tabs(tabLevel).appendLine("[System.Diagnostics.DebuggerNonUserCode()]");
 	if (opts.hasSerializer(CSharpSerializers.NewtonsoftJson) || opts.hasSerializer(CSharpSerializers.DataContract)) {
 		builder.tabs(tabLevel).appendLine("[DataMember(Name = \"{0}\", IsRequired = {1})]", transport, isRequired ? "false" : "true");
 	}

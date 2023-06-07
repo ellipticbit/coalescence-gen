@@ -34,7 +34,7 @@ public void generateEFContext(CSharpProjectOptions opts, Schema[] schemata) {
 	sb.tabs(tabLevel).appendLine("using Microsoft.EntityFrameworkCore.Metadata;");
 	sb.tabs(tabLevel).appendLine("using EllipticBit.Services.Database;");
 	sb.appendLine();
-	sb.tabs(tabLevel).appendLine("[GeneratedCodeAttribute(\"EllipticBit.Hotwire.Generator\", \"2.0.0.0\")]");
+	sb.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Hotwire.Generator\", \"2.0.0.0\")]");
 	if (opts.enableEFExtensions) {
 		sb.tabs(tabLevel).appendLine("public class {0} : EfCoreDatabaseService<{0}>, IDatabaseService<{0}>", opts.contextName.cleanName());
 	}

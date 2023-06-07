@@ -118,7 +118,7 @@ public final class CSharpProjectOptions {
 			writeln("Cleaning previously generated files in directory: " ~ od);
 			auto rfFiles = dirEntries(od, SpanMode.depth).filter!(f => f.name.endsWith(".cs"));
 			foreach(rf; rfFiles) {
-				if (readText(rf).canFind("[GeneratedCodeAttribute(\"EllipticBit.Hotwire.Generator\", ")) {
+				if (readText(rf).canFind("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Hotwire.Generator\", ")) {
 					std.file.remove(rf);
 				}
 			}
