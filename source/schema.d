@@ -578,17 +578,17 @@ public class ForeignKey
 
 	public string targetId() {
 		if (sourceTable.sqlId != targetTable.sqlId) {
-			return cleanForeignKeyName(sourceColumn().name) ~ "_" ~ sourceTable.parent.name ~ sourceTable.name;
+			return cleanForeignKeyName(sourceColumn().name) ~ "_" ~ sourceTable.parent.name.uppercaseFirst() ~ sourceTable.name;
 		} else {
-			return cleanForeignKeyName(sourceColumn().name) ~ "_" ~ sourceTable.parent.name ~ sourceTable.name ~ "_Self";
+			return cleanForeignKeyName(sourceColumn().name) ~ "_" ~ sourceTable.parent.name.uppercaseFirst() ~ sourceTable.name ~ "_Self";
 		}
 	}
 
 	public string sourceId() {
 		if (sourceTable.sqlId != targetTable.sqlId) {
-			return cleanForeignKeyName(sourceColumn().name) ~ "_" ~ targetTable.parent.name ~ targetTable.name;
+			return cleanForeignKeyName(sourceColumn().name) ~ "_" ~ targetTable.parent.name.uppercaseFirst() ~ targetTable.name;
 		} else {
-			return cleanForeignKeyName(sourceColumn().name) ~ "_" ~ targetTable.parent.name ~ targetTable.name ~ "_Navigation";
+			return cleanForeignKeyName(sourceColumn().name) ~ "_" ~ targetTable.parent.name.uppercaseFirst() ~ targetTable.name ~ "_Navigation";
 		}
 	}
 }
