@@ -103,7 +103,7 @@ public final class CSharpProjectOptions {
 	//Write generated code to disk
 	private void writeFile(StringBuilder builder, string outputDir, string fileName) {
 		string outputPath = setExtension(buildNormalizedPath(outputDir, fileName.uppercaseFirst()), ".cs");
-		writeln("Output:\t\t" ~ outputPath);
+		writeln("Output:\t" ~ outputPath);
 		auto fsfile = File(outputPath, "w");
 		fsfile.write(builder);
 		fsfile.close();
@@ -116,7 +116,7 @@ public final class CSharpProjectOptions {
 
 	private void cleanFiles(string[] outputDirs) {
 		foreach(od; outputDirs) {
-			writeln("Cleaning:\t" ~ od);
+			writeln("Clean:\t" ~ od);
 			auto rfFiles = dirEntries(od, SpanMode.depth).filter!(f => f.name.endsWith(".cs"));
 			foreach(rf; rfFiles) {
 				if (readText(rf).canFind("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Hotwire.Generator\", ")) {
