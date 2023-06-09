@@ -58,11 +58,21 @@ public final class CSharpProjectOptions {
 		this.clientUIBindings = root.getAttribute!bool("clientBindings", false);
 		this.serverUIBindings = root.getAttribute!bool("serverBindings", false);
 		this.enableEFExtensions = root.getAttribute!bool("enableEFExtensions", false);
+		version(Posix) {
 		foreach(cop; root.getTagValues("clientPaths")){
-			this.clientOutputPaths ~= buildNormalizedPath(projectRoot, cop.get!string());
+			this.clientOutputPaths ~= buildNormalizedPath(projectRoot, cop.get!string().replace("\\", "/"));
 		}
 		foreach(sop; root.getTagValues("serverPaths")) {
-			this.serverOutputPaths ~= buildNormalizedPath(projectRoot, sop.get!string());
+			this.serverOutputPaths ~= buildNormalizedPath(projectRoot, sop.get!string().replace("\\", "/"));
+		}
+		}
+		version(Windows) {
+		foreach(cop; root.getTagValues("clientPaths")){
+			this.clientOutputPaths ~= buildNormalizedPath(projectRoot, cop.get!string().replace("/", "\\"));
+		}
+		foreach(sop; root.getTagValues("serverPaths")) {
+			this.serverOutputPaths ~= buildNormalizedPath(projectRoot, sop.get!string().replace("/", "\\"));
+		}
 		}
 		this.compatibility = to!CSharpCompatibility(root.getAttribute!string("compatibility", "NET60"));
 		foreach(sop; root.getTagValues("serializers")) {
