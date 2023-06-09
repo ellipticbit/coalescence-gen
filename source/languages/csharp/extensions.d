@@ -83,15 +83,15 @@ public final class CSharpProjectOptions {
 	}
 
 	private void writeFiles(StringBuilder builder, string[] outputDirs, string schemaName, string fileName) {
-		foreach (op; outputDirs) {
+		foreach (od; outputDirs) {
 			if (outputMode == CSharpOutputMode.FilePerObject && fileName != string.init) {
-				string outDir = buildNormalizedPath(op, schemaName);
+				string outDir = buildNormalizedPath(od, schemaName);
 				if(!exists(outDir)) {
 					mkdirRecurse(outDir);
 				}
 				writeFile(builder, outDir, fileName);
 			} else {
-				string outDir = buildNormalizedPath(op);
+				string outDir = buildNormalizedPath(od);
 				if(!exists(outDir)) {
 					mkdirRecurse(outDir);
 				}
@@ -116,8 +116,8 @@ public final class CSharpProjectOptions {
 
 	private void cleanFiles(string[] outputDirs) {
 		foreach(od; outputDirs) {
-			writeln("Clean:\t" ~ od);
-			auto rfFiles = dirEntries(od, SpanMode.depth).filter!(f => f.name.endsWith(".cs"));
+			writeln("Clean:\t" ~ buildNormalizedPath(od));
+			auto rfFiles = dirEntries(buildNormalizedPath(od), SpanMode.depth).filter!(f => f.name.endsWith(".cs"));
 			foreach(rf; rfFiles) {
 				if (readText(rf).canFind("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Hotwire.Generator\", ")) {
 					std.file.remove(rf);
