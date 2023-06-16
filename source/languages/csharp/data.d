@@ -41,7 +41,10 @@ public void generateDataNetwork(Network m, StringBuilder builder, CSharpProjectO
 	if (opts.hasSerializer(CSharpSerializers.SystemTextJson)) {
 		builder.tabs(tabLevel).appendLine("[JsonConstructor]");
 	}
-    builder.tabs(tabLevel).appendLine("public {0}() { }", m.name);
+	builder.tabs(tabLevel++).appendLine("public {0}() {", m.name);
+	builder.tabs(tabLevel).appendLine("PostInitializer();");
+	builder.tabs(--tabLevel).appendLine("}");
+	builder.tabs(tabLevel).appendLine("partial void PostInitializer();");
     builder.appendLine();
 
     if (!isClient)
@@ -178,9 +181,12 @@ public void generateDataView(View table, StringBuilder builder, CSharpProjectOpt
 {
 	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Hotwire.Generator\", \"2.0.0.0\")]");
 	builder.tabs(tabLevel).appendLine("[System.Diagnostics.DebuggerNonUserCode()]");
-	builder.tabs(tabLevel).appendLine("public class {0}{1}", table.name, ((!isClient && opts.serverUIBindings) || (isClient && opts.clientUIBindings)) ? " : BindingObject" : string.init);
+	builder.tabs(tabLevel).appendLine("public partial class {0}{1}", table.name, ((!isClient && opts.serverUIBindings) || (isClient && opts.clientUIBindings)) ? " : BindingObject" : string.init);
 	builder.tabs(tabLevel++).appendLine("{");
-	builder.tabs(tabLevel).appendLine("public {0}() { }", table.name);
+	builder.tabs(tabLevel++).appendLine("public {0}() {", table.name);
+	builder.tabs(tabLevel).appendLine("PostInitializer();");
+	builder.tabs(--tabLevel).appendLine("}");
+	builder.tabs(tabLevel).appendLine("partial void PostInitializer();");
 	foreach (c; table.members) {
 		c.generateDataSqlMember(builder, opts, isClient, tabLevel);
 	}
