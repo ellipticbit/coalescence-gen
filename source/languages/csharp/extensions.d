@@ -37,44 +37,39 @@ public enum CSharpCompatibility {
 	NET60,
 }
 
+public enum CSharpGeneratorMode {
+	Server,
+	Client,
+	Database,
+}
+
 public final class CSharpProjectOptions {
+	public CSharpGeneratorMode mode;
 	public CSharpOutputMode outputMode;
-	public string[] clientOutputPaths;
-	public string[] serverOutputPaths;
+	public string outputPath;
 	public string contextName;
-	public string serverNamespace;
-	public string clientNamespace;
-	public bool serverUIBindings;
-	public bool clientUIBindings;
+	public string namespace;
+	public bool uiBindings;
 	public bool enableEFExtensions;
 	public CSharpCompatibility compatibility;
 	public CSharpSerializers[] serializers;
 
 	public this (Tag root, string databaseName, string projectRoot) {
-		this.outputMode = to!CSharpOutputMode(root.getAttribute!string("output", "FilePerObject"));
+		mode = CSharpGeneratorMode.Database;
+		if (root.name.toUpper() == "Server".toUpper()) mode = CSharpGeneratorMode.Server;
+		if (root.name.toUpper() == "Client".toUpper()) mode = CSharpGeneratorMode.Client;
+		this.outputMode = to!CSharpOutputMode(root.getAttribute!string("outputMode", "FilePerObject"));
 		this.contextName = root.getAttribute!string("contextName", databaseName);
-		this.clientNamespace = root.getAttribute!string("clientNamespace", databaseName);
-		this.serverNamespace = root.getAttribute!string("serverNamespace", databaseName);
-		this.clientUIBindings = root.getAttribute!bool("clientBindings", false);
-		this.serverUIBindings = root.getAttribute!bool("serverBindings", false);
+		this.namespace = root.getAttribute!string("namespace", databaseName);
+		this.uiBindings = root.getAttribute!bool("uiBindings", false);
 		this.enableEFExtensions = root.getAttribute!bool("enableEFExtensions", false);
+		this.compatibility = to!CSharpCompatibility(root.getAttribute!string("compatibility", "NET60"));
 		version(Posix) {
-		foreach(cop; root.getTagValues("clientPaths")){
-			this.clientOutputPaths ~= buildNormalizedPath(projectRoot, cop.get!string().replace("\\", "/"));
-		}
-		foreach(sop; root.getTagValues("serverPaths")) {
-			this.serverOutputPaths ~= buildNormalizedPath(projectRoot, sop.get!string().replace("\\", "/"));
-		}
+		this.outputPath = buildNormalizedPath(projectRoot, root.expectAttribute!string("outputPath").replace("\\", "/"));
 		}
 		version(Windows) {
-		foreach(cop; root.getTagValues("clientPaths")){
-			this.clientOutputPaths ~= buildNormalizedPath(projectRoot, cop.get!string().replace("/", "\\"));
+		this.outputPath = buildNormalizedPath(projectRoot, root.expectAttribute!string("outputPath").replace("/", "\\"));
 		}
-		foreach(sop; root.getTagValues("serverPaths")) {
-			this.serverOutputPaths ~= buildNormalizedPath(projectRoot, sop.get!string().replace("/", "\\"));
-		}
-		}
-		this.compatibility = to!CSharpCompatibility(root.getAttribute!string("compatibility", "NET60"));
 		foreach(sop; root.getTagValues("serializers")) {
 			this.serializers ~= to!CSharpSerializers(sop.get!string());
 		}
@@ -84,54 +79,38 @@ public final class CSharpProjectOptions {
 		return serializers.any!(a => a == serializer);
 	}
 
-	public void writeFileServer(StringBuilder builder, string schemaName, string objectName = string.init) {
-		writeFiles(builder, serverOutputPaths, schemaName, objectName);
-	}
-
-	public void writeFileClient(StringBuilder builder, string schemaName, string objectName = string.init) {
-		writeFiles(builder, clientOutputPaths, schemaName, objectName);
-	}
-
-	private void writeFiles(StringBuilder builder, string[] outputDirs, string schemaName, string fileName) {
-		foreach (od; outputDirs) {
-			if (outputMode == CSharpOutputMode.FilePerObject && fileName != string.init) {
-				string outDir = buildNormalizedPath(od, schemaName);
-				if(!exists(outDir)) {
-					mkdirRecurse(outDir);
-				}
-				writeFile(builder, outDir, fileName);
-			} else {
-				string outDir = buildNormalizedPath(od);
-				if(!exists(outDir)) {
-					mkdirRecurse(outDir);
-				}
-				writeFile(builder, outDir, schemaName);
+	public void writeFile(StringBuilder builder, string schemaName, string fileName = string.init) {
+		if (outputMode == CSharpOutputMode.FilePerObject && fileName != string.init) {
+			string outDir = buildNormalizedPath(outputPath, schemaName);
+			if(!exists(outDir)) {
+				mkdirRecurse(outDir);
 			}
+
+			string op = setExtension(buildNormalizedPath(outDir, fileName.uppercaseFirst()), ".cs");
+			writeln("Output:\t" ~ op);
+			auto fsfile = File(op, "w");
+			fsfile.write(builder);
+			fsfile.close();
+		} else {
+			string outDir = buildNormalizedPath(outputPath);
+			if(!exists(outDir)) {
+				mkdirRecurse(outDir);
+			}
+
+			string op = setExtension(buildNormalizedPath(outDir, fileName.uppercaseFirst()), ".cs");
+			writeln("Output:\t" ~ op);
+			auto fsfile = File(op, "w");
+			fsfile.write(builder);
+			fsfile.close();
 		}
 	}
 
-	//Write generated code to disk
-	private void writeFile(StringBuilder builder, string outputDir, string fileName) {
-		string outputPath = setExtension(buildNormalizedPath(outputDir, fileName.uppercaseFirst()), ".cs");
-		writeln("Output:\t" ~ outputPath);
-		auto fsfile = File(outputPath, "w");
-		fsfile.write(builder);
-		fsfile.close();
-	}
-
 	public void cleanFiles() {
-		cleanFiles(serverOutputPaths);
-		cleanFiles(clientOutputPaths);
-	}
-
-	private void cleanFiles(string[] outputDirs) {
-		foreach(od; outputDirs) {
-			writeln("Clean:\t" ~ buildNormalizedPath(od));
-			auto rfFiles = dirEntries(buildNormalizedPath(od), SpanMode.depth).filter!(f => f.name.endsWith(".cs"));
-			foreach(rf; rfFiles) {
-				if (readText(rf).canFind("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Hotwire.Generator\", ")) {
-					std.file.remove(rf);
-				}
+		writeln("Clean:\t" ~ buildNormalizedPath(outputPath));
+		auto rfFiles = dirEntries(buildNormalizedPath(outputPath), SpanMode.depth).filter!(f => f.name.endsWith(".cs"));
+		foreach(rf; rfFiles) {
+			if (readText(rf).canFind("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Hotwire.Generator\", ")) {
+				std.file.remove(rf);
 			}
 		}
 	}

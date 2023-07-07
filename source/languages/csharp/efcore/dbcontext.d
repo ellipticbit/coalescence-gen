@@ -19,7 +19,7 @@ public void generateEFContext(CSharpProjectOptions opts, Schema[] schemata) {
 	auto sb = new StringBuilder(8_388_608);
 	int tabLevel = 1;
 
-	sb.appendLine("namespace {0}", opts.serverNamespace);
+	sb.appendLine("namespace {0}", opts.namespace);
 	sb.appendLine("{");
 	sb.tabs(tabLevel).appendLine("using System;");
 	sb.tabs(tabLevel).appendLine("using System.Collections.Generic;");
@@ -98,7 +98,7 @@ public void generateEFContext(CSharpProjectOptions opts, Schema[] schemata) {
 	sb.tabs(--tabLevel).appendLine("}");
 	sb.appendLine("}");
 
-	opts.writeFileServer(sb, opts.contextName.cleanName());
+	opts.writeFile(sb, opts.contextName.cleanName());
 }
 
 private void generateSchemaModel(CSharpProjectOptions opts, StringBuilder sb, Schema s, int tabLevel) {

@@ -1,7 +1,10 @@
 project {
-	generators:csharp serverNamespace="Hotwire.Test.Server" clientNamespace="Hotwire.Test.Client" clientBindings=true {
-		clientPaths "..\\output\\client"
-		serverPaths "..\\output\\server"
-		serializers "SystemTextJson" "NewtonsoftJson" "DataContract"
+	generators:csharp {
+		client outputPath="..\\output\\client" namespace="Hotwire.Test.Client" uiBindings=true {
+			serializers "SystemTextJson" "NewtonsoftJson" "DataContract"
+		}
+		server outputPath="..\\output\\server" namespace="Hotwire.Test.Server" {
+			serializers "SystemTextJson" "NewtonsoftJson" "DataContract"
+		}
 	}
 }

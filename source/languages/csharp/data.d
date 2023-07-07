@@ -25,7 +25,7 @@ public void generateDataNetwork(Network m, StringBuilder builder, CSharpProjectO
     if (opts.hasSerializer(CSharpSerializers.NewtonsoftJson) || opts.hasSerializer(CSharpSerializers.DataContract)) {
         builder.tabs(tabLevel).appendLine("[DataContract]");
     }
-	if ((!isClient && opts.serverUIBindings) || (isClient && opts.clientUIBindings)) {
+	if (opts.uiBindings) {
 		builder.tabs(tabLevel).appendLine("public sealed partial class {0} : BindingObject", m.name);
 	}
 	else {
@@ -81,8 +81,8 @@ private void generateDataNetworkMember(DataMember mm, StringBuilder builder, CSh
 	builder.appendLine();
 	builder.tabs(tabLevel).appendLine("private {0} _{1};", generateType(mm.type, false), mm.name);
 	builder.generateBindingMetadata(mm.transport.isNullOrWhitespace() ? mm.name : mm.transport, !mm.isNullable, opts, tabLevel);
-	if ((!isClient && opts.serverUIBindings) || (isClient && opts.clientUIBindings)) {
-		builder.tabs(tabLevel).appendLine("public {0} {1} { get { return _{1}; } {2}set { _{1} = value; {3}} }", generateType(mm.type, false), mm.name, mm.isReadOnly ? "private " : string.init, generateSetter(mm.name, ((!isClient && opts.serverUIBindings) || (isClient && opts.clientUIBindings))));
+	if (opts.uiBindings) {
+		builder.tabs(tabLevel).appendLine("public {0} {1} { get { return _{1}; } {2}set { _{1} = value; {3}} }", generateType(mm.type, false), mm.name, mm.isReadOnly ? "private " : string.init, generateSetter(mm.name, (opts.uiBindings)));
 	} else {
 		builder.tabs(tabLevel).appendLine("public {0} {1} { get { return _{1}; } {2}set { _{1} = value; } }", generateType(mm.type, false), mm.name, mm.isReadOnly ? "private " : string.init);
 	}
@@ -97,9 +97,9 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
         builder.tabs(tabLevel).appendLine("[DataContract]");
     }
 	if (!isClient && opts.enableEFExtensions) {
-		builder.tabs(tabLevel).appendLine("public partial class {0} : {1}IDatabaseMergeable<{0}>", table.name, ((!isClient && opts.serverUIBindings) || (isClient && opts.clientUIBindings)) ? "BindingObject, " : string.init);
+		builder.tabs(tabLevel).appendLine("public partial class {0} : {1}IDatabaseMergeable<{0}>", table.name, (opts.uiBindings) ? "BindingObject, " : string.init);
 	}
-	else if ((!isClient && opts.serverUIBindings) || (isClient && opts.clientUIBindings)) {
+	else if (opts.uiBindings) {
 		builder.tabs(tabLevel).appendLine("public partial class {0} : BindingObject", table.name);
 	}
 	else {
@@ -113,7 +113,7 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 	}
 	builder.tabs(tabLevel++).appendLine("public {0}() {", table.name);
 	foreach (fk; fkTarget.filter!(a => a.targetTable.sqlId == table.sqlId && a.direction != ForeignKeyDirection.OneToOne)) {
-		builder.tabs(tabLevel).appendLine("this.{0} = new {1}<{2}>();", fk.targetId(), (((!isClient && opts.serverUIBindings) || (isClient && opts.clientUIBindings)) ? "ThreadObservableCollection" : "HashSet"), fk.sourceTable.getCSharpFullName());
+		builder.tabs(tabLevel).appendLine("this.{0} = new {1}<{2}>();", fk.targetId(), ((opts.uiBindings) ? "ThreadObservableCollection" : "HashSet"), fk.sourceTable.getCSharpFullName());
 	}
 	builder.tabs(tabLevel).appendLine("PostInitializer();");
 	builder.tabs(--tabLevel).appendLine("}");
@@ -123,20 +123,20 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 		builder.appendLine();
 		builder.tabs(2).appendLine("private {0} _{1};", getTypeFromSqlType(c.sqlType, c.isNullable), c.name);
 		builder.generateBindingMetadata(c.transport.isNullOrWhitespace() ? c.name : c.transport, !c.isNullable, opts, tabLevel);
-		builder.tabs(2).appendLine("public {0} {1} { get { return _{1}; } set { {2} } }", getTypeFromSqlType(c.sqlType, c.isNullable), c.name, generateSetter(c.name, ((!isClient && opts.serverUIBindings) || (isClient && opts.clientUIBindings))));
+		builder.tabs(2).appendLine("public {0} {1} { get { return _{1}; } set { {2} } }", getTypeFromSqlType(c.sqlType, c.isNullable), c.name, generateSetter(c.name, (opts.uiBindings)));
 	}
 
 	foreach (fk; fkTarget) {
 		builder.appendLine();
 		if (fk.direction != ForeignKeyDirection.OneToOne) {
-			builder.tabs(2).appendLine("private {0}<{1}> _{2};", (((!isClient && opts.serverUIBindings) || (isClient && opts.clientUIBindings)) ? "ThreadObservableCollection" : "ICollection"), fk.sourceTable.getCSharpFullName(), fk.targetId());
+			builder.tabs(2).appendLine("private {0}<{1}> _{2};", ((opts.uiBindings) ? "ThreadObservableCollection" : "ICollection"), fk.sourceTable.getCSharpFullName(), fk.targetId());
 			builder.generateBindingMetadata(fk.targetId(), false, opts, tabLevel);
-			builder.tabs(2).appendLine("public virtual {0}<{1}> {2} { get { return _{2}; } set { {3} } }", (((!isClient && opts.serverUIBindings) || (isClient && opts.clientUIBindings)) ? "ThreadObservableCollection" : "ICollection"), fk.sourceTable.getCSharpFullName(), fk.targetId(), generateSetter(fk.targetId(), ((!isClient && opts.serverUIBindings) || (isClient && opts.clientUIBindings))));
+			builder.tabs(2).appendLine("public virtual {0}<{1}> {2} { get { return _{2}; } set { {3} } }", ((opts.uiBindings) ? "ThreadObservableCollection" : "ICollection"), fk.sourceTable.getCSharpFullName(), fk.targetId(), generateSetter(fk.targetId(), (opts.uiBindings)));
 		}
 		else {
 			builder.tabs(2).appendLine("private {0} _{1};", fk.sourceTable.getCSharpFullName(), fk.targetId());
 			builder.generateBindingMetadata(fk.targetId(), false, opts, tabLevel);
-			builder.tabs(2).appendLine("public virtual {0} {1} { get { return _{1}; } set { {2} } }", fk.sourceTable.getCSharpFullName(), fk.targetId(), generateSetter(fk.targetId(), ((!isClient && opts.serverUIBindings) || (isClient && opts.clientUIBindings))));
+			builder.tabs(2).appendLine("public virtual {0} {1} { get { return _{1}; } set { {2} } }", fk.sourceTable.getCSharpFullName(), fk.targetId(), generateSetter(fk.targetId(), (opts.uiBindings)));
 		}
 	}
 
@@ -145,12 +145,12 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 		if (fk.direction != ForeignKeyDirection.ManyToMany) {
 			builder.tabs(tabLevel).appendLine("private {0} _{1};", fk.targetTable.getCSharpFullName(), fk.sourceId());
 			builder.generateBindingMetadata(fk.sourceId(), false, opts, tabLevel);
-			builder.tabs(tabLevel).appendLine("public virtual {0} {1} { get { return _{1}; } set { {2} } }", fk.targetTable.getCSharpFullName(), fk.sourceId(), generateSetter(fk.sourceId(), ((!isClient && opts.serverUIBindings) || (isClient && opts.clientUIBindings))));
+			builder.tabs(tabLevel).appendLine("public virtual {0} {1} { get { return _{1}; } set { {2} } }", fk.targetTable.getCSharpFullName(), fk.sourceId(), generateSetter(fk.sourceId(), (opts.uiBindings)));
 		}
 		else {
-			builder.tabs(tabLevel).appendLine("private {0}<{1}> _{2};", (((!isClient && opts.serverUIBindings) || (isClient && opts.clientUIBindings)) ? "ThreadObservableCollection" : "ICollection"), fk.targetTable.getCSharpFullName(), fk.sourceId());
+			builder.tabs(tabLevel).appendLine("private {0}<{1}> _{2};", ((opts.uiBindings) ? "ThreadObservableCollection" : "ICollection"), fk.targetTable.getCSharpFullName(), fk.sourceId());
 			builder.generateBindingMetadata(fk.sourceId(), false, opts, tabLevel);
-			builder.tabs(tabLevel).appendLine("public virtual {0}<{1}> {2} { get { return _{2}; } set { {3} } }", (((!isClient && opts.serverUIBindings) || (isClient && opts.clientUIBindings)) ? "ThreadObservableCollection" : "ICollection"), fk.targetTable.getCSharpFullName(), fk.sourceId(), generateSetter(fk.sourceId(), ((!isClient && opts.serverUIBindings) || (isClient && opts.clientUIBindings))));
+			builder.tabs(tabLevel).appendLine("public virtual {0}<{1}> {2} { get { return _{2}; } set { {3} } }", ((opts.uiBindings) ? "ThreadObservableCollection" : "ICollection"), fk.targetTable.getCSharpFullName(), fk.sourceId(), generateSetter(fk.sourceId(), (opts.uiBindings)));
 		}
 	}
 
@@ -181,7 +181,7 @@ public void generateDataView(View table, StringBuilder builder, CSharpProjectOpt
 {
 	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Hotwire.Generator\", \"2.0.0.0\")]");
 	builder.tabs(tabLevel).appendLine("[System.Diagnostics.DebuggerNonUserCode()]");
-	builder.tabs(tabLevel).appendLine("public partial class {0}{1}", table.name, ((!isClient && opts.serverUIBindings) || (isClient && opts.clientUIBindings)) ? " : BindingObject" : string.init);
+	builder.tabs(tabLevel).appendLine("public partial class {0}{1}", table.name, (opts.uiBindings) ? " : BindingObject" : string.init);
 	builder.tabs(tabLevel++).appendLine("{");
 	builder.tabs(tabLevel++).appendLine("public {0}() {", table.name);
 	builder.tabs(tabLevel).appendLine("PostInitializer();");
@@ -197,7 +197,7 @@ public void generateDataUdt(Udt udt, StringBuilder builder, CSharpProjectOptions
 {
 	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Hotwire.Generator\", \"2.0.0.0\")]");
 	builder.tabs(tabLevel).appendLine("[System.Diagnostics.DebuggerNonUserCode()]");
-	builder.tabs(tabLevel).appendLine("public partial class {0}Udt{1}", udt.name, ((!isClient && opts.serverUIBindings) || (isClient && opts.clientUIBindings)) ? " : BindingObject" : string.init);
+	builder.tabs(tabLevel).appendLine("public partial class {0}Udt{1}", udt.name, (opts.uiBindings) ? " : BindingObject" : string.init);
 	builder.tabs(tabLevel++).appendLine("{");
 	builder.tabs(tabLevel++).appendLine("public {0}() {", udt.name);
 	builder.tabs(tabLevel).appendLine("PostInitializer();");
@@ -217,8 +217,8 @@ private void generateDataSqlMember(DataMember mm, StringBuilder builder, CSharpP
 	builder.appendLine();
 	builder.tabs(tabLevel).appendLine("private {0} _{1};", getTypeFromSqlType(mm.sqlType, mm.isNullable), mm.name);
 	builder.generateBindingMetadata(mm.transport.isNullOrWhitespace() ? mm.name : mm.transport, !mm.isNullable, opts, tabLevel);
-	if ((!isClient && opts.serverUIBindings) || (isClient && opts.clientUIBindings)) {
-		builder.tabs(tabLevel).appendLine("public {0} {1} { get { return _{1}; } {2}set { _{1} = value; {3}} }", getTypeFromSqlType(mm.sqlType, mm.isNullable), mm.name, mm.isReadOnly ? "private " : string.init, generateSetter(mm.name, ((!isClient && opts.serverUIBindings) || (isClient && opts.clientUIBindings))));
+	if (opts.uiBindings) {
+		builder.tabs(tabLevel).appendLine("public {0} {1} { get { return _{1}; } {2}set { _{1} = value; {3}} }", getTypeFromSqlType(mm.sqlType, mm.isNullable), mm.name, mm.isReadOnly ? "private " : string.init, generateSetter(mm.name, (opts.uiBindings)));
 	} else {
 		builder.tabs(tabLevel).appendLine("public {0} {1} { get { return _{1}; } {2}set { _{1} = value; } }", getTypeFromSqlType(mm.sqlType, mm.isNullable), mm.name, mm.isReadOnly ? "private " : string.init);
 	}
