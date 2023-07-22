@@ -25,59 +25,56 @@ public void generateCSharp(Project prj, CSharpProjectOptions opts)
 {
 	opts.cleanFiles();
 
-	if (opts.mode == CSharpGeneratorMode.Database) {
-		if (prj.hasDatabaseItems) {
-			generateEFContext(opts, prj.serverSchema);
-		}
+	if (prj.hasDatabaseItems) {
+		generateEFContext(opts, prj.serverSchema);
 	}
-	else {
-		if (opts.outputMode == CSharpOutputMode.SingleFile) {
-			if (opts.mode == CSharpGeneratorMode.Server) {
-				auto serverBuilder = new StringBuilder(8_388_608);
+
+	if (opts.outputMode == CSharpOutputMode.SingleFile) {
+		if (opts.mode == CSharpGeneratorMode.Server) {
+			auto serverBuilder = new StringBuilder(8_388_608);
+			serverBuilder.generateUsingsServerComplete(prj, opts);
+			foreach(ns; prj.serverSchema) {
+				ns.generateSchemaServer(serverBuilder, prj, opts);
+			}
+			opts.writeFile(serverBuilder, opts.contextName);
+		}
+
+		if (opts.mode == CSharpGeneratorMode.Client) {
+			auto clientBuilder = new StringBuilder(8_388_608);
+			clientBuilder.generateUsingsClientComplete(prj, opts);
+			foreach(ns; prj.clientSchema) {
+				ns.generateSchemaClient(clientBuilder, prj, opts);
+			}
+			opts.writeFile(clientBuilder, opts.contextName);
+		}
+	} else if (opts.outputMode == CSharpOutputMode.FilePerSchema) {
+		if (opts.mode == CSharpGeneratorMode.Server) {
+			foreach(ns; prj.serverSchema) {
+				auto serverBuilder = new StringBuilder(1_048_576);
 				serverBuilder.generateUsingsServerComplete(prj, opts);
-				foreach(ns; prj.serverSchema) {
-					ns.generateSchemaServer(serverBuilder, prj, opts);
-				}
-				opts.writeFile(serverBuilder, opts.contextName);
+				ns.generateSchemaServer(serverBuilder, prj, opts);
+				opts.writeFile(serverBuilder, ns.name);
 			}
+		}
 
-			if (opts.mode == CSharpGeneratorMode.Client) {
-				auto clientBuilder = new StringBuilder(8_388_608);
+		if (opts.mode == CSharpGeneratorMode.Client) {
+			foreach(ns; prj.clientSchema) {
+				auto clientBuilder = new StringBuilder(1_048_576);
 				clientBuilder.generateUsingsClientComplete(prj, opts);
-				foreach(ns; prj.clientSchema) {
-					ns.generateSchemaClient(clientBuilder, prj, opts);
-				}
-				opts.writeFile(clientBuilder, opts.contextName);
+				ns.generateSchemaClient(clientBuilder, prj, opts);
+				opts.writeFile(clientBuilder, ns.name);
 			}
-		} else if (opts.outputMode == CSharpOutputMode.FilePerSchema) {
-			if (opts.mode == CSharpGeneratorMode.Server) {
-				foreach(ns; prj.serverSchema) {
-					auto serverBuilder = new StringBuilder(1_048_576);
-					serverBuilder.generateUsingsServerComplete(prj, opts);
-					ns.generateSchemaServer(serverBuilder, prj, opts);
-					opts.writeFile(serverBuilder, ns.name);
-				}
+		}
+	} else if (opts.outputMode == CSharpOutputMode.FilePerObject) {
+		if (opts.mode == CSharpGeneratorMode.Server) {
+			foreach(ns; prj.serverSchema) {
+				ns.generateSchemaServer(null, prj, opts);
 			}
+		}
 
-			if (opts.mode == CSharpGeneratorMode.Client) {
-				foreach(ns; prj.clientSchema) {
-					auto clientBuilder = new StringBuilder(1_048_576);
-					clientBuilder.generateUsingsClientComplete(prj, opts);
-					ns.generateSchemaClient(clientBuilder, prj, opts);
-					opts.writeFile(clientBuilder, ns.name);
-				}
-			}
-		} else if (opts.outputMode == CSharpOutputMode.FilePerObject) {
-			if (opts.mode == CSharpGeneratorMode.Server) {
-				foreach(ns; prj.serverSchema) {
-					ns.generateSchemaServer(null, prj, opts);
-				}
-			}
-
-			if (opts.mode == CSharpGeneratorMode.Client) {
-				foreach(ns; prj.clientSchema) {
-					ns.generateSchemaClient(null, prj, opts);
-				}
+		if (opts.mode == CSharpGeneratorMode.Client) {
+			foreach(ns; prj.clientSchema) {
+				ns.generateSchemaClient(null, prj, opts);
 			}
 		}
 	}
@@ -103,11 +100,13 @@ private void generateSchemaServer(Schema ns, StringBuilder schemaBuilder, Projec
 		foreach(d; ns.udts.values) {
 			generateDataUdt(d, schemaBuilder, opts, false, 1);
 		}
-		foreach(s; ns.services.values) {
-			generateHttpServer(schemaBuilder, s, 1);
-		}
-		foreach(s; ns.sockets.values) {
-			generateWebsocketServer(schemaBuilder, s, 1);
+		if (opts.mode != CSharpGeneratorMode.Database) {
+			foreach(s; ns.services.values) {
+				generateHttpServer(schemaBuilder, s, 1);
+			}
+			foreach(s; ns.sockets.values) {
+				generateWebsocketServer(schemaBuilder, s, 1);
+			}
 		}
 		schemaBuilder.appendLine("}");
 	} else {
@@ -160,25 +159,27 @@ private void generateSchemaServer(Schema ns, StringBuilder schemaBuilder, Projec
 			builder.appendLine();
 			opts.writeFile(builder, ns.name, d.name);
 		}
-		foreach(s; ns.services.values) {
-			auto builder = new StringBuilder(32_768);
-			builder.generateUsingsServerHttp();
-			builder.appendLine("namespace {0}", ns.getCSharpFqn(opts));
-			builder.appendLine("{");
-			generateHttpServer(builder, s, 1);
-			builder.appendLine("}");
-			builder.appendLine();
-			opts.writeFile(builder, ns.name, s.name);
-		}
-		foreach(s; ns.sockets.values) {
-			auto builder = new StringBuilder(32_768);
-			builder.generateUsingsServerSocket();
-			builder.appendLine("namespace {0}", ns.getCSharpFqn(opts));
-			builder.appendLine("{");
-			generateWebsocketServer(builder, s, 1);
-			builder.appendLine("}");
-			builder.appendLine();
-			opts.writeFile(builder, ns.name, s.name);
+		if (opts.mode != CSharpGeneratorMode.Database) {
+			foreach(s; ns.services.values) {
+				auto builder = new StringBuilder(32_768);
+				builder.generateUsingsServerHttp();
+				builder.appendLine("namespace {0}", ns.getCSharpFqn(opts));
+				builder.appendLine("{");
+				generateHttpServer(builder, s, 1);
+				builder.appendLine("}");
+				builder.appendLine();
+				opts.writeFile(builder, ns.name, s.name);
+			}
+			foreach(s; ns.sockets.values) {
+				auto builder = new StringBuilder(32_768);
+				builder.generateUsingsServerSocket();
+				builder.appendLine("namespace {0}", ns.getCSharpFqn(opts));
+				builder.appendLine("{");
+				generateWebsocketServer(builder, s, 1);
+				builder.appendLine("}");
+				builder.appendLine();
+				opts.writeFile(builder, ns.name, s.name);
+			}
 		}
 	}
 }
@@ -203,11 +204,13 @@ private void generateSchemaClient(Schema ns, StringBuilder schemaBuilder, Projec
 		foreach(d; ns.udts.values) {
 			generateDataUdt(d, schemaBuilder, opts, true, 1);
 		}
-		foreach(s; ns.services.values) {
-			generateHttpClient(schemaBuilder, s, 1);
-		}
-		foreach(s; ns.sockets.values) {
-			generateWebsocketClient(schemaBuilder, s, 1);
+		if (opts.mode != CSharpGeneratorMode.Database) {
+			foreach(s; ns.services.values) {
+				generateHttpClient(schemaBuilder, s, 1);
+			}
+			foreach(s; ns.sockets.values) {
+				generateWebsocketClient(schemaBuilder, s, 1);
+			}
 		}
 		schemaBuilder.appendLine("}");
 	} else {
@@ -260,25 +263,27 @@ private void generateSchemaClient(Schema ns, StringBuilder schemaBuilder, Projec
 			builder.appendLine();
 			opts.writeFile(builder, ns.name, d.name);
 		}
-		foreach(s; ns.services.values) {
-			auto builder = new StringBuilder(32_768);
-			builder.generateUsingsClientHttp();
-			builder.appendLine("namespace {0}", ns.getCSharpFqn(opts));
-			builder.appendLine("{");
-			generateHttpClient(builder, s, 1);
-			builder.appendLine("}");
-			builder.appendLine();
-			opts.writeFile(builder, ns.name, s.name);
-		}
-		foreach(s; ns.sockets.values) {
-			auto builder = new StringBuilder(32_768);
-			builder.generateUsingsClientSocket();
-			builder.appendLine("namespace {0}", ns.getCSharpFqn(opts));
-			builder.appendLine("{");
-			generateWebsocketClient(builder, s, 1);
-			builder.appendLine("}");
-			builder.appendLine();
-			opts.writeFile(builder, ns.name, s.name);
+		if (opts.mode != CSharpGeneratorMode.Database) {
+			foreach(s; ns.services.values) {
+				auto builder = new StringBuilder(32_768);
+				builder.generateUsingsClientHttp();
+				builder.appendLine("namespace {0}", ns.getCSharpFqn(opts));
+				builder.appendLine("{");
+				generateHttpClient(builder, s, 1);
+				builder.appendLine("}");
+				builder.appendLine();
+				opts.writeFile(builder, ns.name, s.name);
+			}
+			foreach(s; ns.sockets.values) {
+				auto builder = new StringBuilder(32_768);
+				builder.generateUsingsClientSocket();
+				builder.appendLine("namespace {0}", ns.getCSharpFqn(opts));
+				builder.appendLine("{");
+				generateWebsocketClient(builder, s, 1);
+				builder.appendLine("}");
+				builder.appendLine();
+				opts.writeFile(builder, ns.name, s.name);
+			}
 		}
 	}
 }
