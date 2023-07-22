@@ -97,7 +97,7 @@ public final class CSharpProjectOptions {
 				mkdirRecurse(outDir);
 			}
 
-			string op = setExtension(buildNormalizedPath(outDir, fileName.uppercaseFirst()), ".cs");
+			string op = setExtension(buildNormalizedPath(outDir, schemaName.uppercaseFirst()), ".cs");
 			writeln("Output:\t" ~ op);
 			auto fsfile = File(op, "w");
 			fsfile.write(builder);
