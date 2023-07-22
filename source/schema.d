@@ -91,7 +91,9 @@ public final class Project {
 		auto nn = root.maybe.namespaces["generators"];
 		foreach(gt; nn.tags){
 			if (gt.name.toUpper() == "csharp".toUpper()) {
-				csharpOptions ~= new CSharpProjectOptions(gt, databaseName, projectRoot);
+				foreach (pt; gt.tags) {
+					csharpOptions ~= new CSharpProjectOptions(pt, databaseName, projectRoot);
+				}
 			}
 		}
 
