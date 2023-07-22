@@ -25,7 +25,7 @@ public void generateCSharp(Project prj, CSharpProjectOptions opts)
 {
 	opts.cleanFiles();
 
-	if (prj.hasDatabaseItems) {
+	if (prj.hasDatabaseItems && opts.mode != CSharpGeneratorMode.Client) {
 		generateEFContext(opts, prj.serverSchema);
 	}
 
