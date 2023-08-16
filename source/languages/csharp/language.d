@@ -1,6 +1,7 @@
 module hwgen.languages.csharp.language;
 
 import hwgen.schema;
+import hwgen.types;
 
 public string getTypeFromSqlType(SqlDbType type, bool isNullable)
 {
@@ -42,4 +43,13 @@ public string getValueTypeFromSqlType(SqlDbType type)
 	if (type == SqlDbType.Timestamp) return "DatabaseValueType.ByteArray";
 	if (type == SqlDbType.Variant) return "DatabaseValueType.Object";
 	return string.init;
+}
+
+public bool isPrimitiveType(TypeComplex type, TypePrimitives primitive) {
+	if (typeid(type.type) == typeid(TypePrimitive)) {
+		TypePrimitive p = cast(TypePrimitive)type.type;
+		return p.primitive == primitive;
+	}
+
+	return false;
 }

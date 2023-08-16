@@ -7,6 +7,7 @@ import hwgen.stringbuilder;
 import hwgen.utility;
 
 import hwgen.languages.csharp.extensions;
+import hwgen.languages.csharp.language;
 import hwgen.languages.csharp.generator;
 
 import std.algorithm.iteration;
@@ -209,7 +210,11 @@ private string generateServerRoute(TypeComplex[] routeParams) {
 	string route = string.init;
 	foreach(rp; routeParams) {
 		if(rp.type !is null) {
-			route ~= "{" ~ cleanName(rp.name) ~ ":" ~ generateType(rp, false, rp.hasDefault) ~ "}/";
+			if (rp.isPrimitiveType(TypePrimitives.String) || rp.isPrimitiveType(TypePrimitives.Base64String) || rp.isPrimitiveType(TypePrimitives.Base64ByteArray)) {
+				route ~= "{" ~ cleanName(rp.name) ~ "}/";
+			} else {
+				route ~= "{" ~ cleanName(rp.name) ~ ":" ~ generateType(rp, false, rp.hasDefault) ~ "}/";
+			}
 		}
 		else {
 			route ~= cleanName(rp.name) ~ "/";
