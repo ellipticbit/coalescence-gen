@@ -209,7 +209,7 @@ private string generateServerRoute(TypeComplex[] routeParams) {
 	string route = string.init;
 	foreach(rp; routeParams) {
 		if(rp.type !is null) {
-			route ~= "{" ~ cleanName(rp.name) ~ ":" ~ generateType(rp, false, rp.hasDefault) ~ "}";
+			route ~= "{" ~ cleanName(rp.name) ~ ":" ~ generateType(rp, false, rp.hasDefault) ~ "}/";
 		}
 		else {
 			route ~= cleanName(rp.name) ~ "/";
