@@ -184,7 +184,7 @@ private void generateClientMethod(StringBuilder builder, HttpService s, HttpServ
 	generateClientMethodParams(builder, sm);
 	builder.appendLine(")");
 	builder.tabs(tabLevel++).appendLine("{");
-	builder.tabs(tabLevel++).appendLine("var response = await requests.CreateRequest({0}).{1}()", s.getRequest(), to!string(sm.verb).capitalize());
+	builder.tabs(tabLevel++).appendLine("await using var response = await requests.CreateRequest({0}).{1}()", s.getRequest(), to!string(sm.verb).capitalize());
 
 	if (s.route.length > 0) {
 		builder.tabs(tabLevel).appendLine(".Path(\"{0}\")", s.route.join("\", \""));
