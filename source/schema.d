@@ -717,6 +717,7 @@ public final class HttpServiceMethod : TypeUser
 	public bool authenticate;
 	public string scheme;
 	public uint timeout;
+	public bool noThrow;
 	public bool retry;
 
 	public HttpServiceMethodVerb verb;
@@ -746,6 +747,7 @@ public final class HttpServiceMethod : TypeUser
 		this.authenticate = root.getAttribute!bool("authenticate", true);
 		this.scheme = root.getAttribute!string("scheme", string.init);
 		this.timeout = root.getAttribute!int("timeout", 0);
+		this.noThrow = root.getAttribute!bool("noThrow", true);
 		this.retry = root.getAttribute!bool("retry", true);
 
 		auto ancext = root.getTag("extensions:aspnetcore", null);

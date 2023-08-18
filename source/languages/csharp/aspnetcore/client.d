@@ -275,7 +275,7 @@ private void generateClientMethod(StringBuilder builder, HttpService s, HttpServ
 		if (sm.returns.length == 1) {
 			TypeComplex tc = sm.returns[0];
 			builder.tabs(tabLevel++).appendLine("return await response");
-			if (!sm.retry) builder.tabs(tabLevel).appendLine(".ThrowOnFailureResponse()");
+			if (sm.noThrow) builder.tabs(tabLevel).appendLine(".ThrowOnFailureResponse()");
 			if (typeid(tc.type) == typeid(TypeByteArray)) {
 				builder.tabs(tabLevel--).appendLine(".AsByteArray();");
 			}
