@@ -657,8 +657,8 @@ public final class HttpService : TypeUser
 	public LanguageExtensionBase[] extensions;
 
 	public bool isPublic;
-	public string route;
-	public bool hasRoute() { return route != null && route != string.init; }
+	public string[] route;
+	public bool hasRoute() { return route.length > 0; }
 	public bool authenticate;
 	public string scheme;
 	public string requestName;
@@ -668,7 +668,7 @@ public final class HttpService : TypeUser
 		this.parent = parent;
 		this.name = root.expectValue!string();
 		this.isPublic = root.getAttribute!bool("public", true);
-		this.route = root.getAttribute!string("route", string.init).strip().strip("/");
+		this.route = root.getAttribute!string("route", string.init).strip().strip("/").split("/").array;
 		this.authenticate = root.getAttribute!bool("authenticate", true);
 		this.scheme = root.getAttribute!string("scheme", string.init);
 		this.requestName = root.getAttribute!string("requestName", null);
@@ -713,7 +713,7 @@ public final class HttpServiceMethod : TypeUser
 	public HttpService parent;
 	public bool hidden;
 
-	public bool hasRoute() { return route != null && route.length > 0; }
+	public bool hasRoute() { return routeParts.length > 0; }
 	public bool authenticate;
 	public string scheme;
 	public uint timeout;

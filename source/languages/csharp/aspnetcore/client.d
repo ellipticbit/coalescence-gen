@@ -186,6 +186,10 @@ private void generateClientMethod(StringBuilder builder, HttpService s, HttpServ
 	builder.tabs(tabLevel++).appendLine("{");
 	builder.tabs(tabLevel++).appendLine("var response = await requests.CreateRequest({0}).{1}()", s.getRequest(), to!string(sm.verb).capitalize());
 
+	if (s.route.length > 0) {
+		builder.tabs(tabLevel).appendLine(".Path(\"{0}\")", s.route.join("\", \""));
+	}
+
 	if (sm.routeParts.length > 0) {
 		if (sm.route.length > 0) {
 			foreach(pp; sm.routeParts) {
@@ -270,7 +274,7 @@ private void generateClientMethod(StringBuilder builder, HttpService s, HttpServ
 		builder.appendLine();
 		if (sm.returns.length == 1) {
 			TypeComplex tc = sm.returns[0];
-			builder.tabs(tabLevel++).append("return await response");
+			builder.tabs(tabLevel++).appendLine("return await response");
 			if (!sm.retry) builder.tabs(tabLevel).appendLine(".ThrowOnFailureResponse()");
 			if (typeid(tc.type) == typeid(TypeByteArray)) {
 				builder.tabs(tabLevel--).appendLine(".AsByteArray();");

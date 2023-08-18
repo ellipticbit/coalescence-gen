@@ -82,8 +82,8 @@ public void generateHttpServer(StringBuilder builder, HttpService s, ushort tabL
 	if (ext !is null && ext.hasArea()) {
 		builder.tabs(tabLevel).appendLine("[Area(\"{0}\")]", ext.area);
 	}
-	if (s.route != string.init) {
-		builder.tabs(tabLevel).appendLine("[Route(\"{0}\")]", s.route);
+	if (s.route.length > 0) {
+		builder.tabs(tabLevel).appendLine("[Route(\"{0}\")]", s.route.join("/"));
 	}
 	generateAuthorization(builder, ext !is null ? ext.getAuthorization() : null, s.authenticate, false, tabLevel);
 	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Hotwire.Generator\", \"2.0.0.0\")]");
@@ -100,7 +100,7 @@ public void generateHttpServer(StringBuilder builder, HttpService s, ushort tabL
 public void generateMethodServer(StringBuilder builder, HttpServiceMethod sm, ushort tabLevel) {
 
 	builder.appendLine();
-	auto routeTemplate = generateServerRoute(sm.route);
+	auto routeTemplate = generateServerRoute(sm);
 	if (routeTemplate == string.init) {
 		builder.tabs(tabLevel).appendLine("[Http{0}]", to!string(sm.verb));
 	}
@@ -206,18 +206,19 @@ private void generateServerMethodParams(StringBuilder builder, HttpServiceMethod
 	else if (!isAbstract && (sm.route.length + sm.content.length) > 0) builder.removeRight(2);
 }
 
-private string generateServerRoute(TypeComplex[] routeParams) {
+private string generateServerRoute(HttpServiceMethod sm) {
 	string route = string.init;
-	foreach(rp; routeParams) {
-		if(rp.type !is null) {
-			if (rp.isPrimitiveType(TypePrimitives.String) || rp.isPrimitiveType(TypePrimitives.Base64String) || rp.isPrimitiveType(TypePrimitives.Base64ByteArray)) {
-				route ~= "{" ~ cleanName(rp.name) ~ "}/";
+	foreach(rp; sm.routeParts) {
+		auto rpt = sm.getRouteType(rp);
+		if(rpt !is null) {
+			if (rpt.isPrimitiveType(TypePrimitives.String) || rpt.isPrimitiveType(TypePrimitives.Base64String) || rpt.isPrimitiveType(TypePrimitives.Base64ByteArray)) {
+				route ~= "{" ~ cleanName(rp) ~ "}/";
 			} else {
-				route ~= "{" ~ cleanName(rp.name) ~ ":" ~ generateType(rp, false, rp.hasDefault) ~ "}/";
+				route ~= "{" ~ cleanName(rp) ~ ":" ~ generateType(rpt, false, rpt.hasDefault) ~ "}/";
 			}
 		}
 		else {
-			route ~= cleanName(rp.name) ~ "/";
+			route ~= cleanName(rp) ~ "/";
 		}
 	}
 	return route.strip("/");
