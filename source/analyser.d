@@ -159,11 +159,11 @@ public bool analyseService(Project prj, HttpService s)
 	{
 		foreach(smp; sm.route) {
 			if (analyseType(prj, smp, s.parent)) hasErrors = true;
-			if (smp.type.mode != TypeMode.Primitive && smp.type.mode != TypeMode.ByteArray) {
+			if (smp.type.mode != TypeMode.Primitive && smp.type.mode != TypeMode.ByteArray && smp.type.mode != TypeMode.Enum) {
 				hasErrors = true;
 				writeAnalyserError("Parameter '" ~ smp.name ~ "' of Member '" ~ sm.name ~ "' must be a primitive type.", smp.sourceLocation);
 			}
-			if (!sm.routeParts.any!(a => a == smp.name.toLower())) {
+			if (!sm.routeParts.any!(a => a.toLower() == smp.name.toLower())) {
 				hasErrors = true;
 				writeAnalyserError("Unable to locate corresponding route part for route type: " ~ smp.name, smp.sourceLocation);
 			}

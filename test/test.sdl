@@ -36,7 +36,7 @@ namespace "Service" {
 			route "method1" "id" id="uint64"
 		}
 		get "Method2" sync=true {
-			route "method2/id" id="uint64?"
+			route "method2/iD/up" id="uint64?"
 			body model="TestModel=null"
 			return result="TestModel"
 		}
