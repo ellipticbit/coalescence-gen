@@ -128,8 +128,8 @@ public void generateMethodServer(StringBuilder builder, HttpServiceMethod sm, us
 	// Generate required parameters
 	foreach (smp; sm.route) {
 		if (smp.hasDefault()) continue;
-		if ((cast(TypePrimitive)smp.type).primitive == TypePrimitives.Base64ByteArray) builder.append("{0}.ArrayFromUrlBase64(), ", smp.name);
-		else if ((cast(TypePrimitive)smp.type).primitive == TypePrimitives.Base64String) builder.append("{0}.StringFromUrlBase64Utf8(), ", smp.name);
+		if (smp.mode == TypeMode.Primitive && (cast(TypePrimitive)smp.type).primitive == TypePrimitives.Base64ByteArray) builder.append("{0}.ArrayFromUrlBase64(), ", smp.name);
+		else if (smp.mode == TypeMode.Primitive && (cast(TypePrimitive)smp.type).primitive == TypePrimitives.Base64String) builder.append("{0}.StringFromUrlBase64Utf8(), ", smp.name);
 		else builder.append("{0}, ", cleanName(smp.name));
 	}
 
@@ -141,8 +141,8 @@ public void generateMethodServer(StringBuilder builder, HttpServiceMethod sm, us
 	// Generate optional parameters
 	foreach (smp; sm.route) {
 		if (!smp.hasDefault()) continue;
-		if ((cast(TypePrimitive)smp.type).primitive == TypePrimitives.Base64ByteArray) builder.append("{0}.ArrayFromUrlBase64()", smp.name);
-		else if ((cast(TypePrimitive)smp.type).primitive == TypePrimitives.Base64String) builder.append("{0}.StringFromUrlBase64Utf8()", smp.name);
+		if (smp.mode == TypeMode.Primitive && (cast(TypePrimitive)smp.type).primitive == TypePrimitives.Base64ByteArray) builder.append("{0}.ArrayFromUrlBase64()", smp.name);
+		else if (smp.mode == TypeMode.Primitive && (cast(TypePrimitive)smp.type).primitive == TypePrimitives.Base64String) builder.append("{0}.StringFromUrlBase64Utf8()", smp.name);
 		else builder.append("{0}, ", cleanName(smp.name));
 	}
 
