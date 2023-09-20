@@ -211,7 +211,7 @@ private string generateServerRoute(HttpServiceMethod sm) {
 	foreach(rp; sm.routeParts) {
 		auto rpt = sm.getRouteType(rp);
 		if(rpt !is null) {
-			if (rpt.isPrimitiveType(TypePrimitives.String) || rpt.isPrimitiveType(TypePrimitives.Base64String) || rpt.isPrimitiveType(TypePrimitives.Base64ByteArray)) {
+			if (rpt.type.mode == TypeMode.Enum || rpt.isPrimitiveType(TypePrimitives.String) || rpt.isPrimitiveType(TypePrimitives.Base64String) || rpt.isPrimitiveType(TypePrimitives.Base64ByteArray)) {
 				route ~= "{" ~ cleanName(rp) ~ "}/";
 			} else {
 				route ~= "{" ~ cleanName(rp) ~ ":" ~ generateType(rpt, false, rpt.hasDefault) ~ "}/";
