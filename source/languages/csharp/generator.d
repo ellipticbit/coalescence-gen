@@ -534,13 +534,13 @@ public string generateType(TypeComplex type, bool base64external = false, bool f
 
 	else if(typeid(type.type) == typeid(TypeEnum)) {
 		TypeEnum t = cast(TypeEnum)(type.type);
-		return t.definition.parent.name ~ "." ~ t.definition.name ~ (type.nullable ? "?" : "");
+		return t.definition.parent.name.uppercaseFirst() ~ "." ~ t.definition.name ~ (type.nullable ? "?" : "");
 		//return t.definition.getCSharpFqn() ~ (type.nullable ? "?" : "");
 	}
 
 	else if(typeid(type.type) == typeid(TypeModel)) {
 		TypeModel t = cast(TypeModel)(type.type);
-		return t.definition.parent.name ~ "." ~ t.definition.name;
+		return t.definition.parent.name.uppercaseFirst() ~ "." ~ t.definition.name;
 		//return t.definition.getCSharpFqn();
 	}
 
