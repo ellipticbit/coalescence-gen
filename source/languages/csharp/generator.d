@@ -1,19 +1,19 @@
-module hwgen.languages.csharp.generator;
+module coalescence.languages.csharp.generator;
 
-import hwgen.globals;
-import hwgen.types;
-import hwgen.schema;
-import hwgen.stringbuilder;
-import hwgen.utility;
+import coalescence.globals;
+import coalescence.types;
+import coalescence.schema;
+import coalescence.stringbuilder;
+import coalescence.utility;
 
-import hwgen.languages.csharp.enums;
-import hwgen.languages.csharp.data;
-import hwgen.languages.csharp.extensions;
-import hwgen.languages.csharp.aspnetcore.client;
-import hwgen.languages.csharp.aspnetcore.server;
-import hwgen.languages.csharp.signalr.server;
-import hwgen.languages.csharp.signalr.client;
-import hwgen.languages.csharp.efcore.dbcontext;
+import coalescence.languages.csharp.enums;
+import coalescence.languages.csharp.data;
+import coalescence.languages.csharp.extensions;
+import coalescence.languages.csharp.aspnetcore.client;
+import coalescence.languages.csharp.aspnetcore.server;
+import coalescence.languages.csharp.signalr.server;
+import coalescence.languages.csharp.signalr.client;
+import coalescence.languages.csharp.efcore.dbcontext;
 
 import std.algorithm.searching;
 import std.path;

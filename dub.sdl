@@ -1,5 +1,5 @@
-name "hwgen"
-description "HWGen is a cross-langauge code-generation tool for the Hotwire Fluent REST Library."
+name "coalesce"
+description "Coalesce is a cross-langauge code-generation tool for the Coalescence Fluent REST Library."
 authors "Adam Wilson"
 copyright "Copyright © EllipticBit 2022-2023"
 license "BSL-1.0"

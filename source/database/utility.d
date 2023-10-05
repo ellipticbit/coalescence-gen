@@ -1,6 +1,6 @@
-module hwgen.database.utility;
+module coalescence.database.utility;
 
-import hwgen.schema;
+import coalescence.schema;
 
 import std.algorithm;
 import std.array;

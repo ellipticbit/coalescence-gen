@@ -1,7 +1,7 @@
-module hwgen.languages.csharp.language;
+module coalescence.languages.csharp.language;
 
-import hwgen.schema;
-import hwgen.types;
+import coalescence.schema;
+import coalescence.types;
 
 public string getTypeFromSqlType(SqlDbType type, bool isNullable)
 {

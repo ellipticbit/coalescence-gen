@@ -1,10 +1,10 @@
-import hwgen.globals;
-import hwgen.schema;
-import hwgen.generator;
-import hwgen.analyser;
-import hwgen.utility;
+import coalescence.globals;
+import coalescence.schema;
+import coalescence.generator;
+import coalescence.analyser;
+import coalescence.utility;
 
-import hwgen.database.mssql.schemareader;
+import coalescence.database.mssql.schemareader;
 
 import sdlang;
 import ddbc;
@@ -20,7 +20,7 @@ import std.string;
 
 int main(string[] args)
 {
-    writeln("Hotwire Code Generator");
+    writeln("Coalescence Code Generator");
     writeln("Version: ", appver);
     writeln();
 
@@ -122,7 +122,7 @@ private Schema[] loadFiles(string rootDir, Schema[] dbSchema)
 	Schema[] tsl = dbSchema;
 	auto rfFiles = dirEntries(rootDir, SpanMode.depth).filter!(f => f.name.endsWith(".sdl"));
 	foreach(rf; rfFiles) {
-		if (baseName(rf.name).toUpper() == ".hotwire.sdl".toUpper()) continue;
+		if (baseName(rf.name).toUpper() == ".coalesce.sdl".toUpper()) continue;
 		writeln("Input:\t" ~ rf.name);
 		Tag frt = parseFile(rf.name);
 		foreach (t; frt.maybe.tags) {

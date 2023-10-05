@@ -1,14 +1,14 @@
-module hwgen.languages.csharp.aspnetcore.server;
+module coalescence.languages.csharp.aspnetcore.server;
 
-import hwgen.types;
-import hwgen.schema;
-import hwgen.globals;
-import hwgen.stringbuilder;
-import hwgen.utility;
+import coalescence.types;
+import coalescence.schema;
+import coalescence.globals;
+import coalescence.stringbuilder;
+import coalescence.utility;
 
-import hwgen.languages.csharp.extensions;
-import hwgen.languages.csharp.language;
-import hwgen.languages.csharp.generator;
+import coalescence.languages.csharp.extensions;
+import coalescence.languages.csharp.language;
+import coalescence.languages.csharp.generator;
 
 import std.algorithm.iteration;
 import std.algorithm.searching;

@@ -1,9 +1,9 @@
-module hwgen.analyser;
+module coalescence.analyser;
 
-import hwgen.types;
-import hwgen.schema;
-import hwgen.globals;
-import hwgen.generator;
+import coalescence.types;
+import coalescence.schema;
+import coalescence.globals;
+import coalescence.generator;
 
 import std.algorithm.searching;
 import std.algorithm.sorting;

@@ -1,9 +1,9 @@
-module hwgen.database.mssql.types;
+module coalescence.database.mssql.types;
 
 import std.conv;
 import std.string;
 
-import hwgen.schema;
+import coalescence.schema;
 
 public string getMssqlTypeFromColumn(DataMember col)
 {

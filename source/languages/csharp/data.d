@@ -1,15 +1,15 @@
-module hwgen.languages.csharp.data;
+module coalescence.languages.csharp.data;
 
-import hwgen.languages.csharp.language;
-import hwgen.database.utility;
-import hwgen.types;
-import hwgen.schema;
-import hwgen.globals;
-import hwgen.stringbuilder;
-import hwgen.utility;
+import coalescence.languages.csharp.language;
+import coalescence.database.utility;
+import coalescence.types;
+import coalescence.schema;
+import coalescence.globals;
+import coalescence.stringbuilder;
+import coalescence.utility;
 
-import hwgen.languages.csharp.extensions;
-import hwgen.languages.csharp.generator;
+import coalescence.languages.csharp.extensions;
+import coalescence.languages.csharp.generator;
 
 import std.array;
 import std.algorithm.iteration;

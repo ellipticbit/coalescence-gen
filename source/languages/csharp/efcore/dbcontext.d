@@ -1,4 +1,4 @@
-module hwgen.languages.csharp.efcore.dbcontext;
+module coalescence.languages.csharp.efcore.dbcontext;
 
 import std.array;
 import std.algorithm.searching;
@@ -8,12 +8,12 @@ import std.path;
 import std.stdio;
 import std.string;
 
-import hwgen.stringbuilder;
-import hwgen.schema;
-import hwgen.utility;
-import hwgen.database.mssql.types;
-import hwgen.languages.csharp.extensions;
-import hwgen.languages.csharp.language;
+import coalescence.stringbuilder;
+import coalescence.schema;
+import coalescence.utility;
+import coalescence.database.mssql.types;
+import coalescence.languages.csharp.extensions;
+import coalescence.languages.csharp.language;
 
 public void generateEFContext(CSharpProjectOptions opts, Schema[] schemata) {
 	auto sb = new StringBuilder(8_388_608);

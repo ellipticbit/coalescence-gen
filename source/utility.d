@@ -1,6 +1,6 @@
-module hwgen.utility;
+module coalescence.utility;
 
-import hwgen.types;
+import coalescence.types;
 
 import std.array;
 import std.conv;

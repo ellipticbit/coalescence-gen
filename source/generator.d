@@ -1,8 +1,8 @@
-module hwgen.generator;
+module coalescence.generator;
 
-import hwgen.schema;
-import hwgen.globals;
-import hwgen.languages.csharp.generator;
+import coalescence.schema;
+import coalescence.globals;
+import coalescence.languages.csharp.generator;
 
 import std.stdio;
 import std.uni;

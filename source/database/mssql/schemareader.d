@@ -1,4 +1,4 @@
-module hwgen.database.mssql.schemareader;
+module coalescence.database.mssql.schemareader;
 
 import std.array;
 import std.algorithm.searching;
@@ -12,10 +12,10 @@ import std.uni;
 
 import ddbc;
 
-import hwgen.globals;
-import hwgen.schema;
-import hwgen.utility;
-import hwgen.database.mssql.types;
+import coalescence.globals;
+import coalescence.schema;
+import coalescence.utility;
+import coalescence.database.mssql.types;
 
 public Schema[] readMssqlSchemata(Connection conn)
 {

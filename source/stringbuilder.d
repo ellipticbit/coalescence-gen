@@ -1,4 +1,4 @@
-module hwgen.stringbuilder;
+module coalescence.stringbuilder;
 
 import core.vararg;
 import std.conv;

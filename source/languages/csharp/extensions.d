@@ -1,8 +1,8 @@
-module hwgen.languages.csharp.extensions;
+module coalescence.languages.csharp.extensions;
 
-import hwgen.schema;
-import hwgen.stringbuilder;
-import hwgen.utility;
+import coalescence.schema;
+import coalescence.stringbuilder;
+import coalescence.utility;
 
 import std.algorithm.iteration;
 import std.algorithm.searching;

@@ -1,13 +1,13 @@
-module hwgen.schema;
+module coalescence.schema;
 
-import hwgen.globals;
-import hwgen.types;
-import hwgen.stringbuilder;
-import hwgen.utility;
-import hwgen.database.utility;
+import coalescence.globals;
+import coalescence.types;
+import coalescence.stringbuilder;
+import coalescence.utility;
+import coalescence.database.utility;
 
 // Extensions
-import hwgen.languages.csharp.extensions;
+import coalescence.languages.csharp.extensions;
 
 import std.algorithm.iteration;
 import std.algorithm.searching;

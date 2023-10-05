@@ -1,7 +1,7 @@
-module hwgen.globals;
+module coalescence.globals;
 
-import hwgen.stringbuilder;
-import hwgen.types;
+import coalescence.stringbuilder;
+import coalescence.types;
 
 import std.conv;
 import std.file;

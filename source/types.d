@@ -1,7 +1,7 @@
-module hwgen.types;
-import hwgen.schema;
-import hwgen.globals;
-import hwgen.generator;
+module coalescence.types;
+import coalescence.schema;
+import coalescence.globals;
+import coalescence.generator;
 
 import sdlang;
 
