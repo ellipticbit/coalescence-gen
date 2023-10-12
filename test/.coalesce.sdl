@@ -1,9 +1,9 @@
 project {
 	generators:csharp {
-		client outputPath="..\\output\\client" namespace="Hotwire.Test.Client" uiBindings=true {
+		client outputPath="..\\output\\client" namespace="Coalescence.Test.Client" uiBindings=true {
 			serializers "SystemTextJson" "NewtonsoftJson" "DataContract"
 		}
-		server outputPath="..\\output\\server" namespace="Hotwire.Test.Server" {
+		server outputPath="..\\output\\server" namespace="Coalescence.Test.Server" {
 			serializers "SystemTextJson" "NewtonsoftJson" "DataContract"
 		}
 	}

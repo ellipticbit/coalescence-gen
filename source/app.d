@@ -20,9 +20,9 @@ import std.string;
 
 int main(string[] args)
 {
-    writeln("Coalescence Code Generator");
-    writeln("Version: ", appver);
-    writeln();
+    writeln("Coalescence Code Generator - v", appver);
+    writeln("Copyright (C) 2023 EllipticBit LLC, All Rights Reserved.");
+	writeln();
 
     //Make sure there are enough arguments and display usage
     if(args.length == 1)
@@ -71,7 +71,7 @@ int main(string[] args)
 			return 2;
 		}
 	} else {
-		projectPath = buildNormalizedPath(rootDir, ".hotwire.sdl");
+		projectPath = buildNormalizedPath(rootDir, ".Coalescence.sdl");
 		if (!exists(projectPath)) {
 			writeln("ERROR: Unable to locate project file: " ~ projectPath);
 			return 2;

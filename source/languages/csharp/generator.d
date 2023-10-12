@@ -312,11 +312,11 @@ private void generateUsingsServerComplete(StringBuilder builder, Project prj, CS
 	builder.appendLine("using Microsoft.AspNetCore.Authorization;");
 	if (prj.hasSocketServices) {
 		builder.appendLine("using Microsoft.AspNetCore.SignalR;");
-		builder.appendLine("using EllipticBit.Hotwire.SignalR;");
+		builder.appendLine("using EllipticBit.Coalescence.SignalR;");
 	}
-	builder.appendLine("using EllipticBit.Hotwire.Shared;");
+	builder.appendLine("using EllipticBit.Coalescence.Shared;");
 	if (prj.hasHttpServices) {
-		builder.appendLine("using EllipticBit.Hotwire.AspNetCore;");
+		builder.appendLine("using EllipticBit.Coalescence.AspNetCore;");
 	}
 	if (opts.enableEFExtensions) builder.appendLine("using EllipticBit.Services.Database;");
 	builder.appendLine();
@@ -349,10 +349,10 @@ private void generateUsingsClientComplete(StringBuilder builder, Project prj, CS
 		builder.appendLine("using Microsoft.AspNetCore.SignalR.Client;");
 		builder.appendLine("using Microsoft.Extensions.DependencyInjection;");
 		builder.appendLine("using Microsoft.Extensions.DependencyInjection.Extensions;");
-		builder.appendLine("using EllipticBit.Hotwire.SignalR;");
+		builder.appendLine("using EllipticBit.Coalescence.SignalR;");
 	}
 	if (prj.hasHttpServices) {
-		builder.appendLine("using EllipticBit.Hotwire.Request;");
+		builder.appendLine("using EllipticBit.Coalescence.Request;");
 	}
 	builder.appendLine();
 }
@@ -409,8 +409,8 @@ private void generateUsingsServerHttp(StringBuilder builder) {
 	builder.appendLine("using Microsoft.Extensions.Primitives;");
 	builder.appendLine("using Microsoft.AspNetCore.Mvc;");
 	builder.appendLine("using Microsoft.AspNetCore.Authorization;");
-	builder.appendLine("using EllipticBit.Hotwire.Shared;");
-	builder.appendLine("using EllipticBit.Hotwire.AspNetCore;");
+	builder.appendLine("using EllipticBit.Coalescence.Shared;");
+	builder.appendLine("using EllipticBit.Coalescence.AspNetCore;");
 	builder.appendLine();
 }
 
@@ -424,7 +424,7 @@ private void generateUsingsClientHttp(StringBuilder builder) {
 	builder.appendLine("using System.Net.Http;");
 	builder.appendLine("using System.Net.Http.Headers;");
 	builder.appendLine("using System.Text;");
-	builder.appendLine("using EllipticBit.Hotwire.Request;");
+	builder.appendLine("using EllipticBit.Coalescence.Request;");
 	builder.appendLine();
 }
 
@@ -438,8 +438,8 @@ private void generateUsingsServerSocket(StringBuilder builder) {
 	builder.appendLine("using Microsoft.AspNetCore.Mvc;");
 	builder.appendLine("using Microsoft.AspNetCore.Authorization;");
 	builder.appendLine("using Microsoft.AspNetCore.SignalR;");
-	builder.appendLine("using EllipticBit.Hotwire.SignalR;");
-	builder.appendLine("using EllipticBit.Hotwire.Shared;");
+	builder.appendLine("using EllipticBit.Coalescence.SignalR;");
+	builder.appendLine("using EllipticBit.Coalescence.Shared;");
 	builder.appendLine();
 }
 
@@ -456,7 +456,7 @@ private void generateUsingsClientSocket(StringBuilder builder) {
 	builder.appendLine("using Microsoft.AspNetCore.SignalR.Client;");
 	builder.appendLine("using Microsoft.Extensions.DependencyInjection;");
 	builder.appendLine("using Microsoft.Extensions.DependencyInjection.Extensions;");
-	builder.appendLine("using EllipticBit.Hotwire.SignalR;");
+	builder.appendLine("using EllipticBit.Coalescence.SignalR;");
 	builder.appendLine();
 }
 

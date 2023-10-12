@@ -24,7 +24,7 @@ public void generateHttpServer(StringBuilder builder, HttpService s, ushort tabL
 	builder.appendLine();
 	foreach(m; s.methods) {
 		if (m.query.length == 0) continue;
-		builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Hotwire.Generator\", \"2.0.0.0\")]");
+		builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"2.0.0.0\")]");
 		builder.tabs(tabLevel).appendLine("[System.Diagnostics.DebuggerNonUserCode()]");
 		builder.tabs(tabLevel).appendLine("public class {0}Query", m.name);
 		builder.tabs(tabLevel++).appendLine("{");
@@ -48,7 +48,7 @@ public void generateHttpServer(StringBuilder builder, HttpService s, ushort tabL
 	builder.appendLine();
 	foreach(m; s.methods) {
 		if (m.header.length == 0) continue;
-		builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Hotwire.Generator\", \"2.0.0.0\")]");
+		builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"2.0.0.0\")]");
 		builder.tabs(tabLevel).appendLine("[System.Diagnostics.DebuggerNonUserCode()]");
 		builder.tabs(tabLevel).appendLine("public class {0}Headers", m.name);
 		builder.tabs(tabLevel++).appendLine("{");
@@ -69,7 +69,7 @@ public void generateHttpServer(StringBuilder builder, HttpService s, ushort tabL
 	}
 
 	builder.appendLine();
-	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Hotwire.Generator\", \"2.0.0.0\")]");
+	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"2.0.0.0\")]");
 	builder.tabs(tabLevel).appendLine("public interface I{0}", s.name);
 	builder.tabs(tabLevel++).appendLine("{");
 	foreach(m; s.methods) {
@@ -86,10 +86,10 @@ public void generateHttpServer(StringBuilder builder, HttpService s, ushort tabL
 		builder.tabs(tabLevel).appendLine("[Route(\"{0}\")]", s.route.join("/"));
 	}
 	generateAuthorization(builder, ext !is null ? ext.getAuthorization() : null, s.authenticate, false, tabLevel);
-	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Hotwire.Generator\", \"2.0.0.0\")]");
-	builder.tabs(tabLevel).appendLine("public abstract partial class {0}Base : HotwireControllerBase, I{0}", s.name);
+	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"2.0.0.0\")]");
+	builder.tabs(tabLevel).appendLine("public abstract partial class {0}Base : CoalescenceControllerBase, I{0}", s.name);
 	builder.tabs(tabLevel++).appendLine("{");
-	builder.tabs(tabLevel).appendLine("protected {0}Base(IEnumerable<IHotwireSerializer> serializers) : base(serializers) {}", s.name);
+	builder.tabs(tabLevel).appendLine("protected {0}Base(IEnumerable<ICoalescenceSerializer> serializers) : base(serializers) {}", s.name);
 	builder.appendLine();
 	foreach(sm; s.methods) {
 		generateMethodServer(builder, sm, cast(ushort)(tabLevel));

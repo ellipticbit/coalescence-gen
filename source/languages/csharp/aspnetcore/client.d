@@ -24,9 +24,9 @@ public void generateHttpClient(StringBuilder builder, HttpService s, ushort tabL
 	builder.appendLine();
 	foreach(m; s.methods) {
 		if (m.query.length == 0) continue;
-		builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Hotwire.Generator\", \"2.0.0.0\")]");
+		builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"2.0.0.0\")]");
 		builder.tabs(tabLevel).appendLine("[System.Diagnostics.DebuggerNonUserCode()]");
-		builder.tabs(tabLevel).appendLine("public class {0}Query : IHotwireParameters", m.name);
+		builder.tabs(tabLevel).appendLine("public class {0}Query : ICoalescenceParameters", m.name);
 		builder.tabs(tabLevel++).appendLine("{");
 		foreach(smp; m.query) {
 			builder.tabs(tabLevel).appendLine("public {1} {0} { get; }", smp.name, generateType(smp, false, true));
@@ -39,7 +39,7 @@ public void generateHttpClient(StringBuilder builder, HttpService s, ushort tabL
 		}
 		builder.tabs(--tabLevel).appendLine("}");
 		builder.appendLine();
-		builder.tabs(tabLevel++).appendLine("IDictionary<string, IEnumerable<string>> IHotwireParameters.GetParameters() {");
+		builder.tabs(tabLevel++).appendLine("IDictionary<string, IEnumerable<string>> ICoalescenceParameters.GetParameters() {");
 		builder.tabs(tabLevel).appendLine("var rl = new Dictionary<string, IEnumerable<string>>();");
 		foreach(smp; m.query) {
 			if (smp.type.mode == TypeMode.Collection) {
@@ -57,9 +57,9 @@ public void generateHttpClient(StringBuilder builder, HttpService s, ushort tabL
 	builder.appendLine();
 	foreach(m; s.methods) {
 		if (m.header.length == 0) continue;
-		builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Hotwire.Generator\", \"2.0.0.0\")]");
+		builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"2.0.0.0\")]");
 		builder.tabs(tabLevel).appendLine("[System.Diagnostics.DebuggerNonUserCode()]");
-		builder.tabs(tabLevel).appendLine("public class {0}Header : IHotwireParameters", m.name);
+		builder.tabs(tabLevel).appendLine("public class {0}Header : ICoalescenceParameters", m.name);
 		builder.tabs(tabLevel++).appendLine("{");
 		foreach(smp; m.header) {
 			builder.tabs(tabLevel).appendLine("public {1} {0} { get; }", smp.name, generateType(smp, false, true));
@@ -72,7 +72,7 @@ public void generateHttpClient(StringBuilder builder, HttpService s, ushort tabL
 		}
 		builder.tabs(--tabLevel).appendLine("}");
 		builder.appendLine();
-		builder.tabs(tabLevel++).appendLine("IDictionary<string, IEnumerable<string>> IHotwireParameters.GetParameters() {");
+		builder.tabs(tabLevel++).appendLine("IDictionary<string, IEnumerable<string>> ICoalescenceParameters.GetParameters() {");
 		builder.tabs(tabLevel).appendLine("var rl = new Dictionary<string, IEnumerable<string>>();");
 		foreach(smp; m.header) {
 			if (smp.type.mode == TypeMode.Collection) {
@@ -87,7 +87,7 @@ public void generateHttpClient(StringBuilder builder, HttpService s, ushort tabL
 	}
 
 	builder.appendLine();
-	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Hotwire.Generator\", \"2.0.0.0\")]");
+	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"2.0.0.0\")]");
 	builder.tabs(tabLevel).appendLine("{1} interface I{0}", s.name, s.isPublic ? "public" : "internal");
 	builder.tabs(tabLevel++).appendLine("{");
 	foreach(m; s.methods) {
@@ -95,13 +95,13 @@ public void generateHttpClient(StringBuilder builder, HttpService s, ushort tabL
 	}
 	builder.tabs(--tabLevel).appendLine("}");
 	builder.appendLine();
-	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Hotwire.Generator\", \"2.0.0.0\")]");
+	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"2.0.0.0\")]");
 	builder.tabs(tabLevel).appendLine("{1} sealed partial class {0} : I{0}", s.name, s.isPublic ? "public" : "internal");
 	builder.tabs(tabLevel++).appendLine("{");
-	builder.tabs(tabLevel).appendLine("private readonly IHotwireRequestFactory requests;");
+	builder.tabs(tabLevel).appendLine("private readonly ICoalescenceRequestFactory requests;");
 	if (s.scheme != string.init) builder.tabs(tabLevel).appendLine("private readonly string defaultAuthenticationScheme = \"{0}\";", s.scheme);
 	builder.appendLine();
-	builder.tabs(tabLevel).appendLine("public {0}(IHotwireRequestFactory requests)", s.name);
+	builder.tabs(tabLevel).appendLine("public {0}(ICoalescenceRequestFactory requests)", s.name);
 	builder.tabs(tabLevel++).appendLine("{");
 	builder.tabs(tabLevel).appendLine("this.requests = requests;");
 	builder.tabs(--tabLevel).appendLine("}");

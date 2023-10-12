@@ -109,7 +109,7 @@ public final class CSharpProjectOptions {
 		writeln("Clean:\t" ~ buildNormalizedPath(outputPath));
 		auto rfFiles = dirEntries(buildNormalizedPath(outputPath), SpanMode.depth).filter!(f => f.name.endsWith(".cs"));
 		foreach(rf; rfFiles) {
-			if (readText(rf).canFind("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Hotwire.Generator\", ")) {
+			if (readText(rf).canFind("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", ")) {
 				std.file.remove(rf);
 			}
 		}
