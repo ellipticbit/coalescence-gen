@@ -1,12 +1,12 @@
-module hwgen.languages.csharp.enums;
+module coalescence.languages.csharp.enums;
 
-import hwgen.schema;
-import hwgen.globals;
-import hwgen.stringbuilder;
-import hwgen.utility;
+import coalescence.schema;
+import coalescence.globals;
+import coalescence.stringbuilder;
+import coalescence.utility;
 
-import hwgen.languages.csharp.extensions;
-import hwgen.languages.csharp.generator;
+import coalescence.languages.csharp.extensions;
+import coalescence.languages.csharp.generator;
 
 import std.conv;
 import std.stdio;
