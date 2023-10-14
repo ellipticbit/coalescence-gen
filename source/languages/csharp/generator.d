@@ -291,10 +291,6 @@ private void generateSchemaClient(Schema ns, StringBuilder schemaBuilder, Projec
 private void generateUsingsServerComplete(StringBuilder builder, Project prj, CSharpProjectOptions opts) {
 	builder.appendLine("using System;");
 	builder.appendLine("using System.Collections.Generic;");
-	if (opts.uiBindings) {
-		builder.appendLine("using System.Collections.ObjectModel;");
-		builder.appendLine("using System.ComponentModel;");
-	}
 	builder.appendLine("using System.Linq;");
 	builder.appendLine("using System.IO;");
 	if (opts.serializers.any!(a => a == CSharpSerializers.DataContract)) {
@@ -325,10 +321,6 @@ private void generateUsingsServerComplete(StringBuilder builder, Project prj, CS
 private void generateUsingsClientComplete(StringBuilder builder, Project prj, CSharpProjectOptions opts) {
 	builder.appendLine("using System;");
 	builder.appendLine("using System.Collections.Generic;");
-	if (opts.uiBindings) {
-		builder.appendLine("using System.Collections.ObjectModel;");
-		builder.appendLine("using System.ComponentModel;");
-	}
 	builder.appendLine("using System.Linq;");
 	builder.appendLine("using System.IO;");
 	if (opts.serializers.any!(a => a == CSharpSerializers.DataContract)) {
@@ -351,6 +343,9 @@ private void generateUsingsClientComplete(StringBuilder builder, Project prj, CS
 		builder.appendLine("using Microsoft.Extensions.DependencyInjection.Extensions;");
 		builder.appendLine("using EllipticBit.Coalescence.SignalR;");
 	}
+	if (opts.uiBindings) {
+		builder.appendLine("using EllipticBit.Coalescence.Shared;");
+	}
 	if (prj.hasHttpServices) {
 		builder.appendLine("using EllipticBit.Coalescence.Request;");
 	}
@@ -360,10 +355,6 @@ private void generateUsingsClientComplete(StringBuilder builder, Project prj, CS
 private void generateUsingsServerData(StringBuilder builder, CSharpProjectOptions opts) {
 	builder.appendLine("using System;");
 	builder.appendLine("using System.Collections.Generic;");
-	if (opts.uiBindings) {
-		builder.appendLine("using System.Collections.ObjectModel;");
-		builder.appendLine("using System.ComponentModel;");
-	}
 	builder.appendLine("using System.Linq;");
 	builder.appendLine("using System.IO;");
 	if (opts.serializers.any!(a => a == CSharpSerializers.DataContract)) {
@@ -374,6 +365,9 @@ private void generateUsingsServerData(StringBuilder builder, CSharpProjectOption
 	}
 	if (opts.serializers.any!(a => a == CSharpSerializers.NewtonsoftJson)) {
 		builder.appendLine("using Newtonsoft.Json;");
+	}
+	if (opts.uiBindings) {
+		builder.appendLine("using EllipticBit.Coalescence.Shared;");
 	}
 	if (opts.enableEFExtensions) builder.appendLine("using EllipticBit.Services.Database;");
 	builder.appendLine();
@@ -382,10 +376,6 @@ private void generateUsingsServerData(StringBuilder builder, CSharpProjectOption
 private void generateUsingsClientData(StringBuilder builder, CSharpProjectOptions opts) {
 	builder.appendLine("using System;");
 	builder.appendLine("using System.Collections.Generic;");
-	if (opts.uiBindings) {
-		builder.appendLine("using System.Collections.ObjectModel;");
-		builder.appendLine("using System.ComponentModel;");
-	}
 	builder.appendLine("using System.Linq;");
 	builder.appendLine("using System.IO;");
 	if (opts.serializers.any!(a => a == CSharpSerializers.DataContract)) {
@@ -396,6 +386,9 @@ private void generateUsingsClientData(StringBuilder builder, CSharpProjectOption
 	}
 	if (opts.serializers.any!(a => a == CSharpSerializers.NewtonsoftJson)) {
 		builder.appendLine("using Newtonsoft.Json;");
+	}
+	if (opts.uiBindings) {
+		builder.appendLine("using EllipticBit.Coalescence.Shared;");
 	}
 	builder.appendLine();
 }
