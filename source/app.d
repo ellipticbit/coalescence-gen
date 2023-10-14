@@ -71,7 +71,7 @@ int main(string[] args)
 			return 2;
 		}
 	} else {
-		projectPath = buildNormalizedPath(rootDir, ".Coalescence.sdl");
+		projectPath = buildNormalizedPath(rootDir, ".coalescence.sdl");
 		if (!exists(projectPath)) {
 			writeln("ERROR: Unable to locate project file: " ~ projectPath);
 			return 2;
@@ -122,7 +122,7 @@ private Schema[] loadFiles(string rootDir, Schema[] dbSchema)
 	Schema[] tsl = dbSchema;
 	auto rfFiles = dirEntries(rootDir, SpanMode.depth).filter!(f => f.name.endsWith(".sdl"));
 	foreach(rf; rfFiles) {
-		if (baseName(rf.name).toUpper() == ".coalesce.sdl".toUpper()) continue;
+		if (baseName(rf.name).toUpper() == ".coalescence.sdl".toUpper()) continue;
 		writeln("Input:\t" ~ rf.name);
 		Tag frt = parseFile(rf.name);
 		foreach (t; frt.maybe.tags) {
