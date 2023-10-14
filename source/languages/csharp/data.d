@@ -113,7 +113,7 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 	}
 	builder.tabs(tabLevel++).appendLine("public {0}() {", table.name);
 	foreach (fk; fkTarget.filter!(a => a.targetTable.sqlId == table.sqlId && a.direction != ForeignKeyDirection.OneToOne)) {
-		builder.tabs(tabLevel).appendLine("this.{0} = new {1}<{2}>();", fk.targetId(), ((opts.uiBindings) ? "ThreadObservableCollection" : "HashSet"), fk.sourceTable.getCSharpFullName());
+		builder.tabs(tabLevel).appendLine("this.{0} = new HashSet<{1}>();", fk.targetId(), fk.sourceTable.getCSharpFullName());
 	}
 	builder.tabs(tabLevel).appendLine("PostInitializer();");
 	builder.tabs(--tabLevel).appendLine("}");
@@ -129,9 +129,9 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 	foreach (fk; fkTarget) {
 		builder.appendLine();
 		if (fk.direction != ForeignKeyDirection.OneToOne) {
-			builder.tabs(2).appendLine("private {0}<{1}> _{2};", ((opts.uiBindings) ? "ThreadObservableCollection" : "ICollection"), fk.sourceTable.getCSharpFullName(), fk.targetId());
+			builder.tabs(2).appendLine("private ICollection<{0}> _{1};", fk.sourceTable.getCSharpFullName(), fk.targetId());
 			builder.generateBindingMetadata(fk.targetId(), false, opts, tabLevel);
-			builder.tabs(2).appendLine("public virtual {0}<{1}> {2} { get { return _{2}; } set { {3} } }", ((opts.uiBindings) ? "ThreadObservableCollection" : "ICollection"), fk.sourceTable.getCSharpFullName(), fk.targetId(), generateSetter(fk.targetId(), (opts.uiBindings)));
+			builder.tabs(2).appendLine("public virtual ICollection<{0}> {1} { get { return _{1}; } set { {2} } }", fk.sourceTable.getCSharpFullName(), fk.targetId(), generateSetter(fk.targetId(), (opts.uiBindings)));
 		}
 		else {
 			builder.tabs(2).appendLine("private {0} _{1};", fk.sourceTable.getCSharpFullName(), fk.targetId());
@@ -148,9 +148,9 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 			builder.tabs(tabLevel).appendLine("public virtual {0} {1} { get { return _{1}; } set { {2} } }", fk.targetTable.getCSharpFullName(), fk.sourceId(), generateSetter(fk.sourceId(), (opts.uiBindings)));
 		}
 		else {
-			builder.tabs(tabLevel).appendLine("private {0}<{1}> _{2};", ((opts.uiBindings) ? "ThreadObservableCollection" : "ICollection"), fk.targetTable.getCSharpFullName(), fk.sourceId());
+			builder.tabs(tabLevel).appendLine("private ICollection<{0}> _{1};", fk.targetTable.getCSharpFullName(), fk.sourceId());
 			builder.generateBindingMetadata(fk.sourceId(), false, opts, tabLevel);
-			builder.tabs(tabLevel).appendLine("public virtual {0}<{1}> {2} { get { return _{2}; } set { {3} } }", ((opts.uiBindings) ? "ThreadObservableCollection" : "ICollection"), fk.targetTable.getCSharpFullName(), fk.sourceId(), generateSetter(fk.sourceId(), (opts.uiBindings)));
+			builder.tabs(tabLevel).appendLine("public virtual ICollection<{0}> {1} { get { return _{1}; } set { {2} } }", fk.targetTable.getCSharpFullName(), fk.sourceId(), generateSetter(fk.sourceId(), (opts.uiBindings)));
 		}
 	}
 
