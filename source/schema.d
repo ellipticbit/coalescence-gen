@@ -442,6 +442,7 @@ public final class DataMember
 	public string name;
 	public TypeComplex type = null;
 	public string transport;
+	public bool enumAsString = false;
 
 	public int sqlId;
 	public string sqlName;
@@ -455,6 +456,8 @@ public final class DataMember
 	public bool isIdentity;
 	public bool isComputed;
 	public bool isReadOnly;
+
+	public bool isTypeEnum() { return typeid(type.type) == typeid(TypeEnum); }
 
 	public this(DataObject parent, int id, string name, SqlDbType type, int maxLength, byte precision, byte scale, bool hasDefault, bool isNullable, bool isIdentity, bool isComputed)
 	{
@@ -486,6 +489,7 @@ public final class DataMember
 		this.name = this.sqlName = root.name();
 		this.transport = root.getAttribute!string("transport", this.name);
 		this.type = new TypeComplex(this.name, root.expectAttribute!string("type"), root.location);
+		this.enumAsString = root.getAttribute!bool("enumString", false);
 		this.sqlType = SqlDbType.None;
 		this.maxLength = root.getAttribute!int("maxLength", -1);
 		this.precision = -1;
@@ -503,6 +507,7 @@ public final class DataMember
 		this.name = copy.name;
 		this.type = copy.type;
 		this.transport = copy.transport;
+		this.enumAsString = copy.enumAsString;
 
 		this.sqlId = copy.sqlId;
 		this.sqlName = copy.sqlName;
