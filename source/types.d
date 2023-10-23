@@ -214,10 +214,10 @@ public final class TypeComplex : TypeBase {
 	public @property TypeBase type() { return _type; }
 	public @property TypeBase type(TypeBase value) { return _type = value;}
 
-	private string _name;
+	private string _name = string.init;
 	public @property string name() { return _name; }
 
-	private bool _nullable;
+	private bool _nullable = false;
 	public @property bool nullable() { return _nullable; }
 
 	private bool _defaultInit = false;

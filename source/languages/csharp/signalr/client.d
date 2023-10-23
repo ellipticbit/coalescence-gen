@@ -102,7 +102,7 @@ private void generateMethodParameters(StringBuilder builder, TypeComplex[] smpl)
 	bool hasParams = false;
 	foreach (smp; smpl) {
 		if (smp.type is null) continue;
-		builder.append("{0} {1}, ", generateType(smp, false, true), cleanName(smp.name));
+		builder.append("{0} {1}, ", generateType(smp, false), cleanName(smp.name));
 		hasParams = true;
 	}
 
