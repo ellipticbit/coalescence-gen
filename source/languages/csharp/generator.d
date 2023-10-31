@@ -30,7 +30,7 @@ public void generateCSharp(Project prj, CSharpProjectOptions opts)
 	}
 
 	if (opts.outputMode == CSharpOutputMode.SingleFile) {
-		if (opts.mode == CSharpGeneratorMode.Server) {
+		if (opts.mode != CSharpGeneratorMode.Client) {
 			auto serverBuilder = new StringBuilder(8_388_608);
 			serverBuilder.generateUsingsServerComplete(prj, opts);
 			foreach(ns; prj.serverSchema) {
@@ -48,7 +48,7 @@ public void generateCSharp(Project prj, CSharpProjectOptions opts)
 			opts.writeFile(clientBuilder, opts.contextName);
 		}
 	} else if (opts.outputMode == CSharpOutputMode.FilePerSchema) {
-		if (opts.mode == CSharpGeneratorMode.Server) {
+		if (opts.mode != CSharpGeneratorMode.Client) {
 			foreach(ns; prj.serverSchema) {
 				auto serverBuilder = new StringBuilder(1_048_576);
 				serverBuilder.generateUsingsServerComplete(prj, opts);
@@ -66,7 +66,7 @@ public void generateCSharp(Project prj, CSharpProjectOptions opts)
 			}
 		}
 	} else if (opts.outputMode == CSharpOutputMode.FilePerObject) {
-		if (opts.mode == CSharpGeneratorMode.Server) {
+		if (opts.mode != CSharpGeneratorMode.Client) {
 			foreach(ns; prj.serverSchema) {
 				ns.generateSchemaServer(null, prj, opts);
 			}
@@ -88,9 +88,6 @@ private void generateSchemaServer(Schema ns, StringBuilder schemaBuilder, Projec
 		foreach(e; ns.enums.values) {
 			generateEnum(e, schemaBuilder, opts, 1);
 		}
-		foreach(d; ns.network.values) {
-			generateDataNetwork(d, schemaBuilder, opts, false, 1);
-		}
 		foreach(d; ns.tables.values) {
 			generateDataTable(d, schemaBuilder, opts, prj, false, 1);
 		}
@@ -101,6 +98,9 @@ private void generateSchemaServer(Schema ns, StringBuilder schemaBuilder, Projec
 			generateDataUdt(d, schemaBuilder, opts, false, 1);
 		}
 		if (opts.mode != CSharpGeneratorMode.Database) {
+			foreach(d; ns.network.values) {
+				generateDataNetwork(d, schemaBuilder, opts, false, 1);
+			}
 			foreach(s; ns.services.values) {
 				generateHttpServer(schemaBuilder, s, 1);
 			}
@@ -118,16 +118,6 @@ private void generateSchemaServer(Schema ns, StringBuilder schemaBuilder, Projec
 			builder.appendLine("}");
 			builder.appendLine();
 			opts.writeFile(builder, ns.name, e.name);
-		}
-		foreach(d; ns.network.values) {
-			auto builder = new StringBuilder(16_384);
-			builder.generateUsingsServerData(opts);
-			builder.appendLine("namespace {0}", ns.getCSharpFqn(opts));
-			builder.appendLine("{");
-			generateDataNetwork(d, builder, opts, false, 1);
-			builder.appendLine("}");
-			builder.appendLine();
-			opts.writeFile(builder, ns.name, d.name);
 		}
 		foreach(d; ns.tables.values) {
 			auto builder = new StringBuilder(16_384);
@@ -160,6 +150,16 @@ private void generateSchemaServer(Schema ns, StringBuilder schemaBuilder, Projec
 			opts.writeFile(builder, ns.name, d.name);
 		}
 		if (opts.mode != CSharpGeneratorMode.Database) {
+			foreach(d; ns.network.values) {
+				auto builder = new StringBuilder(16_384);
+				builder.generateUsingsServerData(opts);
+				builder.appendLine("namespace {0}", ns.getCSharpFqn(opts));
+				builder.appendLine("{");
+				generateDataNetwork(d, builder, opts, false, 1);
+				builder.appendLine("}");
+				builder.appendLine();
+				opts.writeFile(builder, ns.name, d.name);
+			}
 			foreach(s; ns.services.values) {
 				auto builder = new StringBuilder(32_768);
 				builder.generateUsingsServerHttp();
@@ -192,9 +192,6 @@ private void generateSchemaClient(Schema ns, StringBuilder schemaBuilder, Projec
 		foreach(e; ns.enums.values) {
 			generateEnum(e, schemaBuilder, opts, 1);
 		}
-		foreach(d; ns.network.values) {
-			generateDataNetwork(d, schemaBuilder, opts, true, 1);
-		}
 		foreach(d; ns.tables.values) {
 			generateDataTable(d, schemaBuilder, opts, prj, true, 1);
 		}
@@ -205,6 +202,9 @@ private void generateSchemaClient(Schema ns, StringBuilder schemaBuilder, Projec
 			generateDataUdt(d, schemaBuilder, opts, true, 1);
 		}
 		if (opts.mode != CSharpGeneratorMode.Database) {
+			foreach(d; ns.network.values) {
+				generateDataNetwork(d, schemaBuilder, opts, true, 1);
+			}
 			foreach(s; ns.services.values) {
 				generateHttpClient(schemaBuilder, s, 1);
 			}
@@ -222,16 +222,6 @@ private void generateSchemaClient(Schema ns, StringBuilder schemaBuilder, Projec
 			builder.appendLine("}");
 			builder.appendLine();
 			opts.writeFile(builder, ns.name, e.name);
-		}
-		foreach(d; ns.network.values) {
-			auto builder = new StringBuilder(16_384);
-			builder.generateUsingsClientData(opts);
-			builder.appendLine("namespace {0}", ns.getCSharpFqn(opts));
-			builder.appendLine("{");
-			generateDataNetwork(d, builder, opts, true, 1);
-			builder.appendLine("}");
-			builder.appendLine();
-			opts.writeFile(builder, ns.name, d.name);
 		}
 		foreach(d; ns.tables.values) {
 			auto builder = new StringBuilder(16_384);
@@ -264,6 +254,16 @@ private void generateSchemaClient(Schema ns, StringBuilder schemaBuilder, Projec
 			opts.writeFile(builder, ns.name, d.name);
 		}
 		if (opts.mode != CSharpGeneratorMode.Database) {
+			foreach(d; ns.network.values) {
+				auto builder = new StringBuilder(16_384);
+				builder.generateUsingsClientData(opts);
+				builder.appendLine("namespace {0}", ns.getCSharpFqn(opts));
+				builder.appendLine("{");
+				generateDataNetwork(d, builder, opts, true, 1);
+				builder.appendLine("}");
+				builder.appendLine();
+				opts.writeFile(builder, ns.name, d.name);
+			}
 			foreach(s; ns.services.values) {
 				auto builder = new StringBuilder(32_768);
 				builder.generateUsingsClientHttp();

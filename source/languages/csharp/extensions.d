@@ -55,9 +55,10 @@ public final class CSharpProjectOptions {
 	public CSharpSerializers[] serializers;
 
 	public this (Tag root, string databaseName, string projectRoot) {
-		mode = CSharpGeneratorMode.Database;
-		if (root.name.toUpper() == "Server".toUpper()) mode = CSharpGeneratorMode.Server;
-		if (root.name.toUpper() == "Client".toUpper()) mode = CSharpGeneratorMode.Client;
+		if (root.name.toUpper() == "Database".toUpper()) mode = CSharpGeneratorMode.Database;
+		else if (root.name.toUpper() == "Server".toUpper()) mode = CSharpGeneratorMode.Server;
+		else if (root.name.toUpper() == "Client".toUpper()) mode = CSharpGeneratorMode.Client;
+		else throw new Exception("Invalid generator mode specified: " ~ root.name);
 		this.outputMode = to!CSharpOutputMode(root.getAttribute!string("outputMode", "FilePerObject"));
 		this.contextName = root.getAttribute!string("contextName", databaseName);
 		this.namespace = root.getAttribute!string("namespace", databaseName);
