@@ -304,16 +304,18 @@ private void generateUsingsServerComplete(StringBuilder builder, Project prj, CS
 	}
 	builder.appendLine("using System.Threading.Tasks;");
 	builder.appendLine("using Microsoft.Extensions.Primitives;");
-	builder.appendLine("using Microsoft.AspNetCore.Mvc;");
-	builder.appendLine("using Microsoft.AspNetCore.Authorization;");
-	if (prj.hasSocketServices) {
-		builder.appendLine("using Microsoft.AspNetCore.SignalR;");
-		builder.appendLine("using EllipticBit.Coalescence.SignalR;");
+	if (opts.mode != CSharpGeneratorMode.Database) {
+		builder.appendLine("using Microsoft.AspNetCore.Mvc;");
+		builder.appendLine("using Microsoft.AspNetCore.Authorization;");
+		if (prj.hasSocketServices) {
+			builder.appendLine("using Microsoft.AspNetCore.SignalR;");
+			builder.appendLine("using EllipticBit.Coalescence.SignalR;");
+		}
+		if (prj.hasHttpServices) {
+			builder.appendLine("using EllipticBit.Coalescence.AspNetCore;");
+		}
 	}
 	builder.appendLine("using EllipticBit.Coalescence.Shared;");
-	if (prj.hasHttpServices) {
-		builder.appendLine("using EllipticBit.Coalescence.AspNetCore;");
-	}
 	if (opts.enableEFExtensions) builder.appendLine("using EllipticBit.Services.Database;");
 	builder.appendLine();
 }
@@ -337,17 +339,19 @@ private void generateUsingsClientComplete(StringBuilder builder, Project prj, CS
 	builder.appendLine("using System.Net.Http;");
 	builder.appendLine("using System.Net.Http.Headers;");
 	builder.appendLine("using System.Text;");
-	if (prj.hasSocketServices) {
-		builder.appendLine("using Microsoft.AspNetCore.SignalR.Client;");
-		builder.appendLine("using Microsoft.Extensions.DependencyInjection;");
-		builder.appendLine("using Microsoft.Extensions.DependencyInjection.Extensions;");
-		builder.appendLine("using EllipticBit.Coalescence.SignalR;");
+	builder.appendLine("using Microsoft.Extensions.DependencyInjection;");
+	builder.appendLine("using Microsoft.Extensions.DependencyInjection.Extensions;");
+	if (opts.mode != CSharpGeneratorMode.Database) {
+		if (prj.hasSocketServices) {
+			builder.appendLine("using Microsoft.AspNetCore.SignalR.Client;");
+			builder.appendLine("using EllipticBit.Coalescence.SignalR;");
+		}
+		if (prj.hasHttpServices) {
+			builder.appendLine("using EllipticBit.Coalescence.Request;");
+		}
 	}
 	if (opts.uiBindings) {
 		builder.appendLine("using EllipticBit.Coalescence.Shared;");
-	}
-	if (prj.hasHttpServices) {
-		builder.appendLine("using EllipticBit.Coalescence.Request;");
 	}
 	builder.appendLine();
 }
@@ -366,10 +370,8 @@ private void generateUsingsServerData(StringBuilder builder, CSharpProjectOption
 	if (opts.serializers.any!(a => a == CSharpSerializers.NewtonsoftJson)) {
 		builder.appendLine("using Newtonsoft.Json;");
 	}
-	if (opts.uiBindings) {
-		builder.appendLine("using EllipticBit.Coalescence.Shared;");
-	}
 	if (opts.enableEFExtensions) builder.appendLine("using EllipticBit.Services.Database;");
+	if (opts.uiBindings) builder.appendLine("using EllipticBit.Coalescence.Shared;");
 	builder.appendLine();
 }
 
@@ -387,9 +389,7 @@ private void generateUsingsClientData(StringBuilder builder, CSharpProjectOption
 	if (opts.serializers.any!(a => a == CSharpSerializers.NewtonsoftJson)) {
 		builder.appendLine("using Newtonsoft.Json;");
 	}
-	if (opts.uiBindings) {
-		builder.appendLine("using EllipticBit.Coalescence.Shared;");
-	}
+	if (opts.uiBindings) builder.appendLine("using EllipticBit.Coalescence.Shared;");
 	builder.appendLine();
 }
 
