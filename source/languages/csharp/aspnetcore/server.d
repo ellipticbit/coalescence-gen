@@ -57,11 +57,12 @@ public void generateHttpServer(StringBuilder builder, HttpService s, ushort tabL
 		}
 		builder.appendLine();
 		builder.tabs(tabLevel++).appendLine("internal {0}Headers(Microsoft.AspNetCore.Http.IHeaderDictionary headers) {", m.name);
+		int c = 1;
 		foreach (smp; m.header) {
 			if (smp.type.mode == TypeMode.Collection) {
-				builder.tabs(tabLevel).appendLine("if (headers.TryGetValue(\"{0}\", out StringValues values)) this.{0} = values.Select(a => {1}).ToList();", smp.name, getStringConversion(smp, "a"));
+				builder.tabs(tabLevel).appendLine("if (headers.TryGetValue(\"{0}\", out StringValues values{2})) this.{0} = values{2}.Select(a => {1}).ToList();", smp.name, getStringConversion(smp, "a"), to!string(c++));
 			} else if (smp.type.mode == TypeMode.Primitive) {
-				builder.tabs(tabLevel).appendLine("if (headers.TryGetValue(\"{0}\", out StringValues values)) this.{0} = {1};", smp.name, getStringConversion(smp, "values.First()"));
+				builder.tabs(tabLevel).appendLine("if (headers.TryGetValue(\"{0}\", out StringValues values{2})) this.{0} = {1};", smp.name, getStringConversion(smp, "values" ~ to!string(c++) ~ ".First()"), to!string(c++));
 			}
 		}
 		builder.tabs(--tabLevel).appendLine("}");
