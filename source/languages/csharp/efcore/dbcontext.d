@@ -85,7 +85,7 @@ public void generateEFContext(CSharpProjectOptions opts, Schema[] schemata) {
 			sb.tabs(--tabLevel).appendLine("});");
 		}
 		foreach (t; s.getViews()) {
-			sb.tabs(tabLevel).appendLine("modelBuilder.{0}<{2}.{1}>(entity =>", (opts.compatibility == CSharpCompatibility.NET60 ? "Entity" : "Query"), t.name, s.name.uppercaseFirst());
+			sb.tabs(tabLevel).appendLine("modelBuilder.Entity<{1}.{0}>(entity =>", t.name, s.name.uppercaseFirst());
 			sb.tabs(tabLevel++).appendLine("{");
 			sb.tabs(tabLevel).appendLine("entity.HasNoKey().ToView(\"{0}\", \"{1}\");", t.name, s.name);
 			foreach (c; t.members)

@@ -193,7 +193,7 @@ private void generateServerMethodParams(StringBuilder builder, HttpServiceMethod
 		}
 
 		if (sm.header.length != 0) {
-			builder.append("{0}Header headers = null, ", sm.name);
+			builder.append("{0}Headers headers = null, ", sm.name);
 		}
 	}
 
