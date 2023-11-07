@@ -24,12 +24,8 @@ public void generateEFContext(CSharpProjectOptions opts, Schema[] schemata) {
 	sb.tabs(tabLevel).appendLine("using System;");
 	sb.tabs(tabLevel).appendLine("using System.Collections.Generic;");
 	sb.tabs(tabLevel).appendLine("using System.Data;");
-	if (opts.compatibility == CSharpCompatibility.NET60) {
-		sb.tabs(tabLevel).appendLine("using Microsoft.Data.SqlClient;");
-	} else {
-		sb.tabs(tabLevel).appendLine("using System.Data.SqlClient;");
-	}
 	sb.tabs(tabLevel).appendLine("using System.Threading.Tasks;");
+	sb.tabs(tabLevel).appendLine("using Microsoft.Data.SqlClient;");
 	sb.tabs(tabLevel).appendLine("using Microsoft.EntityFrameworkCore;");
 	sb.tabs(tabLevel).appendLine("using Microsoft.EntityFrameworkCore.Metadata;");
 	sb.tabs(tabLevel).appendLine("using EllipticBit.Services.Database;");
