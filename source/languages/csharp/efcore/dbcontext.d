@@ -283,7 +283,11 @@ private void generateStoredProcedure(StringBuilder sb, Procedure p, int tabLevel
 								a.type != SqlDbType.Udt)) {
 		sb.appendLine(")");
 	} else {
-		sb.appendLine(", bool noResult = true)");
+		if (p.parameters.length == 0) {
+			sb.appendLine("bool noResult = true)");
+		} else {
+			sb.appendLine(", bool noResult = true)");
+		}
 	}
 	sb.tabs(tabLevel++).appendLine("{");
 	sb.tabs(tabLevel).appendLine("using var dbc = new SqlConnection(_parent._connectionString);");
