@@ -259,7 +259,7 @@ private void generateStoredProcedure(StringBuilder sb, Procedure p, int tabLevel
 		sb.appendLine();
 		sb.tabs(tabLevel).append("public async Task<{0}Result> {0}(", p.name);
 	} else {
-		sb.tabs(tabLevel).append("public async Task<DataSet> {0}(", p.name);
+		sb.tabs(tabLevel).append("public async Task<SqlDataReader> {0}(", p.name);
 	}
 	bool hasParam = false;
 	foreach (pp; p.parameters.filter!(a => a.direction == ParameterDirection.Input)) {
@@ -277,12 +277,17 @@ private void generateStoredProcedure(StringBuilder sb, Procedure p, int tabLevel
 	if (hasParam) {
 		sb.removeRight(2);
 	}
-	sb.appendLine(")");
+	if (p.parameters.any!(a => (a.direction == ParameterDirection.ReturnValue ||
+								a.direction == ParameterDirection.InputOutput ||
+								a.direction == ParameterDirection.Output) &&
+								a.type != SqlDbType.Udt)) {
+		sb.appendLine(")");
+	} else {
+		sb.appendLine(", bool noResult = true)");
+	}
 	sb.tabs(tabLevel++).appendLine("{");
-	sb.tabs(tabLevel).appendLine("using (var dbc = new SqlConnection(_parent._connectionString))");
-	sb.tabs(tabLevel).appendLine("using (var cmd = dbc.CreateCommand())");
-	sb.tabs(tabLevel).appendLine("using (var da = new SqlDataAdapter(cmd))");
-	sb.tabs(tabLevel++).appendLine("{");
+	sb.tabs(tabLevel).appendLine("using var dbc = new SqlConnection(_parent._connectionString);");
+	sb.tabs(tabLevel).appendLine("using var cmd = dbc.CreateCommand();");
 	sb.tabs(tabLevel).appendLine("await dbc.OpenAsync();");
 	sb.tabs(tabLevel).appendLine("cmd.CommandText = \"[{0}].[{1}]\";", p.parent.sqlName, p.sqlName);
 	sb.tabs(tabLevel).appendLine("cmd.CommandType = CommandType.StoredProcedure;");
@@ -291,8 +296,7 @@ private void generateStoredProcedure(StringBuilder sb, Procedure p, int tabLevel
 			auto direction = pp.direction == ParameterDirection.Input ? "Input" :
 				pp.direction == ParameterDirection.InputOutput ? "InputOutput" :
 				"ReturnValue";
-			sb.tabs(tabLevel).appendLine("var p{0} = new SqlParameter(\"@{0}\", SqlDbType.{1}) { Value = (object){0} ?? DBNull.Value, Direction = ParameterDirection.{2} };", pp.name, to!string(pp.type), direction);
-			sb.tabs(tabLevel).appendLine("cmd.Parameters.Add(p{0});", pp.name);
+			sb.tabs(tabLevel).appendLine("cmd.Parameters.Add(new SqlParameter(\"@{0}\", SqlDbType.{1}) { Value = (object){0} ?? DBNull.Value, Direction = ParameterDirection.{2} });", pp.name, to!string(pp.type), direction);
 		} else if (pp.type == SqlDbType.Udt) {
 			sb.tabs(tabLevel).appendLine("var dt{0} = new DataTable();", pp.name);
 			foreach (c; pp.udtType.members)
@@ -327,10 +331,11 @@ private void generateStoredProcedure(StringBuilder sb, Procedure p, int tabLevel
 		}
 		sb.tabs(tabLevel).appendLine("return rv;");
 	} else {
-		sb.tabs(tabLevel).appendLine("var ds = new DataSet();");
-		sb.tabs(tabLevel).appendLine("await Task.Run(() => { da.Fill(ds); });");
-		sb.tabs(tabLevel).appendLine("return ds;");
+		sb.tabs(tabLevel++).appendLine("if (noResult) {");
+		sb.tabs(tabLevel).appendLine("await cmd.ExecuteNonQueryAsync();");
+		sb.tabs(tabLevel).appendLine("return null;");
+		sb.tabs(--tabLevel).appendLine("}");
+		sb.tabs(tabLevel).appendLine("return await cmd.ExecuteReaderAsync(CommandBehavior.CloseConnection);");
 	}
-	sb.tabs(--tabLevel).appendLine("}");
 	sb.tabs(--tabLevel).appendLine("}");
 }
