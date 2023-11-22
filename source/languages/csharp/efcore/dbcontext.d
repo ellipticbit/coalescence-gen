@@ -296,7 +296,8 @@ private void generateStoredProcedure(StringBuilder sb, Procedure p, int tabLevel
 			auto direction = pp.direction == ParameterDirection.Input ? "Input" :
 				pp.direction == ParameterDirection.InputOutput ? "InputOutput" :
 				"ReturnValue";
-			sb.tabs(tabLevel).appendLine("cmd.Parameters.Add(new SqlParameter(\"@{0}\", SqlDbType.{1}) { Value = (object){0} ?? DBNull.Value, Direction = ParameterDirection.{2} });", pp.name, to!string(pp.type), direction);
+			sb.tabs(tabLevel).appendLine("var p{0} = new SqlParameter(\"@{0}\", SqlDbType.{1}) { Value = (object){0} ?? DBNull.Value, Direction = ParameterDirection.{2} };", pp.name, to!string(pp.type), direction);
+			sb.tabs(tabLevel).appendLine("cmd.Parameters.Add(p{0});", pp.name);
 		} else if (pp.type == SqlDbType.Udt) {
 			sb.tabs(tabLevel).appendLine("var dt{0} = new DataTable();", pp.name);
 			foreach (c; pp.udtType.members)
