@@ -290,8 +290,8 @@ private void generateStoredProcedure(StringBuilder sb, Procedure p, int tabLevel
 		}
 	}
 	sb.tabs(tabLevel++).appendLine("{");
-	sb.tabs(tabLevel).appendLine("using var dbc = new SqlConnection(_parent._connectionString);");
-	sb.tabs(tabLevel).appendLine("using var cmd = dbc.CreateCommand();");
+	sb.tabs(tabLevel).appendLine("var dbc = new SqlConnection(_parent._connectionString);");
+	sb.tabs(tabLevel).appendLine("var cmd = dbc.CreateCommand();");
 	sb.tabs(tabLevel).appendLine("await dbc.OpenAsync();");
 	sb.tabs(tabLevel).appendLine("cmd.CommandText = \"[{0}].[{1}]\";", p.parent.sqlName, p.sqlName);
 	sb.tabs(tabLevel).appendLine("cmd.CommandType = CommandType.StoredProcedure;");
@@ -338,6 +338,9 @@ private void generateStoredProcedure(StringBuilder sb, Procedure p, int tabLevel
 	} else {
 		sb.tabs(tabLevel++).appendLine("if (noResult) {");
 		sb.tabs(tabLevel).appendLine("await cmd.ExecuteNonQueryAsync();");
+		sb.tabs(tabLevel).appendLine("dbc.Close();");
+		sb.tabs(tabLevel).appendLine("cmd.Dispose();");
+		sb.tabs(tabLevel).appendLine("dbc.Dispose();");
 		sb.tabs(tabLevel).appendLine("return null;");
 		sb.tabs(--tabLevel).appendLine("}");
 		sb.tabs(tabLevel).appendLine("return await cmd.ExecuteReaderAsync(CommandBehavior.CloseConnection);");
