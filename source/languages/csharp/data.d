@@ -217,11 +217,7 @@ private void generateDataSqlMember(DataMember mm, StringBuilder builder, CSharpP
 	builder.appendLine();
 	builder.tabs(tabLevel).appendLine("private {0} _{1};", getTypeFromSqlType(mm.sqlType, mm.isNullable), mm.name);
 	builder.generateBindingMetadata(mm.transport.isNullOrWhitespace() ? mm.name : mm.transport, !mm.isNullable, mm.isTypeEnum(), opts, tabLevel);
-	if (opts.uiBindings) {
-		builder.tabs(tabLevel).appendLine("public {0} {1} { get { return _{1}; } {2}set { _{1} = value; {3}} }", getTypeFromSqlType(mm.sqlType, mm.isNullable), mm.name, mm.isReadOnly ? "private " : string.init, generateSetter(mm.name, opts.uiBindings));
-	} else {
-		builder.tabs(tabLevel).appendLine("public {0} {1} { get { return _{1}; } {2}set { _{1} = value; } }", getTypeFromSqlType(mm.sqlType, mm.isNullable), mm.name, mm.isReadOnly ? "private " : string.init);
-	}
+	builder.tabs(tabLevel).appendLine("public {0} {1} { get { return _{1}; } {2}set { {3} } }", getTypeFromSqlType(mm.sqlType, mm.isNullable), mm.name, mm.isReadOnly ? "private " : string.init, generateSetter(mm.name, opts.uiBindings));
 }
 
 private void generateBindingMetadata(StringBuilder builder, string transport, bool isRequired, bool stringEnum, CSharpProjectOptions opts, ushort tabLevel) {
@@ -241,5 +237,5 @@ private void generateBindingMetadata(StringBuilder builder, string transport, bo
 }
 
 private string generateSetter(string name, bool binding) {
-	return binding ? "SetField(ref _" ~ name ~ ", value, \"" ~ name ~"\");" : "_" ~ name ~ " = value;";
+	return binding ? "SetField(ref _" ~ name ~ ", value);" : "_" ~ name ~ " = value;";
 }
