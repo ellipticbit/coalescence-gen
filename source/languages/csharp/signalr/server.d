@@ -36,6 +36,11 @@ public void generateWebsocketServer(StringBuilder builder, WebsocketService s, u
         builder.tabs(tabLevel++).appendLine("{");
 		foreach(ns; s.namespaces) {
 			foreach(m; ns.client) {
+				if (ns.name !is null && ns.name != string.init) {
+					builder.tabs(tabLevel).appendLine("[HubMethodName(\"{0}.{1}\")]", cleanName(ns.name), cleanName(m.socketName));
+				} else {
+					builder.tabs(tabLevel).appendLine("[HubMethodName(\"{0}\")]", cleanName(m.socketName));
+				}
 				generateInterfaceMethod(builder, m, ns.name, tabLevel);
 			}
 		}
