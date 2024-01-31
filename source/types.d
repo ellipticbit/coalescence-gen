@@ -335,14 +335,17 @@ public final class TypeComplex : TypeBase {
 		else if (typeStr.toLower().startsWith("string".toLower())) {
 			_type = new TypePrimitive(TypePrimitives.String);
 			_nullable = true;
+			return;
 		}
 		else if (typeStr.toLower().startsWith("array64".toLower())) {
 			_type = new TypePrimitive(TypePrimitives.Base64ByteArray);
 			_nullable = true;
+			return;
 		}
 		else if (typeStr.toLower().startsWith("string64".toLower())) {
 			_type = new TypePrimitive(TypePrimitives.Base64String);
 			_nullable = true;
+			return;
 		}
 		else if (typeStr.toLower().startsWith("datetime".toLower())) _type = new TypePrimitive(TypePrimitives.DateTime);
 		else if (typeStr.toLower().startsWith("datetimetz".toLower())) _type = new TypePrimitive(TypePrimitives.DateTimeTz);

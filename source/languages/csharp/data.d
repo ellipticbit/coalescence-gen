@@ -34,7 +34,7 @@ public void generateDataNetwork(Network m, StringBuilder builder, CSharpProjectO
     builder.tabs(tabLevel++).appendLine("{");
 
     foreach(v; m.members) {
-        v.generateDataNetworkMember(builder, opts, isClient, tabLevel);
+        v.generateDataNetworkMember(builder, opts, tabLevel);
 	}
 
     builder.appendLine();
@@ -74,7 +74,7 @@ public void generateDataNetwork(Network m, StringBuilder builder, CSharpProjectO
     builder.tabs(--tabLevel).appendLine("}");
 }
 
-private void generateDataNetworkMember(DataMember mm, StringBuilder builder, CSharpProjectOptions opts, bool isClient, ushort tabLevel)
+private void generateDataNetworkMember(DataMember mm, StringBuilder builder, CSharpProjectOptions opts, ushort tabLevel)
 {
 	if (mm.hidden) return;
 
