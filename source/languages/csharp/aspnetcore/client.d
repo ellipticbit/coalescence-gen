@@ -216,7 +216,7 @@ private void generateClientMethod(StringBuilder builder, HttpService s, HttpServ
 	if (sm.authenticate && sm.scheme != string.init) {
 		builder.tabs(tabLevel).appendLine(".Authentication(\"{0}\")", sm.scheme);
 	} else if (sm.authenticate || s.authenticate) {
-		builder.tabs(tabLevel).appendLine(".Authentication(options.DefaultAuthenticationScheme)");
+		builder.tabs(tabLevel).appendLine(".Authentication()");
 	}
 
 	if (sm.timeout > 0) builder.tabs(tabLevel).append(".Timeout(TimeSpan.FromSeconds({0}))", to!string(sm.timeout));
