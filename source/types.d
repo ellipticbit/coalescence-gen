@@ -312,10 +312,12 @@ public final class TypeComplex : TypeBase {
 		}
 		else if (typeStr.toLower().startsWith("stream".toLower())) {
 			_type = new TypeStream();
+			_nullable = true;
 			return;
 		}
 		else if (typeStr.toLower().startsWith("content".toLower())) {
 			_type = new TypeContent();
+			_nullable = true;
 			return;
 		}
 		else if (typeStr.toLower().startsWith("bool".toLower())) _type = new TypePrimitive(TypePrimitives.Boolean);
@@ -330,9 +332,18 @@ public final class TypeComplex : TypeBase {
 		else if (typeStr.toLower().startsWith("float".toLower())) _type = new TypePrimitive(TypePrimitives.Float);
 		else if (typeStr.toLower().startsWith("double".toLower())) _type = new TypePrimitive(TypePrimitives.Double);
 		else if (typeStr.toLower().startsWith("fixed".toLower())) _type = new TypePrimitive(TypePrimitives.Fixed);
-		else if (typeStr.toLower().startsWith("string".toLower())) _type = new TypePrimitive(TypePrimitives.String);
-		else if (typeStr.toLower().startsWith("array64".toLower())) _type = new TypePrimitive(TypePrimitives.Base64ByteArray);
-		else if (typeStr.toLower().startsWith("string64".toLower())) _type = new TypePrimitive(TypePrimitives.Base64String);
+		else if (typeStr.toLower().startsWith("string".toLower())) {
+			_type = new TypePrimitive(TypePrimitives.String);
+			_nullable = true;
+		}
+		else if (typeStr.toLower().startsWith("array64".toLower())) {
+			_type = new TypePrimitive(TypePrimitives.Base64ByteArray);
+			_nullable = true;
+		}
+		else if (typeStr.toLower().startsWith("string64".toLower())) {
+			_type = new TypePrimitive(TypePrimitives.Base64String);
+			_nullable = true;
+		}
 		else if (typeStr.toLower().startsWith("datetime".toLower())) _type = new TypePrimitive(TypePrimitives.DateTime);
 		else if (typeStr.toLower().startsWith("datetimetz".toLower())) _type = new TypePrimitive(TypePrimitives.DateTimeTz);
 		else if (typeStr.toLower().startsWith("timespan".toLower())) _type = new TypePrimitive(TypePrimitives.TimeSpan);

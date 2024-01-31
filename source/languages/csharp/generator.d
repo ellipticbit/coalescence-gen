@@ -347,7 +347,7 @@ private void generateUsingsClientComplete(StringBuilder builder, Project prj, CS
 			builder.appendLine("using EllipticBit.Coalescence.SignalR;");
 		}
 		if (prj.hasHttpServices) {
-			builder.appendLine("using EllipticBit.Coalescence.Request;");
+			builder.appendLine("using EllipticBit.Coalescence.Shared.Request;");
 		}
 	}
 	if (opts.uiBindings) {
@@ -417,7 +417,7 @@ private void generateUsingsClientHttp(StringBuilder builder) {
 	builder.appendLine("using System.Net.Http;");
 	builder.appendLine("using System.Net.Http.Headers;");
 	builder.appendLine("using System.Text;");
-	builder.appendLine("using EllipticBit.Coalescence.Request;");
+	builder.appendLine("using EllipticBit.Coalescence.Shared.Request;");
 	builder.appendLine();
 }
 

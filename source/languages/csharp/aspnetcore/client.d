@@ -24,7 +24,7 @@ public void generateHttpClient(StringBuilder builder, HttpService s, ushort tabL
 	builder.appendLine();
 	foreach(m; s.methods) {
 		if (m.query.length == 0) continue;
-		builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"2.0.0.0\")]");
+		builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.2.0.0\")]");
 		builder.tabs(tabLevel).appendLine("[System.Diagnostics.DebuggerNonUserCode()]");
 		builder.tabs(tabLevel).appendLine("public class {0}Query : ICoalescenceParameters", m.name);
 		builder.tabs(tabLevel++).appendLine("{");
@@ -57,7 +57,7 @@ public void generateHttpClient(StringBuilder builder, HttpService s, ushort tabL
 	builder.appendLine();
 	foreach(m; s.methods) {
 		if (m.header.length == 0) continue;
-		builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"2.0.0.0\")]");
+		builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.2.0.0\")]");
 		builder.tabs(tabLevel).appendLine("[System.Diagnostics.DebuggerNonUserCode()]");
 		builder.tabs(tabLevel).appendLine("public class {0}Header : ICoalescenceParameters", m.name);
 		builder.tabs(tabLevel++).appendLine("{");
@@ -87,7 +87,7 @@ public void generateHttpClient(StringBuilder builder, HttpService s, ushort tabL
 	}
 
 	builder.appendLine();
-	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"2.0.0.0\")]");
+	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.2.0.0\")]");
 	builder.tabs(tabLevel).appendLine("{1} interface I{0}", s.name, s.isPublic ? "public" : "internal");
 	builder.tabs(tabLevel++).appendLine("{");
 	foreach(m; s.methods) {
@@ -95,7 +95,7 @@ public void generateHttpClient(StringBuilder builder, HttpService s, ushort tabL
 	}
 	builder.tabs(--tabLevel).appendLine("}");
 	builder.appendLine();
-	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"2.0.0.0\")]");
+	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.2.0.0\")]");
 	builder.tabs(tabLevel).appendLine("{1} sealed partial class {0} : I{0}", s.name, s.isPublic ? "public" : "internal");
 	builder.tabs(tabLevel++).appendLine("{");
 	builder.tabs(tabLevel).appendLine("private readonly ICoalescenceRequestFactory requests;");
@@ -215,8 +215,8 @@ private void generateClientMethod(StringBuilder builder, HttpService s, HttpServ
 
 	if (sm.authenticate && sm.scheme != string.init) {
 		builder.tabs(tabLevel).appendLine(".Authentication(\"{0}\")", sm.scheme);
-	} else if (sm.authenticate && s.scheme != string.init) {
-		builder.tabs(tabLevel).appendLine(".Authentication(defaultAuthenticationScheme)", sm.scheme);
+	} else if (sm.authenticate || s.authenticate) {
+		builder.tabs(tabLevel).appendLine(".Authentication(options.DefaultAuthenticationScheme)");
 	}
 
 	if (sm.timeout > 0) builder.tabs(tabLevel).append(".Timeout(TimeSpan.FromSeconds({0}))", to!string(sm.timeout));
@@ -286,13 +286,13 @@ private void generateClientMethod(StringBuilder builder, HttpService s, HttpServ
 				builder.tabs(tabLevel--).appendLine(".AsContent();");
 			}
 			else if (typeid(tc.type) == typeid(TypePrimitive) && (cast(TypePrimitive)tc.type).primitive == TypePrimitives.String) {
-				builder.tabs(tabLevel--).appendLine(".AsText();");
+				builder.tabs(tabLevel--).appendLine(".AsString();");
 			}
 			else if (typeid(tc.type) == typeid(TypeFormUrlEncoded)) {
 				builder.tabs(tabLevel--).appendLine(".AsFormUrlEncoded();");
 			}
 			else {
-				builder.tabs(tabLevel--).appendLine(".AsObject<{0}>();", generateType(tc));
+				builder.tabs(tabLevel--).appendLine(".AsDeserialized<{0}>();", generateType(tc));
 			}
 		} else {
 			//TODO: Multipart returns not implemented in client library.

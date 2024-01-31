@@ -21,7 +21,7 @@ import std.string;
 int main(string[] args)
 {
     writeln("Coalescence Code Generator - v", appver);
-    writeln("Copyright (C) 2023 EllipticBit LLC, All Rights Reserved.");
+    writeln("Copyright (C) 2024 EllipticBit LLC, All Rights Reserved.");
 	writeln();
 
     //Make sure there are enough arguments and display usage
