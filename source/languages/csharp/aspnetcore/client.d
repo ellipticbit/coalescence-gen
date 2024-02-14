@@ -218,7 +218,7 @@ private void generateClientMethod(StringBuilder builder, HttpService s, HttpServ
 			builder.tabs(tabLevel).appendLine(".Query(query)");
 		} else {
 			foreach (smp; sm.query) {
-				builder.tabs(tabLevel).appendLine(".Query({0})", smp.name);
+				builder.tabs(tabLevel).appendLine(".Query(\"{0}\", {0})", smp.name);
 			}
 		}
 	}
