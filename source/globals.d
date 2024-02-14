@@ -12,7 +12,7 @@ import std.string;
 
 import sdlang;
 
-public const string appver = "1.2.0";
+public const string appver = "1.2.4";
 
 public __gshared int errorCount = 0;
 public __gshared int warnCount = 0;

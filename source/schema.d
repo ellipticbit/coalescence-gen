@@ -729,6 +729,7 @@ public final class HttpServiceMethod : TypeUser
 	public string[] routeParts;
 	public TypeComplex[] route;
 	public TypeComplex[] query;
+	public bool queryAsParams;
 	public TypeComplex[] header;
 	public TypeComplex[] content;
 	public TypeComplex[] returns;
@@ -783,7 +784,9 @@ public final class HttpServiceMethod : TypeUser
 
 		auto qt = root.getTag("query", null);
 		if (qt !is null) {
+			this.queryAsParams = qt.getAttribute!bool("asParams", true);
 			foreach(smp; qt.maybe.attributes) {
+				if (smp.name == "asParams") continue;
 				query ~= new TypeComplex(smp.name, smp.value.get!string(), root.location);
 			}
 		}

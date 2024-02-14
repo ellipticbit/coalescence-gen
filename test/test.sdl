@@ -68,7 +68,7 @@ namespace "Service" {
 		}
 		get "GetJobs" {
 			header tenantId="string"
-			query plate="bool" vin="[int32]"
+			query plate="bool" vin="[int32]" asParams=false
 		}
 	}
 }
