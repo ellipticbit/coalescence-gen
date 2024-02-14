@@ -32,10 +32,14 @@ public void generateHttpClient(StringBuilder builder, HttpService s, ushort tabL
 			builder.tabs(tabLevel).appendLine("public {1} {0} { get; }", smp.name, generateType(smp, false, true));
 		}
 		builder.appendLine();
-		builder.tabs(tabLevel++).appendLine("public {0}Query() {", m.name);
-		foreach (smp; m.query) {
-			if (smp.type.mode != TypeMode.Collection) continue;
-			builder.appendLine("{0} = new {1}();", smp.name, generateType(smp, false, true));
+		builder.tabs(tabLevel++).append("public {0}Query(", m.name);
+		foreach(smp; m.query) {
+			builder.append("{1} {0}, ", smp.name, generateType(smp, false, true));
+		}
+		builder.removeRight(2);
+		builder.appendLine(") {");
+		foreach(smp; m.query) {
+			builder.tabs(tabLevel).appendLine("this.{0} = {0};", smp.name);
 		}
 		builder.tabs(--tabLevel).appendLine("}");
 		builder.appendLine();
@@ -65,10 +69,14 @@ public void generateHttpClient(StringBuilder builder, HttpService s, ushort tabL
 			builder.tabs(tabLevel).appendLine("public {1} {0} { get; }", smp.name, generateType(smp, false, true));
 		}
 		builder.appendLine();
-		builder.tabs(tabLevel++).appendLine("public {0}Header() {", m.name);
-		foreach (smp; m.header) {
-			if (smp.type.mode != TypeMode.Collection) continue;
-			builder.tabs(tabLevel).appendLine("{0} = new {1}();", smp.name, generateType(smp, false, true));
+		builder.tabs(tabLevel++).append("public {0}Header(", m.name);
+		foreach(smp; m.header) {
+			builder.append("{1} {0}, ", smp.name, generateType(smp, false, true));
+		}
+		builder.removeRight(2);
+		builder.appendLine(") {");
+		foreach(smp; m.header) {
+			builder.tabs(tabLevel).appendLine("this.{0} = {0};", smp.name);
 		}
 		builder.tabs(--tabLevel).appendLine("}");
 		builder.appendLine();
