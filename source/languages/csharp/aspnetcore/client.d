@@ -341,7 +341,7 @@ private void generateClientMethodParams(StringBuilder builder, HttpServiceMethod
 			builder.append("{0}Query query = null, ", sm.name);
 		} else {
 			foreach (smp; sm.query) {
-				builder.append("{0} {1}, ", smp.name, generateType(smp, false, true));
+				builder.append("{1} {0}, ", smp.name, generateType(smp, false, true));
 			}
 		}
 	}
