@@ -170,14 +170,14 @@ public bool analyseService(Project prj, HttpService s)
 		}
 		foreach(smp; sm.query) {
 			if (analyseType(prj, smp, s.parent)) hasErrors = true;
-			if (smp.type.mode != TypeMode.Collection && smp.type.mode != TypeMode.Primitive && smp.type.mode != TypeMode.ByteArray) {
+			if (smp.type.mode != TypeMode.Collection && smp.type.mode != TypeMode.Primitive && smp.type.mode != TypeMode.ByteArray && smp.type.mode != TypeMode.Enum) {
 				hasErrors = true;
 				writeAnalyserError("Parameter '" ~ smp.name ~ "' of Member '" ~ sm.name ~ "' must be either a collection or primitive type.", smp.sourceLocation);
 			}
 		}
 		foreach(smp; sm.header) {
 			if (analyseType(prj, smp, s.parent)) hasErrors = true;
-			if (smp.type.mode != TypeMode.Collection && smp.type.mode != TypeMode.Primitive && smp.type.mode != TypeMode.ByteArray) {
+			if (smp.type.mode != TypeMode.Collection && smp.type.mode != TypeMode.Primitive && smp.type.mode != TypeMode.ByteArray && smp.type.mode != TypeMode.Enum) {
 				hasErrors = true;
 				writeAnalyserError("Parameter '" ~ smp.name ~ "' of Member '" ~ sm.name ~ "' must be either a collection or primitive type.", smp.sourceLocation);
 			}
