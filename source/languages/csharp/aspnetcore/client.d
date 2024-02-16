@@ -29,12 +29,12 @@ public void generateHttpClient(StringBuilder builder, HttpService s, ushort tabL
 		builder.tabs(tabLevel).appendLine("public class {0}Query : ICoalescenceParameters", m.name);
 		builder.tabs(tabLevel++).appendLine("{");
 		foreach(smp; m.query) {
-			builder.tabs(tabLevel).appendLine("public {1} {0} { get; }", smp.name, generateType(smp, false, true));
+			builder.tabs(tabLevel).appendLine("public {1} {0} { get; }", smp.name, generateType(smp, false, false));
 		}
 		builder.appendLine();
 		builder.tabs(tabLevel++).append("public {0}Query(", m.name);
 		foreach(smp; m.query) {
-			builder.append("{1} {0}, ", smp.name, generateType(smp, false, true));
+			builder.append("{1} {0}, ", smp.name, generateType(smp, false, false));
 		}
 		builder.removeRight(2);
 		builder.appendLine(") {");
@@ -341,7 +341,7 @@ private void generateClientMethodParams(StringBuilder builder, HttpServiceMethod
 			builder.append("{0}Query query = null, ", sm.name);
 		} else {
 			foreach (smp; sm.query) {
-				builder.append("{1} {0}, ", smp.name, generateType(smp, false, true));
+				builder.append("{1} {0}, ", smp.name, generateType(smp, false, false));
 			}
 		}
 	}
