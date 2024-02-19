@@ -329,12 +329,10 @@ private void generateClientMethodParams(StringBuilder builder, HttpServiceMethod
 		builder.append("{0} {1}, ", generateType(smp, false, false), cleanName(smp.name));
 	}
 
-	if (sm.query.length != 0) {
-		if (!sm.queryAsParams) {
-			foreach (smp; sm.query) {
-				if (smp.hasDefault()) continue;
-				builder.append("{0} {1}, ", generateType(smp, false, false), cleanName(smp.name));
-			}
+	if (sm.query.length != 0 && sm.queryAsParams) {
+		foreach (smp; sm.query) {
+			if (smp.hasDefault()) continue;
+			builder.append("{0} {1}, ", generateType(smp, false, false), cleanName(smp.name));
 		}
 	}
 
