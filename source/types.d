@@ -243,7 +243,7 @@ public final class TypeComplex : TypeBase {
 		void ProcessOptions(string typeDef, bool isNullable, bool allowValues) {
 			if (typeDef == string.init) return;
 
-			_nullable = typeDef.canFind('?');
+			_nullable = isNullable || typeDef.canFind('?');
 			if (!(isNullable || _nullable) && typeDef.canFind("=null") && typeid(_type) != typeid(TypeUnknown)) {
 				writeParseError("Null default value specified on non-nullable type. The null default value specifier will be ignored", location);
 			} else {

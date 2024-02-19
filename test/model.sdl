@@ -10,6 +10,7 @@ namespace "Service" {
 		Member1 type="uint8" readonly=true
 		Member2 type="double?" tansport="m2"
 		Member3 type="Service.TestEnum" transport="m3"
+		Member4 type="string"
 		IntCollectionTest type="[int32]" transport="intt"
 		ModelCollectionTest type="[SubModel]" transport="mt" modelbind=true
 		NamespaceModelTest type="[NamespaceTest]" transport="nt" modelbind=true

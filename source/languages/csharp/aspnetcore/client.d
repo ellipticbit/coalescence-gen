@@ -329,19 +329,28 @@ private void generateClientMethodParams(StringBuilder builder, HttpServiceMethod
 		builder.append("{0} {1}, ", generateType(smp, false, false), cleanName(smp.name));
 	}
 
+	if (sm.query.length != 0) {
+		if (!sm.queryAsParams) {
+			foreach (smp; sm.query) {
+				if (smp.hasDefault()) continue;
+				builder.append("{0} {1}, ", generateType(smp, false, false), cleanName(smp.name));
+			}
+		}
+	}
+
 	// Generate optional parameters
 	foreach (smp; sm.route) {
 		if (!smp.hasDefault()) continue;
 		builder.append("{0} {1} = {2}, ", generateType(smp, false, false), cleanName(smp.name), getDefaultValue(smp));
 	}
 
-	// These parameters are only required in the abstract signature
 	if (sm.query.length != 0) {
 		if (!sm.queryAsParams) {
 			builder.append("{0}Query query = null, ", sm.name);
 		} else {
 			foreach (smp; sm.query) {
-				builder.append("{1} {0}, ", smp.name, generateType(smp, false, false));
+				if (!smp.hasDefault()) continue;
+				builder.append("{0} {1} = {2}, ", generateType(smp, false, false)), cleanName(smp.name), getDefaultValue(smp);
 			}
 		}
 	}
