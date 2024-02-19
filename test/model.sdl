@@ -1,7 +1,7 @@
 namespace "Service" {
 	enum "TestEnum" packed=false {
 		value1
-		value2 100
+		value2 100 isDefaultValue=true
 		value3 "Service.TestEnum.value1" "Service.TestEnum.value2"
 	}
 

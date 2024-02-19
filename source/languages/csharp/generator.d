@@ -595,27 +595,26 @@ public string getDefaultValue(TypeComplex type) {
 				return type.defaultValue;
 			}
 		}
+	} else if (typeid(type.type) == typeid(TypeEnum)) {
+		TypeEnum te = cast(TypeEnum)type.type;
+		auto idx = te.definition.values.countUntil!(a => a.isDefault)();
+		if (idx == -1) {
+			writeParseError("Unable able to locate the default value for enumeration: " ~ te.definition.name, type.sourceLocation);
+			return string.init;
+		}
+		return getCSharpFullName(te.definition) ~ "." ~ te.definition.values[idx].name;
 	} else if (typeid(type.type) == typeid(TypeVoid)) {
 		return string.init;
-	} else if (typeid(type.type) == typeid(TypeByteArray)) {
+	} else if (typeid(type.type) == typeid(TypeByteArray) || typeid(type.type) == typeid(TypeModel) || typeid(type.type) == typeid(TypeStream) || typeid(type.type) == typeid(TypeContent)) {
 		if (type.defaultInit || type.defaultNull) {
 			return "null";
 		} else {
-			writeParseError("Invalid default values for Byte Array types.", type.sourceLocation);
-			return string.init;
-		}
-	} else if (typeid(type.type) == typeid(TypeModel) || typeid(type.type) == typeid(TypeStream) || typeid(type.type) == typeid(TypeContent)) {
-		if (type.defaultNull) {
-			return "null";
-		} else {
-			writeParseError("Invalid default values for Model/Stream/Content types.", type.sourceLocation);
 			return string.init;
 		}
 	} else if (typeid(type.type) == typeid(TypeCollection) || typeid(type.type) == typeid(TypeDictionary)) {
 		if (type.defaultInit || type.defaultNull) {
-			return "new()";
+			return "default(" ~ generateType(type) ~ ")";
 		} else {
-			writeParseError("Invalid default values for Collection and Dictionary types.", type.sourceLocation);
 			return string.init;
 		}
 	}

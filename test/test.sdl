@@ -55,7 +55,7 @@ namespace "Service" {
 			return result="[TestModel]"
 		}
 		post "Method6" authenticate=true {
-			route "method6" "id" id="uint64"
+			route "method6" "id/enum" id="uint64" enum="TestEnum=init"
 			header test="string=null"
 		}
 		post "Method7" authenticate=true {
@@ -63,7 +63,7 @@ namespace "Service" {
 			header test="[uint8]"
 		}
 		post "Method8" {
-			route "method8/id/optional" id="uint64" optional="uint64?"
+			route "method8/id/optional" id="uint64" optional="uint64?=null"
 			header tenantId="string"
 		}
 		get "GetJobs" {

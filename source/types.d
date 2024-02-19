@@ -240,31 +240,32 @@ public final class TypeComplex : TypeBase {
 		_name = name;
 		_sourceLocation = location;
 
-		void ProcessOptions(string tyepDef, bool allowValues) {
-			if (tyepDef == string.init) return;
+		void ProcessOptions(string typeDef, bool isNullable, bool allowValues) {
+			if (typeDef == string.init) return;
 
-			_nullable = tyepDef.canFind('?');
+			_nullable = typeDef.canFind('?');
+			if (!(isNullable || _nullable) && typeDef.canFind("=null") && typeid(_type) != typeid(TypeUnknown)) {
+				writeParseError("Null default value specified on non-nullable type. The null default value specifier will be ignored", location);
+			} else {
+				_defaultNull = typeDef.canFind("=null");
+			}
+			_defaultInit = typeDef.canFind("=init");
 
 			if (allowValues) {
-				if (tyepDef.canFind("=init")) _defaultInit = true;
-				else if (tyepDef.canFind("=null")) _defaultNull = true;
-				else if (tyepDef.canFind("='")) {
-					string split = findSplitAfter(tyepDef, "='")[1];
+				if (typeDef.canFind("='")) {
+					string split = findSplitAfter(typeDef, "='")[1];
 					_defaultValue = split[0..lastIndexOf(split, '\'')];
-				} else if (tyepDef.canFind("=")) {
-					_defaultValue = findSplitAfter(tyepDef, "=")[1];
+				} else if (typeDef.canFind("=")) {
+					_defaultValue = findSplitAfter(typeDef, "=")[1];
+				} else {
+					if (typeDef.canFind("=")) writeParseWarning("Invalid default value specified. No default value will be set.", location);
 				}
-			} else {
-				if (tyepDef.canFind("=init")) _defaultInit = true;
-				else if (tyepDef.canFind("=null")) _defaultNull = true;
-				else if (tyepDef.canFind("=")) writeParseWarning("Invalid default value specified. No default value will be set.", location);
 			}
 		}
 
 		if (typeStr.toLower().startsWith("void".toLower())) {
 			_type = new TypeVoid();
 			_nullable = false;
-			return;
 		}
 		else if (typeStr[0] == '[') {
 			_nullable = true;
@@ -277,7 +278,7 @@ public final class TypeComplex : TypeBase {
 				_type = new TypeCollection(collectionType);
 			}
 
-			ProcessOptions(typeStr[closeIdx+1..$], false);
+			ProcessOptions(typeStr[closeIdx+1..$], true, false);
 			return;
 		}
 		else if (typeStr[0] == '(') {
@@ -307,18 +308,16 @@ public final class TypeComplex : TypeBase {
 				_type = new TypeDictionary(keyType, valueType);
 			}
 
-			ProcessOptions(typeStr[closeIdx..$], false);
+			ProcessOptions(typeStr[closeIdx..$], true, false);
 			return;
 		}
 		else if (typeStr.toLower().startsWith("stream".toLower())) {
 			_type = new TypeStream();
 			_nullable = true;
-			return;
 		}
 		else if (typeStr.toLower().startsWith("content".toLower())) {
 			_type = new TypeContent();
 			_nullable = true;
-			return;
 		}
 		else if (typeStr.toLower().startsWith("bool".toLower())) _type = new TypePrimitive(TypePrimitives.Boolean);
 		else if (typeStr.toLower().startsWith("uint8".toLower())) _type = new TypePrimitive(TypePrimitives.UInt8);
@@ -335,17 +334,14 @@ public final class TypeComplex : TypeBase {
 		else if (typeStr.toLower().startsWith("string".toLower())) {
 			_type = new TypePrimitive(TypePrimitives.String);
 			_nullable = true;
-			return;
 		}
 		else if (typeStr.toLower().startsWith("array64".toLower())) {
 			_type = new TypePrimitive(TypePrimitives.Base64ByteArray);
 			_nullable = true;
-			return;
 		}
 		else if (typeStr.toLower().startsWith("string64".toLower())) {
 			_type = new TypePrimitive(TypePrimitives.Base64String);
 			_nullable = true;
-			return;
 		}
 		else if (typeStr.toLower().startsWith("datetime".toLower())) _type = new TypePrimitive(TypePrimitives.DateTime);
 		else if (typeStr.toLower().startsWith("datetimetz".toLower())) _type = new TypePrimitive(TypePrimitives.DateTimeTz);
@@ -358,7 +354,7 @@ public final class TypeComplex : TypeBase {
 			_type = new TypeUnknown(tstr, location);
 		}
 
-		ProcessOptions(typeStr, true);
+		ProcessOptions(typeStr, _nullable, true);
 	}
 }
 

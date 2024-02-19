@@ -79,23 +79,23 @@ private TypeBase analyseTypeUnknown(Project prj, TypeUnknown type)
 	auto sl = splitter(type.typeName, ".").array;
 	string name = sl[sl.length-1];
 	string namespace = string.init;
-	if(sl.length > 1)
+	if (sl.length > 1)
 		foreach(s; sl[0..$-1])
 			namespace ~= s ~ ".";
-	if(namespace != string.init)
+	if (namespace != string.init)
 		namespace = to!string(namespace[0..$-1]);
 
 	Enumeration fe = searchEnums(prj, name, namespace);
 	DataObject fm = searchData(prj, name, namespace);
 
-	if(fe is null && fm is null)
+	if (fe is null && fm is null)
 	{
 		writeAnalyserError("Unable to locate type: " ~ type.typeName, type.sourceLocation);
 		searchSuggest(prj, cast(TypeUser)type, name);
 		return null;
 	}
 
-	if(fe !is null)
+	if (fe !is null)
 		return new TypeEnum(fe, type.sourceLocation);
 	else {
 		return new TypeModel(fm, type.sourceLocation);
@@ -105,6 +105,8 @@ private TypeBase analyseTypeUnknown(Project prj, TypeUnknown type)
 public bool analyseEnum(Enumeration e)
 {
 	bool hasErrors = false;
+	bool hasDefaultValue = false;
+	string dvName = string.init;
 
 	foreach(ev; e.values)
 	{
@@ -123,6 +125,14 @@ public bool analyseEnum(Enumeration e)
 			}
 
 			eav.value = fev[0];
+		}
+
+		if (ev.isDefault && hasDefaultValue) {
+			ev.isDefault = false;
+			writeAnalyserWarning("HasDefaultValue defined value '" ~ ev.name ~ "' will be ignored and the value '" ~ dvName ~ "' will be used.", ev.sourceLocation);
+		} else {
+			hasDefaultValue = true;
+			dvName = ev.name;
 		}
 	}
 

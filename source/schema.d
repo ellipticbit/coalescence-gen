@@ -280,10 +280,12 @@ public final class EnumerationValue : TypeUser
 	public Enumeration parent;
 	public Nullable!long value;
 	public EnumerationValueAggregate[] aggregate;
+	public bool isDefault;
 
 	public this(Enumeration parent, Tag root) {
 		this.parent = parent;
 		this.name = root.name;
+		this.isDefault = root.getAttribute("isDefaultValue", false);
 		if (root.values.length == 1 && root.values[0].convertsTo!long()) {
 			value = root.values[0].get!long();
 		} else if (root.values.length >= 1 && root.values[0].convertsTo!string()) {
