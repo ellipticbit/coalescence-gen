@@ -350,7 +350,7 @@ private void generateClientMethodParams(StringBuilder builder, HttpServiceMethod
 		} else {
 			foreach (smp; sm.query) {
 				if (!smp.hasDefault()) continue;
-				builder.append("{0} {1} = {2}, ", generateType(smp, false, false)), cleanName(smp.name), getDefaultValue(smp);
+				builder.append("{0} {1} = {2}, ", generateType(smp, false, false), cleanName(smp.name), getDefaultValue(smp));
 			}
 		}
 	}
