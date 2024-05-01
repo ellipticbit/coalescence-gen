@@ -205,7 +205,9 @@ private void generateClientMethod(StringBuilder builder, HttpService s, HttpServ
 				if (ptc is null) {
 					builder.tabs(tabLevel).appendLine(".Path(\"{0}\")", pp);
 				} else {
-					builder.tabs(tabLevel).appendLine(".Path({0})", pp);
+					if (ptc.mode == TypeMode.Primitive && (cast(TypePrimitive)ptc.type).primitive == TypePrimitives.Base64ByteArray) builder.tabs(tabLevel).appendLine(".Path({0}.ArrayToUrlBase64())", pp);
+					else if (ptc.mode == TypeMode.Primitive && (cast(TypePrimitive)ptc.type).primitive == TypePrimitives.Base64String) builder.tabs(tabLevel).appendLine(".Path({0}.StringToUrlBase64Utf8())", pp);
+					else builder.tabs(tabLevel).appendLine(".Path({0})", pp);
 				}
 			}
 		} else {
@@ -218,7 +220,9 @@ private void generateClientMethod(StringBuilder builder, HttpService s, HttpServ
 			builder.tabs(tabLevel).appendLine(".Query(query)");
 		} else {
 			foreach (smp; sm.query) {
-				builder.tabs(tabLevel).appendLine(".Query(\"{0}\", {0})", smp.name);
+				if (smp.mode == TypeMode.Primitive && (cast(TypePrimitive)smp.type).primitive == TypePrimitives.Base64ByteArray) builder.tabs(tabLevel).appendLine(".Query(\"{0}\", {0}.ArrayToUrlBase64())", smp.name);
+				else if (smp.mode == TypeMode.Primitive && (cast(TypePrimitive)smp.type).primitive == TypePrimitives.Base64String) builder.tabs(tabLevel).appendLine(".Query(\"{0}\", {0}.StringToUrlBase64Utf8())", smp.name);
+				else builder.tabs(tabLevel).appendLine(".Query(\"{0}\", {0})", smp.name);
 			}
 		}
 	}
