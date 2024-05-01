@@ -229,7 +229,7 @@ private void generateClientMethod(StringBuilder builder, HttpService s, HttpServ
 
 	if (sm.authenticate && sm.scheme != string.init) {
 		builder.tabs(tabLevel).appendLine(".Authentication(\"{0}\")", sm.scheme);
-	} else if (sm.authenticate || s.authenticate) {
+	} else if (sm.authenticate) {
 		builder.tabs(tabLevel).appendLine(".Authentication()");
 	}
 
