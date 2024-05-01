@@ -517,12 +517,12 @@ public string generateType(TypeComplex type, bool base64external = false, bool f
 
 	else if(typeid(type.type) == typeid(TypeCollection)) {
 		TypeCollection t = cast(TypeCollection)(type.type);
-		return "List<" ~ generateType(t.collectionType) ~ ">";
+		return "List<" ~ generateType(t.collectionType, base64external, forceOptional) ~ ">";
 	}
 
 	else if(typeid(type.type) == typeid(TypeDictionary)) {
 		TypeDictionary t = cast(TypeDictionary)(type.type);
-		return "Dictionary<" ~ generateType(t.keyType) ~ ", " ~ generateType(t.valueType) ~ ">";
+		return "Dictionary<" ~ generateType(t.keyType, base64external, forceOptional) ~ ", " ~ generateType(t.valueType, base64external, forceOptional) ~ ">";
 	}
 
 	else if(typeid(type.type) == typeid(TypeEnum)) {

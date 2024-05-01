@@ -59,7 +59,7 @@ namespace "Service" {
 			header test="string=null"
 		}
 		post "Method7" authenticate=true {
-			route "method6" "id" id="uint64"
+			route "method6" "id" "bytes" id="uint64" bytes="array64"
 			header test="[uint8]"
 		}
 		post "Method8" {

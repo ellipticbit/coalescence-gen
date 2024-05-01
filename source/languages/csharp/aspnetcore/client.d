@@ -205,9 +205,7 @@ private void generateClientMethod(StringBuilder builder, HttpService s, HttpServ
 				if (ptc is null) {
 					builder.tabs(tabLevel).appendLine(".Path(\"{0}\")", pp);
 				} else {
-					if (ptc.mode == TypeMode.Primitive && (cast(TypePrimitive)ptc.type).primitive == TypePrimitives.Base64ByteArray) builder.tabs(tabLevel).appendLine(".Path({0}.ArrayToUrlBase64())", pp);
-					else if (ptc.mode == TypeMode.Primitive && (cast(TypePrimitive)ptc.type).primitive == TypePrimitives.Base64String) builder.tabs(tabLevel).appendLine(".Path({0}.StringToUrlBase64Utf8())", pp);
-					else builder.tabs(tabLevel).appendLine(".Path({0})", pp);
+					builder.tabs(tabLevel).appendLine(".Path({0})", pp);
 				}
 			}
 		} else {
@@ -220,9 +218,7 @@ private void generateClientMethod(StringBuilder builder, HttpService s, HttpServ
 			builder.tabs(tabLevel).appendLine(".Query(query)");
 		} else {
 			foreach (smp; sm.query) {
-				if (smp.mode == TypeMode.Primitive && (cast(TypePrimitive)smp.type).primitive == TypePrimitives.Base64ByteArray) builder.tabs(tabLevel).appendLine(".Query(\"{0}\", {0}.ArrayToUrlBase64())", smp.name);
-				else if (smp.mode == TypeMode.Primitive && (cast(TypePrimitive)smp.type).primitive == TypePrimitives.Base64String) builder.tabs(tabLevel).appendLine(".Query(\"{0}\", {0}.StringToUrlBase64Utf8())", smp.name);
-				else builder.tabs(tabLevel).appendLine(".Query(\"{0}\", {0})", smp.name);
+				builder.tabs(tabLevel).appendLine(".Query(\"{0}\", {0})", smp.name);
 			}
 		}
 	}
@@ -325,7 +321,7 @@ private void generateClientMethodParams(StringBuilder builder, HttpServiceMethod
 	// Generate required parameters
 	foreach (smp; sm.route) {
 		if (smp.hasDefault()) continue;
-		builder.append("{0} {1}, ", generateType(smp, false, false), cleanName(smp.name));
+		builder.append("{0} {1}, ", generateType(smp, true, false), cleanName(smp.name));
 	}
 
 	foreach (smp; sm.content) {
@@ -336,14 +332,14 @@ private void generateClientMethodParams(StringBuilder builder, HttpServiceMethod
 	if (sm.query.length != 0 && sm.queryAsParams) {
 		foreach (smp; sm.query) {
 			if (smp.hasDefault()) continue;
-			builder.append("{0} {1}, ", generateType(smp, false, false), cleanName(smp.name));
+			builder.append("{0} {1}, ", generateType(smp, true, false), cleanName(smp.name));
 		}
 	}
 
 	// Generate optional parameters
 	foreach (smp; sm.route) {
 		if (!smp.hasDefault()) continue;
-		builder.append("{0} {1} = {2}, ", generateType(smp, false, false), cleanName(smp.name), getDefaultValue(smp));
+		builder.append("{0} {1} = {2}, ", generateType(smp, true, false), cleanName(smp.name), getDefaultValue(smp));
 	}
 
 	if (sm.query.length != 0) {
@@ -352,7 +348,7 @@ private void generateClientMethodParams(StringBuilder builder, HttpServiceMethod
 		} else {
 			foreach (smp; sm.query) {
 				if (!smp.hasDefault()) continue;
-				builder.append("{0} {1} = {2}, ", generateType(smp, false, false), cleanName(smp.name), getDefaultValue(smp));
+				builder.append("{0} {1} = {2}, ", generateType(smp, true, false), cleanName(smp.name), getDefaultValue(smp));
 			}
 		}
 	}
