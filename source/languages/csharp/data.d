@@ -125,6 +125,11 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 		builder.generateBindingMetadata(c.transport.isNullOrWhitespace() ? c.name : c.transport, !c.isNullable, c.isTypeEnum(), opts, tabLevel);
 		builder.tabs(2).appendLine("public {0} {1} { get { return _{1}; } set { {2} } }", getTypeFromSqlType(c.sqlType, c.isNullable), c.name, generateSetter(c.name, opts.uiBindings));
 	}
+	if (table.modifications !is null) {
+		foreach (c; table.modifications.additions) {
+			c.generateDataSqlMember(builder, opts, isClient, tabLevel);
+		}
+	}
 
 	foreach (fk; fkTarget) {
 		builder.appendLine();
@@ -190,6 +195,11 @@ public void generateDataView(View table, StringBuilder builder, CSharpProjectOpt
 	foreach (c; table.members) {
 		c.generateDataSqlMember(builder, opts, isClient, tabLevel);
 	}
+	if (table.modifications !is null) {
+		foreach (c; table.modifications.additions) {
+			c.generateDataSqlMember(builder, opts, isClient, tabLevel);
+		}
+	}
 	builder.tabs(--tabLevel).appendLine("}");
 }
 
@@ -205,6 +215,11 @@ public void generateDataUdt(Udt udt, StringBuilder builder, CSharpProjectOptions
 	builder.tabs(tabLevel).appendLine("partial void PostInitializer();");
 	foreach (c; udt.members) {
 		c.generateDataSqlMember(builder, opts, isClient, tabLevel);
+	}
+	if (udt.modifications !is null) {
+		foreach (c; udt.modifications.additions) {
+			c.generateDataSqlMember(builder, opts, isClient, tabLevel);
+		}
 	}
 	builder.tabs(--tabLevel).appendLine("}");
 	builder.appendLine();

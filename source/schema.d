@@ -341,11 +341,20 @@ public abstract class DataObject : TypeUser {
 	}
 }
 
-public final class Table : DataObject
+public abstract class DatabaseObject : DataObject
+{
+	public Database modifications;
+
+	public this(DataObjectType type, Schema parent, int oid, string name)
+	{
+		super(type, parent, oid, name);
+	}
+}
+
+public final class Table : DatabaseObject
 {
 	public Index[] indexes;
 	public ForeignKey[] foreignKeys;
-	public Database modifications;
 
 	public bool hasPrimaryKey() {
 		foreach (t; indexes){
@@ -361,20 +370,16 @@ public final class Table : DataObject
 	}
 }
 
-public final class View : DataObject
+public final class View : DatabaseObject
 {
-	public Database modifications;
-
 	public this(Schema parent, int oid, string name)
 	{
 		super(DataObjectType.View, parent, oid, name);
 	}
 }
 
-public final class Udt : DataObject
+public final class Udt : DatabaseObject
 {
-	public Database modifications;
-
 	public this(Schema parent, int oid, string name)
 	{
 		super(DataObjectType.Udt, parent, oid, name);
@@ -403,6 +408,7 @@ public final class Database
 	public string[] clientExclude;
 	public string[string] renames;
 	public TypeComplex[string] retypes;
+	public DataMember[] additions;
 
 	public this(DataObject parent, Tag root) {
 		this.parent = parent;
@@ -429,6 +435,11 @@ public final class Database
 		auto ec = root.getTagValues("exclude:client");
 		foreach(e; ec) {
 			cel ~= e.get!string();
+		}
+
+		auto al = root.getTag("additions");
+		foreach (member; al.tags) {
+			additions ~= new DataMember(parent, member);
 		}
 
 		databaseExclude = del;
