@@ -132,7 +132,7 @@ private Schema[] loadFiles(string rootDir, Schema[] dbSchema)
 				continue;
 			}
 			auto sn = t.expectValue!string();
-			if (tsl.any!(a => a.name == sn)) {
+			if (tsl.any!(a => a.name.toUpper() == sn.toUpper())) {
 				foreach (s; tsl) {
 					if (s.name == sn) {
 						s.merge(t);

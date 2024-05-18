@@ -212,9 +212,9 @@ public final class Schema
 				} else {
 					if ((dn in tables) !is null) {
 						tables[dn].modifications = new Database(tables[dn], t);
-					} else if ((dn in views) is null) {
+					} else if ((dn in views) !is null) {
 						views[dn].modifications = new Database(views[dn], t);
-					} else if ((dn in udts) is null) {
+					} else if ((dn in udts) !is null) {
 						udts[dn].modifications = new Database(udts[dn], t);
 					}
 				}
