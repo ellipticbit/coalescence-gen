@@ -149,6 +149,17 @@ public bool analyseData(Project prj, DataObject m)
 			hasErrors = true;
 	}
 
+	//Analyse modifications
+	if (typeid(m) == typeid(DatabaseObject)) {
+		auto x = cast(DatabaseObject)m;
+		foreach(mm; x.modifications.additions)
+		{
+			//Analyse the type
+			if(analyseType(prj, mm.type, m.parent))
+				hasErrors = true;
+		}
+	}
+
 	if (typeid(m) == typeid(Table)) {
 		auto x = cast(Table)m;
 		foreach(idx; x.indexes) {
