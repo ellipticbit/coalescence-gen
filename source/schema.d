@@ -415,35 +415,45 @@ public final class Database
 		this.name = root.expectValue!string();
 		this.sourceName = root.getAttribute!string("source", this.name);
 
-		auto rl = root.getTagAttributes("rename");
-		foreach(r; rl) {
-			renames[r.name] = r.value.get!string();
+		auto rl = root.getTag("rename");
+		if (rl !is null) {
+			foreach(r; rl.attributes) {
+				renames[r.name] = r.value.get!string();
+			}
 		}
 
-		auto tl = root.getTagAttributes("types");
-		foreach (t; tl) {
-			retypes[t.name] = new TypeComplex(t.name, t.value.get!string(), t.location);
+		auto tl = root.getTag("types");
+		if (tl !is null) {
+			foreach (t; tl.attributes) {
+				retypes[t.name] = new TypeComplex(t.name, t.value.get!string(), t.location);
+			}
 		}
 
 		string[] del;
-		auto ed = root.getTagValues("exclude:database");
-		foreach(e; ed) {
-			del ~= e.get!string();
+		auto ed = root.getTag("exclude:database");
+		if (ed !is null) {
+			foreach(e; ed.values) {
+				del ~= e.get!string();
+			}
 		}
 
 		string[] cel;
-		auto ec = root.getTagValues("exclude:client");
-		foreach(e; ec) {
-			cel ~= e.get!string();
-		}
-
-		auto al = root.getTag("additions");
-		foreach (member; al.tags) {
-			additions ~= new DataMember(parent, member);
+		auto ec = root.getTag("exclude:client");
+		if (ec !is null) {
+			foreach(e; ec.values) {
+				cel ~= e.get!string();
+			}
 		}
 
 		databaseExclude = del;
 		clientExclude = cel;
+
+		auto al = root.getTag("additions");
+		if (al !is null) {
+			foreach (member; al.tags) {
+				additions ~= new DataMember(parent, member);
+			}
+		}
 	}
 }
 

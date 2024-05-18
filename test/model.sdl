@@ -23,3 +23,11 @@ namespace "Service" {
 		Parent type="TestModel" modelbind=true
 	}
 }
+
+namespace "Inventory" {
+	database "PartsPreload" {
+		additions {
+			ModelCollectionTest type="[Inventory.PartsPreload]" transport="mt"
+		}
+	}
+}

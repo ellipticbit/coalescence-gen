@@ -150,13 +150,15 @@ public bool analyseData(Project prj, DataObject m)
 	}
 
 	//Analyse modifications
-	if (typeid(m) == typeid(DatabaseObject)) {
+	if (typeid(m) == typeid(Table) || typeid(m) == typeid(View) || typeid(m) == typeid(Udt)) {
 		auto x = cast(DatabaseObject)m;
-		foreach(mm; x.modifications.additions)
-		{
-			//Analyse the type
-			if(analyseType(prj, mm.type, m.parent))
-				hasErrors = true;
+		if (x.modifications !is null) {
+			foreach(mm; x.modifications.additions)
+			{
+				//Analyse the type
+				if(analyseType(prj, mm.type, m.parent))
+					hasErrors = true;
+			}
 		}
 	}
 

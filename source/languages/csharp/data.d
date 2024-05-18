@@ -127,7 +127,7 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 	}
 	if (table.modifications !is null) {
 		foreach (c; table.modifications.additions) {
-			c.generateDataSqlMember(builder, opts, isClient, tabLevel);
+			c.generateDataNetworkMember(builder, opts, tabLevel);
 		}
 	}
 
@@ -197,7 +197,7 @@ public void generateDataView(View table, StringBuilder builder, CSharpProjectOpt
 	}
 	if (table.modifications !is null) {
 		foreach (c; table.modifications.additions) {
-			c.generateDataSqlMember(builder, opts, isClient, tabLevel);
+			c.generateDataNetworkMember(builder, opts, tabLevel);
 		}
 	}
 	builder.tabs(--tabLevel).appendLine("}");
@@ -218,7 +218,7 @@ public void generateDataUdt(Udt udt, StringBuilder builder, CSharpProjectOptions
 	}
 	if (udt.modifications !is null) {
 		foreach (c; udt.modifications.additions) {
-			c.generateDataSqlMember(builder, opts, isClient, tabLevel);
+			c.generateDataNetworkMember(builder, opts, tabLevel);
 		}
 	}
 	builder.tabs(--tabLevel).appendLine("}");
