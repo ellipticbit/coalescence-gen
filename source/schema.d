@@ -757,6 +757,9 @@ public final class HttpServiceMethod : TypeUser
 	public TypeComplex[] content;
 	public TypeComplex[] returns;
 
+	public string requestEncoding;
+	public string responseEncoding;
+
 	public string tenantIdParameter;
 
 	public bool bodyForm;
@@ -778,6 +781,8 @@ public final class HttpServiceMethod : TypeUser
 		this.timeout = root.getAttribute!int("timeout", 0);
 		this.noThrow = root.getAttribute!bool("noThrow", true);
 		this.retry = root.getAttribute!bool("retry", true);
+		this.requestEncoding = root.getAttribute!string("requestEncoding", string.init);
+		this.responseEncoding = root.getAttribute!string("responseEncoding", string.init);
 
 		auto ancext = root.getTag("extensions:aspnetcore", null);
 		if(ancext !is null) extensions ~= new AspNetCoreHttpMethodExtension(this, ancext);
