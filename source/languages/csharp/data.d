@@ -81,11 +81,7 @@ private void generateDataNetworkMember(DataMember mm, StringBuilder builder, CSh
 	builder.appendLine();
 	builder.tabs(tabLevel).appendLine("private {0} _{1};", generateType(mm.type, false), mm.name);
 	builder.generateBindingMetadata(mm.transport.isNullOrWhitespace() ? mm.name : mm.transport, !mm.isNullable, mm.isTypeEnum(), opts, tabLevel);
-	if (opts.uiBindings) {
-		builder.tabs(tabLevel).appendLine("public {0} {1} { get { return _{1}; } {2}set { _{1} = value; {3}} }", generateType(mm.type, false), mm.name, mm.isReadOnly ? "private " : string.init, generateSetter(mm.name, opts.uiBindings));
-	} else {
-		builder.tabs(tabLevel).appendLine("public {0} {1} { get { return _{1}; } {2}set { _{1} = value; } }", generateType(mm.type, false), mm.name, mm.isReadOnly ? "private " : string.init);
-	}
+	builder.tabs(tabLevel).appendLine("public {0} {1} { get { return _{1}; } {2}set { {3} } }", generateType(mm.type, false), mm.name, mm.isReadOnly ? "private " : string.init, generateSetter(mm.name, opts.uiBindings));
 }
 
 public void generateDataTable(Table table, StringBuilder builder, CSharpProjectOptions opts, Project prj, bool isClient, ushort tabLevel) {
