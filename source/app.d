@@ -6,7 +6,7 @@ import coalescence.utility;
 
 import coalescence.database.mssql.schemareader;
 
-import sdlang;
+import sdlite;
 import ddbc;
 
 import std.algorithm.iteration;
@@ -79,8 +79,9 @@ int main(string[] args)
 	}
 
 	// Load the project file.
-	Tag projectTag = parseFile(projectPath).expectTag("project");
-	if (projectTag is null) {
+	SDLNode[] projectTags = parseFile(projectPath);
+
+	if (projectTags.length == 0 || projectTags[0].name != "project") {
 		writeln("ERROR: Invalid project file specified. No top-level project node was found.");
 		return 3;
 	}
@@ -103,7 +104,9 @@ int main(string[] args)
 	auto mergedSchema = loadFiles(rootDir, dbSchema);
 
 	//Load project tag
-	Project project = new Project(projectTag, mergedSchema, dbname, dirName(projectPath));
+	Project project = new Project(projectTags[0], mergedSchema, dbname, dirName(projectPath));
+
+	if (errorCount > 0) return errorCount;
 
     //Do type analysis
     if(analyse(project)) {
@@ -124,14 +127,14 @@ private Schema[] loadFiles(string rootDir, Schema[] dbSchema)
 	foreach(rf; rfFiles) {
 		if (baseName(rf.name).toUpper() == ".coalescence.sdl".toUpper()) continue;
 		writeln("Input:\t" ~ rf.name);
-		Tag frt = parseFile(rf.name);
-		foreach (t; frt.maybe.tags) {
+		SDLNode[] frt = parseFile(rf.name);
+		foreach (t; frt) {
 			if (t.name.toUpper() == "project".toUpper()) continue;
 			if (t.name.toUpper() != "namespace".toUpper()) {
 				writeParseWarning("Found unrecognized root tag '" ~ t.name ~ "' in file '" ~ rf.name ~ "'. Skipping.", t.location);
 				continue;
 			}
-			auto sn = t.expectValue!string();
+			auto sn = t.expectValue!string(0);
 			if (tsl.any!(a => a.name.toUpper() == sn.toUpper())) {
 				foreach (s; tsl) {
 					if (s.name == sn) {
@@ -145,6 +148,23 @@ private Schema[] loadFiles(string rootDir, Schema[] dbSchema)
 		}
 	}
 	return tsl;
+}
+
+private SDLNode[] parseFile(string path) {
+	import std.ascii : newline;
+	import std.array;
+
+	auto sdlFile = File(path, "r");
+	scope(exit) {
+		sdlFile.close();
+	}
+
+	string sdl = to!string(sdlFile.byLine().joiner(newline).array);
+
+	SDLNode[] docNodes;
+	parseSDLDocument!((n) { docNodes ~= n; })(sdl, baseName(path));
+
+	return docNodes;
 }
 
 private void displayUsage() {

@@ -18,7 +18,7 @@ import std.typecons;
 import std.stdio;
 import std.string;
 
-import sdlang;
+import sdlite;
 
 public enum SqlDbType {
 	None = 0,
@@ -86,27 +86,27 @@ public final class Project {
 	public Schema[] serverSchema;
 	public Schema[] clientSchema;
 
-	public this(Tag root, Schema[] schemata, string databaseName, string projectRoot)
+	public this(SDLNode root, Schema[] schemata, string databaseName, string projectRoot)
 	{
-		auto nn = root.maybe.namespaces["generators"];
-		foreach(gt; nn.tags){
+		auto nn = root.getNodes("generators");
+		foreach(gt; nn){
 			if (gt.name.toUpper() == "csharp".toUpper()) {
-				foreach (pt; gt.tags) {
+				foreach (pt; gt.children) {
 					csharpOptions ~= new CSharpProjectOptions(pt, databaseName, projectRoot);
 				}
 			}
 		}
 
 		string[] del;
-		auto ed = root.getTagValues("exclude:database");
+		auto ed = root.getNodeValues("exclude:database");
 		foreach(e; ed) {
-			del ~= e.get!string();
+			del ~= e.value!string();
 		}
 
 		string[] cel;
-		auto ec = root.getTagValues("exclude:client");
+		auto ec = root.getNodeValues("exclude:client");
 		foreach(e; ec) {
-			cel ~= e.get!string();
+			cel ~= e.value!string();
 		}
 
 		foreach(s; schemata) {
@@ -181,16 +181,16 @@ public final class Schema
 		this.name = this.sqlName = name;
 	}
 
-	public this(Tag root) {
+	public this(SDLNode root) {
 		this.sqlId = -1;
-		this.name = this.sqlName = root.expectValue!string();
+		this.name = this.sqlName = root.expectValue!string(0);
 		merge(root);
 	}
 
-	public void merge(Tag root) {
-		foreach (t; root.maybe.tags) {
+	public void merge(SDLNode root) {
+		foreach (t; root.children) {
 			if (t.name.toUpper() == "enum".toUpper()) {
-				auto en = t.expectValue!string();
+				auto en = t.expectValue!string(0);
 				if ((en in enums) != null) {
 					writeParseError("Enumeration '" ~ en ~ "' alreadys exists in schema '" ~ name ~ "'", t.location);
 				} else {
@@ -198,7 +198,7 @@ public final class Schema
 				}
 			}
 			else if (t.name.toUpper() == "model".toUpper()) {
-				auto mn = t.expectValue!string();
+				auto mn = t.expectValue!string(0);
 				if ((mn in network) != null) {
 					writeParseError("Data Model '" ~ mn ~ "' alreadys exists in schema '" ~ name ~ "'", t.location);
 				} else {
@@ -206,7 +206,7 @@ public final class Schema
 				}
 			}
 			else if (t.name.toUpper() == "database".toUpper()) {
-				auto dn = t.expectValue!string();
+				auto dn = t.expectValue!string(0);
 				if ((dn in tables) is null && (dn in views) is null && (dn in udts) is null) {
 					writeParseError("Unable to locate Database Model '" ~ dn ~ "' in schema '" ~ name ~ "'", t.location);
 				} else {
@@ -220,7 +220,7 @@ public final class Schema
 				}
 			}
 			else if (t.name.toUpper() == "http".toUpper()) {
-				auto sn = t.expectValue!string();
+				auto sn = t.expectValue!string(0);
 				if ((sn in services) != null) {
 					writeParseError("HTTP Service '" ~ sn ~ "' alreadys exists in schema '" ~ name ~ "'", t.location);
 				} else {
@@ -228,7 +228,7 @@ public final class Schema
 				}
 			}
 			else if (t.name.toUpper() == "websocket".toUpper()) {
-				auto sn = t.expectValue!string();
+				auto sn = t.expectValue!string(0);
 				if ((sn in enums) != null) {
 					writeParseError("WebSocket Service '" ~ sn ~ "' alreadys exists in schema '" ~ name ~ "'", t.location);
 				} else {
@@ -260,12 +260,12 @@ public final class Enumeration : TypeUser
 	public bool packed = false;
 	public EnumerationValue[] values;
 
-	public this(Schema parent, Tag root) {
+	public this(Schema parent, SDLNode root) {
 		this.parent = parent;
-		this.name = root.expectValue!string();
-		this.packed = root.getAttribute!bool("packed", false);
+		this.name = root.expectValue!string(0);
+		this.packed = root.getAttributeValue!bool("packed", false);
 
-		foreach (Tag t; root.tags) {
+		foreach (t; root.children) {
 			values ~= new EnumerationValue(this, t);
 		}
 
@@ -282,17 +282,17 @@ public final class EnumerationValue : TypeUser
 	public EnumerationValueAggregate[] aggregate;
 	public bool isDefault;
 
-	public this(Enumeration parent, Tag root) {
+	public this(Enumeration parent, SDLNode root) {
 		this.parent = parent;
 		this.name = root.name;
-		this.isDefault = root.getAttribute("isDefaultValue", false);
-		if (root.values.length == 1 && root.values[0].convertsTo!long()) {
-			value = root.values[0].get!long();
-		} else if (root.values.length >= 1 && root.values[0].convertsTo!string()) {
+		this.isDefault = root.getAttributeValue!bool("isDefaultValue", false);
+		if (root.values.length == 1 && root.values[0].kind == SDLValue.Kind.long_) {
+			value = root.values[0].value!long();
+		} else if (root.values.length >= 1 && root.values[0].kind == SDLValue.Kind.text) {
 			foreach (v; root.values) {
 				auto eva = new EnumerationValueAggregate();
 				eva.parent = this;
-				eva.aggregateLabel = v.get!string();
+				eva.aggregateLabel = v.value!string();
 				this.aggregate ~= eva;
 			}
 		}
@@ -337,7 +337,7 @@ public abstract class DataObject : TypeUser {
 		this.objectType = type;
 		this.parent = parent;
 		this.sqlId = objectId;
-		super(name, Location(-1, -1, -1));
+		super(name, Location(string.init, -1, -1, -1));
 	}
 }
 
@@ -388,12 +388,12 @@ public final class Udt : DatabaseObject
 
 public final class Network : DataObject
 {
-	public this(Schema parent, Tag root) {
-		foreach (Tag t; root.tags) {
+	public this(Schema parent, SDLNode root) {
+		foreach (t; root.children) {
 			members ~= new DataMember(this, t);
 		}
 
-		super(parent, root.expectValue!string(), root.location);
+		super(parent, root.expectValue!string(0), root.location);
 	}
 }
 
@@ -410,47 +410,47 @@ public final class Database
 	public TypeComplex[string] retypes;
 	public DataMember[] additions;
 
-	public this(DataObject parent, Tag root) {
+	public this(DataObject parent, SDLNode root) {
 		this.parent = parent;
-		this.name = root.expectValue!string();
-		this.sourceName = root.getAttribute!string("source", this.name);
+		this.name = root.expectValue!string(0);
+		this.sourceName = root.getAttributeValue!string("source", this.name);
 
-		auto rl = root.getTag("rename");
-		if (rl !is null) {
-			foreach(r; rl.attributes) {
-				renames[r.name] = r.value.get!string();
+		auto rl = root.getNode("rename");
+		if (!rl.isNull) {
+			foreach(r; rl.get().children) {
+				renames[r.name] = r.expectValue!string(0);
 			}
 		}
 
-		auto tl = root.getTag("types");
-		if (tl !is null) {
-			foreach (t; tl.attributes) {
-				retypes[t.name] = new TypeComplex(t.name, t.value.get!string(), t.location);
+		auto tl = root.getNode("types");
+		if (!tl.isNull) {
+			foreach (t; tl.get().children) {
+				retypes[t.name] = new TypeComplex(t.name, t.expectValue!string(0), t.location);
 			}
 		}
 
 		string[] del;
-		auto ed = root.getTag("exclude:database");
-		if (ed !is null) {
-			foreach(e; ed.values) {
-				del ~= e.get!string();
+		auto ed = root.getNode("exclude:database");
+		if (!ed.isNull) {
+			foreach(e; ed.get().values) {
+				del ~= e.value!string();
 			}
 		}
 
 		string[] cel;
-		auto ec = root.getTag("exclude:client");
-		if (ec !is null) {
-			foreach(e; ec.values) {
-				cel ~= e.get!string();
+		auto ec = root.getNode("exclude:client");
+		if (!ec.isNull) {
+			foreach(e; ec.get().values) {
+				cel ~= e.value!string();
 			}
 		}
 
 		databaseExclude = del;
 		clientExclude = cel;
 
-		auto al = root.getTag("additions");
-		if (al !is null) {
-			foreach (member; al.tags) {
+		auto al = root.getNode("additions");
+		if (!al.isNull) {
+			foreach (member; al.get().children) {
 				additions ~= new DataMember(parent, member);
 			}
 		}
@@ -506,20 +506,20 @@ public final class DataMember
 		this.type = getTypeComplexFromSqlDbType(this.sqlType, this.isNullable, this.name);
 	}
 
-	public this (DataObject parent, Tag root) {
+	public this (DataObject parent, SDLNode root) {
 		this.parent = parent;
 		this.sqlId = -1;
 		this.name = this.sqlName = root.name();
-		this.transport = root.getAttribute!string("transport", this.name);
-		this.type = new TypeComplex(this.name, root.expectAttribute!string("type"), root.location);
-		this.enumAsString = root.getAttribute!bool("enumString", false);
+		this.transport = root.getAttributeValue!string("transport", this.name);
+		this.type = new TypeComplex(this.name, root.expectAttributeValue!string("type"), root.location);
+		this.enumAsString = root.getAttributeValue!bool("enumString", false);
 		this.sqlType = SqlDbType.None;
-		this.maxLength = root.getAttribute!int("maxLength", -1);
+		this.maxLength = root.getAttributeValue!int("maxLength", -1);
 		this.precision = -1;
 		this.scale = -1;
 		this.isComputed = false;
 		this.isIdentity = false;
-		this.isReadOnly = root.getAttribute!bool("readonly", false);
+		this.isReadOnly = root.getAttributeValue!bool("readonly", false);
 		this.isNullable = this.type.nullable;
 	}
 
@@ -692,20 +692,20 @@ public final class HttpService : TypeUser
 	public string requestName;
 	public string requestParameterId;
 
-	public this(Schema parent, Tag root) {
+	public this(Schema parent, SDLNode root) {
 		this.parent = parent;
-		this.name = root.expectValue!string();
-		this.isPublic = root.getAttribute!bool("public", true);
-		this.route = root.getAttribute!string("route", string.init).strip().strip("/").split("/").array;
-		this.authenticate = root.getAttribute!bool("authenticate", true);
-		this.scheme = root.getAttribute!string("scheme", string.init);
-		this.requestName = root.getAttribute!string("requestName", null);
-		this.requestParameterId = root.getAttribute!string("requestParameterId", null);
+		this.name = root.expectValue!string(0);
+		this.isPublic = root.getAttributeValue!bool("public", true);
+		this.route = root.getAttributeValue!string("route", string.init).strip().strip("/").split("/").array;
+		this.authenticate = root.getAttributeValue!bool("authenticate", true);
+		this.scheme = root.getAttributeValue!string("scheme", string.init);
+		this.requestName = root.getAttributeValue!string("requestName", null);
+		this.requestParameterId = root.getAttributeValue!string("requestParameterId", null);
 
-		auto ancext = root.getTag("extensions:aspnetcore", null);
-		if(ancext !is null) extensions ~= new AspNetCoreHttpExtension(this, ancext);
+		auto ancext = root.getNode("extensions:aspnetcore");
+		if (!ancext.isNull) extensions ~= new AspNetCoreHttpExtension(this, ancext.get());
 
-		foreach(sm; root.tags) {
+		foreach(sm; root.children) {
 			if (sm.namespace == "extensions") continue;
 			methods ~= new HttpServiceMethod(this, sm);
 		}
@@ -772,20 +772,20 @@ public final class HttpServiceMethod : TypeUser
 
 	public LanguageExtensionBase[] extensions;
 
-	public this(HttpService parent, Tag root) {
+	public this(HttpService parent, SDLNode root) {
 		this.parent = parent;
-		this.name = root.values[0].get!string();
-		this.hidden = root.getAttribute!bool("hidden", false);
-		this.authenticate = root.getAttribute!bool("authenticate", true);
-		this.scheme = root.getAttribute!string("scheme", string.init);
-		this.timeout = root.getAttribute!int("timeout", 0);
-		this.noThrow = root.getAttribute!bool("noThrow", true);
-		this.retry = root.getAttribute!bool("retry", true);
-		this.requestEncoding = root.getAttribute!string("requestEncoding", string.init);
-		this.responseEncoding = root.getAttribute!string("responseEncoding", string.init);
+		this.name = root.expectValue!string(0);
+		this.hidden = root.getAttributeValue!bool("hidden", false);
+		this.authenticate = root.getAttributeValue!bool("authenticate", true);
+		this.scheme = root.getAttributeValue!string("scheme", string.init);
+		this.timeout = root.getAttributeValue!int("timeout", 0);
+		this.noThrow = root.getAttributeValue!bool("noThrow", true);
+		this.retry = root.getAttributeValue!bool("retry", true);
+		this.requestEncoding = root.getAttributeValue!string("requestEncoding", string.init);
+		this.responseEncoding = root.getAttributeValue!string("responseEncoding", string.init);
 
-		auto ancext = root.getTag("extensions:aspnetcore", null);
-		if(ancext !is null) extensions ~= new AspNetCoreHttpMethodExtension(this, ancext);
+		auto ancext = root.getNode("extensions:aspnetcore");
+		if (!ancext.isNull) extensions ~= new AspNetCoreHttpMethodExtension(this, ancext.get());
 
 		string verb = root.name;
 		if (verb.toUpper() == "get".toUpper()) this.verb = HttpServiceMethodVerb.Get;
@@ -796,59 +796,63 @@ public final class HttpServiceMethod : TypeUser
 		else if (verb.toUpper() == "patch".toUpper()) this.verb = HttpServiceMethodVerb.Patch;
 		else writeParseError("Unexpected method verb: " ~ verb, root.location);
 
-		auto pt = root.getTag("route", null);
-		if (pt !is null) {
-			foreach(smp; pt.maybe.attributes) {
-				route ~= new TypeComplex(smp.name, smp.value.get!string(), root.location);
+		auto ptn = root.getNode("route");
+		if (!ptn.isNull) {
+			auto pt = ptn.get();
+			foreach(smp; pt.attributes) {
+				route ~= new TypeComplex(smp.name, smp.value.value!string(), root.location);
 			}
 			if (pt.values.length == 1) {
-				routeParts ~= pt.values[0].get!string().strip().strip("/").split("/");
+				routeParts ~= pt.values[0].value!string().strip().strip("/").split("/");
 			} else if (pt.values.length > 1) {
 				foreach(rv; pt.values) {
-					routeParts ~= rv.get!string().strip().strip("/").split("/");
+					routeParts ~= rv.value!string().strip().strip("/").split("/");
 				}
 			}
 		}
 
-		auto qt = root.getTag("query", null);
-		if (qt !is null) {
-			this.queryAsParams = qt.getAttribute!bool("asParams", true);
-			foreach(smp; qt.maybe.attributes) {
+		auto qtn = root.getNode("query");
+		if (!qtn.isNull) {
+			auto qt = qtn.get();
+			this.queryAsParams = qt.getAttributeValue!bool("asParams", true);
+			foreach(smp; qt.attributes) {
 				if (smp.name == "asParams") continue;
-				query ~= new TypeComplex(smp.name, smp.value.get!string(), root.location);
+				query ~= new TypeComplex(smp.name, smp.value.value!string(), root.location);
 			}
 		}
 
-		auto ht = root.getTag("header", null);
-		if (ht !is null) {
-			foreach(smp; ht.maybe.attributes) {
-				header ~= new TypeComplex(smp.name, smp.value.get!string(), root.location);
+		auto htn = root.getNode("header");
+		if (!htn.isNull) {
+			foreach(smp; htn.get().attributes) {
+				header ~= new TypeComplex(smp.name, smp.value.value!string(), root.location);
 			}
 		}
 
-		string rtid = pt !is null ? pt.getTagAttribute!string("route", "tenantId", null) : null;
-		string qtid = qt !is null ? qt.getTagAttribute!string("query", "tenantId", null) : null;
-		string htid = ht !is null ? ht.getTagAttribute!string("header", "tenantId", null) : null;
+		string rtid = !ptn.isNull ? ptn.get().getNodeAttributeValue!string("route", "tenantId", null) : null;
+		string qtid = !qtn.isNull ? qtn.get().getNodeAttributeValue!string("query", "tenantId", null) : null;
+		string htid = !htn.isNull ? htn.get().getNodeAttributeValue!string("header", "tenantId", null) : null;
 		this.tenantIdParameter = qtid !is null ? qtid : htid !is null ? htid : rtid;
 
-		auto bt = root.getTag("body", null);
-		if (bt !is null) {
-			foreach(smp; bt.maybe.attributes) {
-				content ~= new TypeComplex(smp.name, smp.value.get!string(), root.location);
+		auto btn = root.getNode("body");
+		if (!btn.isNull) {
+			auto bt = btn.get();
+			foreach(smp; bt.attributes) {
+				content ~= new TypeComplex(smp.name, smp.value.value!string(), root.location);
 			}
-			bodyForm = bt.getAttribute!bool("multipart:form", false);
-			bodySubtype = bt.getAttribute!string("multipart:subtype", string.init);
-			bodyBoundary = bt.getAttribute!string("multipart:boundary", string.init);
+			bodyForm = bt.getAttributeValue!bool("multipart:form", false);
+			bodySubtype = bt.getAttributeValue!string("multipart:subtype", string.init);
+			bodyBoundary = bt.getAttributeValue!string("multipart:boundary", string.init);
 		}
 
-		auto rt = root.getTag("return", null);
-		if (rt !is null) {
-			foreach(smp; rt.maybe.attributes) {
-				returns ~= new TypeComplex(smp.name, smp.value.get!string(), root.location);
+		auto rtn = root.getNode("return");
+		if (!rtn.isNull) {
+			auto rt = rtn.get();
+			foreach(smp; rt.attributes) {
+				returns ~= new TypeComplex(smp.name, smp.value.value!string(), root.location);
 			}
-			returnForm = rt.getAttribute!bool("multipart:form", false);
-			returnSubtype = rt.getAttribute!string("multipart:subtype", string.init);
-			returnBoundary = rt.getAttribute!string("multipart:boundary", string.init);
+			returnForm = rt.getAttributeValue!bool("multipart:form", false);
+			returnSubtype = rt.getAttributeValue!string("multipart:subtype", string.init);
+			returnBoundary = rt.getAttributeValue!string("multipart:boundary", string.init);
 		}
 		super(name, root.location);
 	}
@@ -879,32 +883,32 @@ public final class WebsocketService : TypeUser
 	public bool isPublic;
 	public bool authenticate;
 
-	public this(Schema parent, Tag root) {
+	public this(Schema parent, SDLNode root) {
 		this.parent = parent;
-		this.name = root.expectValue!string();
-		string mstr = root.getAttribute!string("system", "SignalR").toUpper();
+		this.name = root.expectValue!string(0);
+		string mstr = root.getAttributeValue!string("system", "SignalR").toUpper();
 		this.systemMode = (mstr == "Raw".toUpper() ? WebsocketServiceSystem.Raw : WebsocketServiceSystem.SignalR);
-		this.isPublic = root.getAttribute!bool("public", true);
-		this.authenticate = root.getAttribute!bool("authenticate", true);
+		this.isPublic = root.getAttributeValue!bool("public", true);
+		this.authenticate = root.getAttributeValue!bool("authenticate", true);
 
-		auto ancext = root.getTag("extensions:aspnetcore", null);
-		if(ancext !is null) extensions ~= new AspNetCoreWebsocketExtension(this, ancext);
+		auto ancext = root.getNode("extensions:aspnetcore");
+		if (!ancext.isNull) extensions ~= new AspNetCoreWebsocketExtension(this, ancext.get());
 
-		foreach(ns; root.tags) {
+		foreach(ns; root.children) {
 			if (ns.name == "namespace") {
-				string namespace = ns.expectValue!string();
+				string namespace = ns.expectValue!string(0);
 				WebsocketServiceMethod[] nssml;
-				auto nst = ns.getTag("server", null);
-				if (nst !is null) {
-					foreach(sm; nst.maybe.tags) {
+				auto nst = ns.getNode("server");
+				if (!nst.isNull) {
+					foreach(sm; nst.get().children) {
 						nssml ~= new WebsocketServiceMethod(this, sm);
 					}
 				}
 
 				WebsocketServiceMethod[] ncsml;
-				auto nct = ns.getTag("client", null);
-				if (nct !is null) {
-					foreach(sm; nct.maybe.tags) {
+				auto nct = ns.getNode("client");
+				if (!nct.isNull) {
+					foreach(sm; nct.get().children) {
 						ncsml ~= new WebsocketServiceMethod(this, sm);
 					}
 				}
@@ -914,17 +918,17 @@ public final class WebsocketService : TypeUser
 		}
 
 		WebsocketServiceMethod[] ssml;
-		auto st = root.getTag("server", null);
-		if (st !is null) {
-			foreach(sm; st.maybe.tags) {
+		auto st = root.getNode("server");
+		if (!st.isNull) {
+			foreach(sm; st.get().children) {
 				ssml ~= new WebsocketServiceMethod(this, sm);
 			}
 		}
 
 		WebsocketServiceMethod[] csml;
-		auto ct = root.getTag("client", null);
-		if (ct !is null) {
-			foreach(sm; ct.maybe.tags) {
+		auto ct = root.getNode("client");
+		if (!ct.isNull) {
+			foreach(sm; ct.get().children) {
 				csml ~= new WebsocketServiceMethod(this, sm);
 			}
 		}
@@ -971,28 +975,28 @@ public final class WebsocketServiceMethod : TypeUser
 
 	public LanguageExtensionBase[] extensions;
 
-	public this(WebsocketService parent, Tag root) {
+	public this(WebsocketService parent, SDLNode root) {
 		this.parent = parent;
 		this.name = root.name;
 		this.socketName = root.name;
-		this.hidden = root.getAttribute!bool("hidden", false);
-		this.sync = root.getAttribute!bool("sync", false);
-		this.authenticate = root.getAttribute!bool("authenticate", true);
+		this.hidden = root.getAttributeValue!bool("hidden", false);
+		this.sync = root.getAttributeValue!bool("sync", false);
+		this.authenticate = root.getAttributeValue!bool("authenticate", true);
 
-		auto ancext = root.getTag("extensions:aspnetcore", null);
-		if(ancext !is null) extensions ~= new AspNetCoreWebsocketMethodExtension(this, ancext);
+		auto ancext = root.getNode("extensions:aspnetcore");
+		if (!ancext.isNull) extensions ~= new AspNetCoreWebsocketMethodExtension(this, ancext.get());
 
-		auto pt = root.getTag("parameters", null);
-		if (pt !is null) {
-			foreach(smp; pt.maybe.attributes) {
-				parameters ~= new TypeComplex(smp.name, smp.value.get!string(), root.location);
+		auto pt = root.getNode("parameters");
+		if (!pt.isNull) {
+			foreach(smp; pt.get().attributes) {
+				parameters ~= new TypeComplex(smp.name, smp.value.value!string(), root.location);
 			}
 		}
 
-		auto rt = root.getTag("return", null);
-		if (rt !is null) {
-			foreach(smp; rt.maybe.attributes) {
-				returns ~= new TypeComplex(smp.name, smp.value.get!string(), root.location);
+		auto rt = root.getNode("return");
+		if (!rt.isNull) {
+			foreach(smp; rt.get().attributes) {
+				returns ~= new TypeComplex(smp.name, smp.value.value!string(), root.location);
 			}
 		}
 

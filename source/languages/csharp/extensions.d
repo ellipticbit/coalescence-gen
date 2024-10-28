@@ -14,7 +14,7 @@ import std.typecons;
 import std.stdio;
 import std.string;
 
-import sdlang;
+import sdlite;
 
 public enum CSharpSerializers {
 	SystemTextJson,
@@ -54,25 +54,27 @@ public final class CSharpProjectOptions {
 	public CSharpCompatibility compatibility;
 	public CSharpSerializers[] serializers;
 
-	public this (Tag root, string databaseName, string projectRoot) {
+	public this (SDLNode root, string databaseName, string projectRoot) {
 		if (root.name.toUpper() == "Database".toUpper()) mode = CSharpGeneratorMode.Database;
 		else if (root.name.toUpper() == "Server".toUpper()) mode = CSharpGeneratorMode.Server;
 		else if (root.name.toUpper() == "Client".toUpper()) mode = CSharpGeneratorMode.Client;
 		else throw new Exception("Invalid generator mode specified: " ~ root.name);
-		this.outputMode = to!CSharpOutputMode(root.getAttribute!string("outputMode", "FilePerObject"));
-		this.contextName = root.getAttribute!string("contextName", databaseName);
-		this.namespace = root.getAttribute!string("namespace", databaseName);
-		this.uiBindings = root.getAttribute!bool("uiBindings", false);
-		this.enableEFExtensions = root.getAttribute!bool("enableEFExtensions", false);
-		this.compatibility = to!CSharpCompatibility(root.getAttribute!string("compatibility", "NET60"));
-		version(Posix) {
-		this.outputPath = buildNormalizedPath(projectRoot, root.expectAttribute!string("outputPath").replace("\\", "/"));
-		}
-		version(Windows) {
-		this.outputPath = buildNormalizedPath(projectRoot, root.expectAttribute!string("outputPath").replace("/", "\\"));
-		}
-		foreach(sop; root.getTagValues("serializers")) {
-			this.serializers ~= to!CSharpSerializers(sop.get!string());
+		this.outputMode = to!CSharpOutputMode(root.getAttributeValue!string("outputMode", "FilePerObject"));
+		this.contextName = root.getAttributeValue!string("contextName", databaseName);
+		this.namespace = root.getAttributeValue!string("namespace", databaseName);
+		this.uiBindings = root.getAttributeValue!bool("uiBindings", false);
+		this.enableEFExtensions = root.getAttributeValue!bool("enableEFExtensions", false);
+		this.compatibility = to!CSharpCompatibility(root.getAttributeValue!string("compatibility", "NET60"));
+        try {
+            version(Posix) {
+            this.outputPath = buildNormalizedPath(projectRoot, root.expectAttributeValue!string("outputPath").replace("\\", "/"));
+            }
+            version(Windows) {
+            this.outputPath = buildNormalizedPath(projectRoot, root.expectAttributeValue!string("outputPath").replace("/", "\\"));
+            }
+        } catch (Exception ex) { }
+		foreach(sop; root.getNodeValues("serializers")) {
+			this.serializers ~= to!CSharpSerializers(sop.value!string());
 		}
 	}
 
@@ -125,12 +127,12 @@ public final class AspNetCoreHttpExtension : LanguageExtensionBase
     public @property bool hasArea() { return area != null && area != string.init; }
     public @property immutable(AspNetCoreAuthorizationExtension) getAuthorization() { return cast(immutable(AspNetCoreAuthorizationExtension))super.authorization; }
 
-    public this(HttpService parent, Tag root) {
+    public this(HttpService parent, SDLNode root) {
         this.parent = cast(immutable(HttpService))parent;
-        this.area = root.getAttribute!string("area", string.init).strip().strip("/");
+        this.area = root.getAttributeValue!string("area", string.init).strip().strip("/");
 
-        auto authTag = root.getTag("authorization", null);
-        auto auth = authTag !is null ? new AspNetCoreAuthorizationExtension(this, authTag) : new AspNetCoreAuthorizationExtension(this);
+        auto authTag = root.getNode("authorization");
+        auto auth = !authTag.isNull() ? new AspNetCoreAuthorizationExtension(this, authTag.get()) : new AspNetCoreAuthorizationExtension(this);
 
         super("csharp", "aspnetcore", auth);
     }
@@ -161,14 +163,14 @@ public final class AspNetCoreHttpMethodExtension : LanguageExtensionBase
     public @property bool hasArea() { return area != null && area != string.init; }
     public @property immutable(AspNetCoreAuthorizationExtension) getAuthorization() { return cast(immutable(AspNetCoreAuthorizationExtension))super.authorization; }
 
-    public this(HttpServiceMethod parent, Tag root) {
+    public this(HttpServiceMethod parent, SDLNode root) {
         this.parent = cast(immutable(HttpServiceMethod))parent;
 
-        this.area = root.getAttribute!string("area", string.init).strip().strip("/");
-        this.sync = root.getAttribute!bool("sync", false);
+        this.area = root.getAttributeValue!string("area", string.init).strip().strip("/");
+        this.sync = root.getAttributeValue!bool("sync", false);
 
-        auto authTag = root.getTag("authorization", null);
-        auto auth = authTag !is null ? new AspNetCoreAuthorizationExtension(this, authTag) : new AspNetCoreAuthorizationExtension(this);
+        auto authTag = root.getNode("authorization");
+        auto auth = !authTag.isNull() ? new AspNetCoreAuthorizationExtension(this, authTag.get()) : new AspNetCoreAuthorizationExtension(this);
 
         super("csharp", "aspnetcore", auth);
     }
@@ -198,12 +200,12 @@ public final class AspNetCoreWebsocketExtension : LanguageExtensionBase
 
     public @property immutable(AspNetCoreAuthorizationExtension) getAuthorization() { return cast(immutable(AspNetCoreAuthorizationExtension))super.authorization; }
 
-    public this(WebsocketService parent, Tag root) {
+    public this(WebsocketService parent, SDLNode root) {
         this.parent = cast(immutable(WebsocketService))parent;
-		this.clientConnection = root.getAttribute!string("clientConnection", string.init);
+		this.clientConnection = root.getAttributeValue!string("clientConnection", string.init);
 
-        auto authTag = root.getTag("authorization", null);
-        auto auth = authTag !is null ? new AspNetCoreAuthorizationExtension(this, authTag) : new AspNetCoreAuthorizationExtension(this);
+        auto authTag = root.getNode("authorization");
+        auto auth = !authTag.isNull() ? new AspNetCoreAuthorizationExtension(this, authTag.get()) : new AspNetCoreAuthorizationExtension(this);
 
         super("csharp", "aspnetcore", auth);
     }
@@ -231,11 +233,11 @@ public final class AspNetCoreWebsocketMethodExtension : LanguageExtensionBase
 
     public @property immutable(AspNetCoreAuthorizationExtension) getAuthorization() { return cast(immutable(AspNetCoreAuthorizationExtension))super.authorization; }
 
-    public this(WebsocketServiceMethod parent, Tag root) {
+    public this(WebsocketServiceMethod parent, SDLNode root) {
         this.parent = cast(immutable(WebsocketServiceMethod))parent;
 
-        auto authTag = root.getTag("authorization", null);
-        auto auth = authTag !is null ? new AspNetCoreAuthorizationExtension(this, authTag) : new AspNetCoreAuthorizationExtension(this);
+        auto authTag = root.getNode("authorization");
+        auto auth = !authTag.isNull() ? new AspNetCoreAuthorizationExtension(this, authTag.get()) : new AspNetCoreAuthorizationExtension(this);
 
         super("csharp", "aspnetcore", auth);
     }
@@ -265,19 +267,19 @@ public final class AspNetCoreAuthorizationExtension : AuthorizationExtensionBase
     public string[] roles;
     public bool requireAllRoles = false;
 
-    public this(LanguageExtensionBase parent, Tag root) {
+    public this(LanguageExtensionBase parent, SDLNode root) {
 		this.parent = parent;
-		requireAllRoles = root.getAttribute!bool("allRoles", false);
-        policy = root.getAttribute!string("policy", null);
+		requireAllRoles = root.getAttributeValue!bool("allRoles", false);
+        policy = root.getAttributeValue!string("policy", null);
 
-        auto st = root.getAttribute!string("schemes", null);
+        auto st = root.getAttributeValue!string("schemes", null);
         if (st !is null) {
             foreach(s; st.split(',')) {
                 schemes ~= s;
             }
         }
 
-        auto rt = root.getAttribute!string("roles", null);
+        auto rt = root.getAttributeValue!string("roles", null);
         if (rt !is null) {
             foreach(r; rt.split(',')) {
                 roles ~= r;
