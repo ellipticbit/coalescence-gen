@@ -6,6 +6,7 @@ import coalescence.types;
 import std.array;
 import std.conv;
 import std.datetime;
+import std.encoding;
 import std.string;
 public import std.typecons;
 
@@ -53,6 +54,12 @@ public string lowercaseFirst(string str) {
 	dchar[] a = str.array;
 	a[0] = toLower(a[0]);
 	return to!string(a);
+}
+
+public @trusted string stripBOM(string str) {
+	ubyte[] bytes = cast(ubyte[])str;
+
+	return cast(string)bytes[getBOM(bytes).sequence.length..$];
 }
 
 Nullable!SDLNode getNode(SDLNode node, string nodeName) {

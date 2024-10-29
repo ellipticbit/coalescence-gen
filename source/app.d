@@ -154,7 +154,7 @@ private SDLNode[] parseFile(string path) {
 	import std.ascii : newline;
 	import std.array;
 
-	string sdl = readText(path);
+	string sdl = stripBOM(readText(path));
 
 	SDLNode[] docNodes;
 	parseSDLDocument!((n) { docNodes ~= n; })(sdl, baseName(path));
