@@ -288,6 +288,8 @@ public final class EnumerationValue : TypeUser
 		this.isDefault = root.getAttributeValue!bool("isDefaultValue", false);
 		if (root.values.length == 1 && root.values[0].kind == SDLValue.Kind.long_) {
 			value = root.values[0].value!long();
+		} else if (root.values.length == 1 && root.values[0].kind == SDLValue.Kind.int_) {
+			value = root.values[0].value!int();
 		} else if (root.values.length >= 1 && root.values[0].kind == SDLValue.Kind.text) {
 			foreach (v; root.values) {
 				auto eva = new EnumerationValueAggregate();
