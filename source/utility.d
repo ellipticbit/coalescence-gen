@@ -57,9 +57,8 @@ public string lowercaseFirst(string str) {
 }
 
 public @trusted string stripBOM(string str) {
-	ubyte[] bytes = cast(ubyte[])str;
-
-	return cast(string)bytes[getBOM(bytes).sequence.length..$];
+	import std.encoding : getBOM;
+	return str[getBOM(str.representation).sequence.length..$];
 }
 
 Nullable!SDLNode getNode(SDLNode node, string nodeName) {
@@ -170,7 +169,7 @@ T expectValue(T)(SDLNode node, int index)
 		is(T == Date) ||
 		is(T == Duration))
 {
-	if (index > node.values.length) {
+	if (index >= node.values.length) {
 		writeParseError("No Value found at index: " ~ to!string(index), node.location);
 		throw new Exception("No Value found at specified index.");
 	}
@@ -191,7 +190,7 @@ T getValue(T)(SDLNode node, int index, T defaultValue)
 		is(T == Date) ||
 		is(T == Duration))
 {
-	if (index > node.values.length) {
+	if (index >= node.values.length) {
 		return defaultValue;
 	}
 

@@ -151,7 +151,6 @@ private Schema[] loadFiles(string rootDir, Schema[] dbSchema)
 }
 
 private SDLNode[] parseFile(string path) {
-	import std.ascii : newline;
 	import std.array;
 
 	string sdl = stripBOM(readText(path));
