@@ -8,12 +8,15 @@ import coalescence.generator;
 import std.algorithm.searching;
 import std.algorithm.sorting;
 import std.algorithm.iteration;
+import std.algorithm.comparison;
 import std.array;
 import std.conv;
 import std.stdio;
 import std.file;
 import std.uni;
 import std.string;
+
+import sdlite;
 
 public bool analyse(Project prj)
 {
@@ -91,7 +94,7 @@ private TypeBase analyseTypeUnknown(Project prj, TypeUnknown type)
 	if (fe is null && fm is null)
 	{
 		writeAnalyserError("Unable to locate type: " ~ type.typeName, type.sourceLocation);
-		searchSuggest(prj, cast(TypeUser)type, name);
+		searchSuggest(prj, type.sourceLocation, name);
 		return null;
 	}
 
@@ -312,45 +315,40 @@ private DataObject searchData(Project prj, string name, string namespace = strin
 	return matches.length != 1 ? null : matches[0];
 }
 
-private void searchSuggest(Project prj, TypeUser type, string name)
+private void searchSuggest(Project prj, Location loc, string name)
 {
 	//Suggestion search
 	foreach(ns; prj.serverSchema)
 	{
 		foreach(m; ns.enums)
 		{
-			auto s1 = to!string(m.name.toLower().dup().array().sort());
-			auto s2 = to!string(name.toLower().dup().array().sort());
-			if (m.name.toLower() == name.toLower() || s1 == s2)
-				writeTypeErrorSuggest(type, m.fullName());
+			if (levenshteinDistance(m.name, name) < 3) {
+				writeTypeErrorSuggest(m.fullName(), loc);
+			}
 		}
 		foreach(m; ns.network)
 		{
-			auto s1 = to!string(m.name.toLower().dup().array().sort());
-			auto s2 = to!string(name.toLower().dup().array().sort());
-			if (m.name.toLower() == name.toLower() || s1 == s2)
-				writeTypeErrorSuggest(type, m.fullName());
+			if (levenshteinDistance(m.name, name) < 3) {
+				writeTypeErrorSuggest(m.fullName(), loc);
+			}
 		}
 		foreach(m; ns.tables)
 		{
-			auto s1 = to!string(m.name.toLower().dup().array().sort());
-			auto s2 = to!string(name.toLower().dup().array().sort());
-			if (m.name.toLower() == name.toLower() || s1 == s2)
-				writeTypeErrorSuggest(type, m.fullName());
+			if (levenshteinDistance(m.name, name) < 3) {
+				writeTypeErrorSuggest(m.fullName(), loc);
+			}
 		}
 		foreach(m; ns.views)
 		{
-			auto s1 = to!string(m.name.toLower().dup().array().sort());
-			auto s2 = to!string(name.toLower().dup().array().sort());
-			if (m.name.toLower() == name.toLower() || s1 == s2)
-				writeTypeErrorSuggest(type, m.fullName());
+			if (levenshteinDistance(m.name, name) < 3) {
+				writeTypeErrorSuggest(m.fullName(), loc);
+			}
 		}
 		foreach(m; ns.udts)
 		{
-			auto s1 = to!string(m.name.toLower().dup().array().sort());
-			auto s2 = to!string(name.toLower().dup().array().sort());
-			if (m.name.toLower() == name.toLower() || s1 == s2)
-				writeTypeErrorSuggest(type, m.fullName());
+			if (levenshteinDistance(m.name, name) < 3) {
+				writeTypeErrorSuggest(m.fullName(), loc);
+			}
 		}
 	}
 }

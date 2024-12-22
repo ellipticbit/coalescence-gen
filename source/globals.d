@@ -37,9 +37,9 @@ public void writeTypeError(TypeUser type)
 	writefln("%s(%d,%d) ERROR: Unable to locate type '%s'", type.sourceLocation.file, type.sourceLocation.line, type.sourceLocation.column, type.name);
 }
 
-public void writeTypeErrorSuggest(TypeUser type, string suggest)
+public void writeTypeErrorSuggest(string suggest, Location loc)
 {
-	writefln("%s(%d,%d) INFO: Did you mean '%s'", type.sourceLocation.file, type.sourceLocation.line, type.sourceLocation.column, suggest);
+	writefln("%s(%d,%d)        Did you mean: %s", loc.file, loc.line, loc.column, suggest);
 }
 
 public void writeAnalyserError(string message, Location loc)
