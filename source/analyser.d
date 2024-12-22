@@ -82,26 +82,51 @@ private TypeBase analyseTypeUnknown(Project prj, TypeUnknown type)
 	auto sl = splitter(type.typeName, ".").array;
 	string name = sl[sl.length-1];
 	string namespace = string.init;
-	if (sl.length > 1)
-		foreach(s; sl[0..$-1])
+	if (sl.length > 1) {
+		foreach(s; sl[0..$-1]) {
 			namespace ~= s ~ ".";
-	if (namespace != string.init)
+		}
+	}
+	if (namespace != string.init) {
 		namespace = to!string(namespace[0..$-1]);
+	}
 
-	Enumeration fe = searchEnums(prj, name, namespace);
-	DataObject fm = searchData(prj, type.sourceLocation, name, namespace);
+	Enumeration[] fel = searchEnums(prj, name, namespace);
+	DataObject[] fml = searchData(prj, name, namespace);
 
-	if (fe is null && fm is null)
-	{
+	if (fel.length == 0 && fml.length == 0) {
 		writeAnalyserError("Unable to locate type: " ~ type.typeName, type.sourceLocation);
 		searchSuggest(prj, type.sourceLocation, name);
 		return null;
 	}
 
-	if (fe !is null)
-		return new TypeEnum(fe, type.sourceLocation);
-	else {
-		return new TypeModel(fm, type.sourceLocation);
+	if ((fel.length + fml.length) > 1) {
+		writeAnalyserError("Multiple matching types found for: " ~ name, type.sourceLocation);
+		foreach (m; fel) {
+			writeTypeErrorSuggest(m.fullName() ~ " (Enum)", type.sourceLocation);
+		}
+		foreach (m; fml) {
+			if (m.objectType == DataObjectType.Network) {
+				writeTypeErrorSuggest(m.fullName() ~ " (Network)", type.sourceLocation);
+			}
+			if (m.objectType == DataObjectType.Table) {
+				writeTypeErrorSuggest(m.fullName() ~ " (Table)", type.sourceLocation);
+			}
+			if (m.objectType == DataObjectType.View) {
+				writeTypeErrorSuggest(m.fullName() ~ " (View)", type.sourceLocation);
+			}
+			if (m.objectType == DataObjectType.Udt) {
+				writeTypeErrorSuggest(m.fullName() ~ " (UDT)", type.sourceLocation);
+			}
+		}
+
+		return null;
+	}
+
+	if (fel.length == 1) {
+		return new TypeEnum(fel[0], type.sourceLocation);
+	} else {
+		return new TypeModel(fml[0], type.sourceLocation);
 	}
 }
 
@@ -260,7 +285,7 @@ public bool analyseWebsocket(Project prj, WebsocketService s)
 	return hasErrors;
 }
 
-public Enumeration searchEnums(Project prj, string name, string namespace = string.init)
+public Enumeration[] searchEnums(Project prj, string name, string namespace = string.init)
 {
 	Enumeration[] matches;
 
@@ -277,10 +302,10 @@ public Enumeration searchEnums(Project prj, string name, string namespace = stri
 		}
 	}
 
-	return matches.length != 1 ? null : matches[0];
+	return matches;
 }
 
-private DataObject searchData(Project prj, Location loc, string name, string namespace = string.init)
+private DataObject[] searchData(Project prj, string name, string namespace = string.init)
 {
 	DataObject[] matches;
 
@@ -312,25 +337,7 @@ private DataObject searchData(Project prj, Location loc, string name, string nam
 		}
 	}
 
-	if (matches.length > 1) {
-		writeAnalyserError("Multiple matching types found for: " ~ name, loc);
-		foreach (m; matches) {
-			if (m.objectType == DataObjectType.Network) {
-				writeTypeErrorSuggest(m.fullName() ~ " (Network)", loc);
-			}
-			if (m.objectType == DataObjectType.Table) {
-				writeTypeErrorSuggest(m.fullName() ~ " (Table)", loc);
-			}
-			if (m.objectType == DataObjectType.View) {
-				writeTypeErrorSuggest(m.fullName() ~ " (View)", loc);
-			}
-			if (m.objectType == DataObjectType.Udt) {
-				writeTypeErrorSuggest(m.fullName() ~ " (UDT)", loc);
-			}
-		}
-	}
-
-	return matches.length != 1 ? null : matches[0];
+	return matches;
 }
 
 private void searchSuggest(Project prj, Location loc, string name)
