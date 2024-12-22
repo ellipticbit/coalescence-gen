@@ -89,7 +89,7 @@ private TypeBase analyseTypeUnknown(Project prj, TypeUnknown type)
 		namespace = to!string(namespace[0..$-1]);
 
 	Enumeration fe = searchEnums(prj, name, namespace);
-	DataObject fm = searchData(prj, name, namespace);
+	DataObject fm = searchData(prj, type.sourceLocation, name, namespace);
 
 	if (fe is null && fm is null)
 	{
@@ -280,7 +280,7 @@ public Enumeration searchEnums(Project prj, string name, string namespace = stri
 	return matches.length != 1 ? null : matches[0];
 }
 
-private DataObject searchData(Project prj, string name, string namespace = string.init)
+private DataObject searchData(Project prj, Location loc, string name, string namespace = string.init)
 {
 	DataObject[] matches;
 
@@ -309,6 +309,24 @@ private DataObject searchData(Project prj, string name, string namespace = strin
 		{
 			if (m.name == name)
 				matches ~= m;
+		}
+	}
+
+	if (matches.length > 1) {
+		writeAnalyserError("Multiple matching types found for: " ~ name, loc);
+		foreach (m; matches) {
+			if (m.objectType == DataObjectType.Network) {
+				writeTypeErrorSuggest(m.fullName() ~ " (Network)", loc);
+			}
+			if (m.objectType == DataObjectType.Table) {
+				writeTypeErrorSuggest(m.fullName() ~ " (Table)", loc);
+			}
+			if (m.objectType == DataObjectType.View) {
+				writeTypeErrorSuggest(m.fullName() ~ " (View)", loc);
+			}
+			if (m.objectType == DataObjectType.Udt) {
+				writeTypeErrorSuggest(m.fullName() ~ " (UDT)", loc);
+			}
 		}
 	}
 
