@@ -194,8 +194,8 @@ private void generatePropertyModel(CSharpProjectOptions opts, StringBuilder sb, 
 	sb.tabs(tabLevel).append(".HasColumnName(\"{0}\")", c.name);
 	sb.appendLine();
 	sb.tabs(tabLevel).append(".HasColumnType(\"{0}\")", getMssqlTypeFromColumn(c));
-	sb.appendLine();
 	if (c.precision != 0) {
+		sb.appendLine();
 		if (c.scale != 0) {
 			sb.tabs(tabLevel).append(".HasPrecision({0}, {1})", to!string(c.precision), to!string(c.scale));
 		}
