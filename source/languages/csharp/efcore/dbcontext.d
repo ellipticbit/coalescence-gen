@@ -146,11 +146,7 @@ private void generateIndexModel(CSharpProjectOptions opts, StringBuilder sb, Tab
 				sb.append(", ");
 		}
 		sb.appendLine(" })");
-		if (opts.compatibility == CSharpCompatibility.NET60) {
-			sb.tabs(tabLevel).append(".HasDatabaseName(\"{0}\")", ix.name);
-		} else {
-			sb.tabs(tabLevel).append(".HasName(\"{0}\")", ix.name);
-		}
+		sb.tabs(tabLevel).append(".HasDatabaseName(\"{0}\")", ix.name);
 		if (ix.isUnique) {
 			sb.appendLine();
 			sb.tabs(tabLevel).append(".IsUnique()");
@@ -198,14 +194,12 @@ private void generatePropertyModel(CSharpProjectOptions opts, StringBuilder sb, 
 	sb.tabs(tabLevel).append(".HasColumnName(\"{0}\")", c.name);
 	sb.appendLine();
 	sb.tabs(tabLevel).append(".HasColumnType(\"{0}\")", getMssqlTypeFromColumn(c));
-	if (opts.compatibility == CSharpCompatibility.NET60 && c.precision != 0) {
-		sb.appendLine();
-		if (c.scale != 0) {
-			sb.tabs(tabLevel).append(".HasPrecision({0}, {1})", to!string(c.precision), to!string(c.scale));
-		}
-		else {
-			sb.tabs(tabLevel).append(".HasPrecision({0})", to!string(c.precision));
-		}
+	sb.appendLine();
+	if (c.scale != 0) {
+		sb.tabs(tabLevel).append(".HasPrecision({0}, {1})", to!string(c.precision), to!string(c.scale));
+	}
+	else {
+		sb.tabs(tabLevel).append(".HasPrecision({0})", to!string(c.precision));
 	}
 
 	if (isVariableLengthType(c.sqlType) && c.maxLength > 0) {

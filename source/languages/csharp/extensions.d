@@ -32,11 +32,6 @@ public enum CSharpOutputMode {
 	SingleFile,
 }
 
-public enum CSharpCompatibility {
-	NET60,
-	NET80
-}
-
 public enum CSharpGeneratorMode {
 	Server,
 	Client,
@@ -51,7 +46,7 @@ public final class CSharpProjectOptions {
 	public string namespace;
 	public bool uiBindings;
 	public bool enableEFExtensions;
-	public CSharpCompatibility compatibility;
+	public bool serializerFieldAttributes;
 	public CSharpSerializers[] serializers;
 
 	public this (SDLNode root, string databaseName, string projectRoot) {
@@ -63,8 +58,8 @@ public final class CSharpProjectOptions {
 		this.contextName = root.getAttributeValue!string("contextName", databaseName);
 		this.namespace = root.getAttributeValue!string("namespace", databaseName);
 		this.uiBindings = root.getAttributeValue!bool("uiBindings", false);
+		this.serializerFieldAttributes = root.getAttributeValue!bool("serializerFieldAttributes", true);
 		this.enableEFExtensions = root.getAttributeValue!bool("enableEFExtensions", false);
-		this.compatibility = to!CSharpCompatibility(root.getAttributeValue!string("compatibility", "NET80"));
 		try {
 			version(Posix) {
 			this.outputPath = buildNormalizedPath(projectRoot, root.expectAttributeValue!string("outputPath").replace("\\", "/"));
