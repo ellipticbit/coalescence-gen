@@ -79,8 +79,10 @@ private void generateDataNetworkMember(DataMember mm, StringBuilder builder, CSh
 	if (mm.hidden) return;
 
 	builder.appendLine();
+	if (opts.compatibility == CSharpCompatibility.NET80) builder.generateBindingMetadata(mm.transport.isNullOrWhitespace() ? mm.name : mm.transport, !mm.isNullable, mm.isTypeEnum(), opts, tabLevel);
 	builder.tabs(tabLevel).appendLine("private {0} _{1};", generateType(mm.type, false), mm.name);
-	builder.generateBindingMetadata(mm.transport.isNullOrWhitespace() ? mm.name : mm.transport, !mm.isNullable, mm.isTypeEnum(), opts, tabLevel);
+	builder.tabs(tabLevel).appendLine("[System.Diagnostics.DebuggerNonUserCode()]");
+	if (opts.compatibility != CSharpCompatibility.NET80) builder.generateBindingMetadata(mm.transport.isNullOrWhitespace() ? mm.name : mm.transport, !mm.isNullable, mm.isTypeEnum(), opts, tabLevel);
 	builder.tabs(tabLevel).appendLine("public {0} {1} { get { return _{1}; } {2}set { {3} } }", generateType(mm.type, false), mm.name, mm.isReadOnly ? "private " : string.init, generateSetter(mm.name, opts.uiBindings));
 }
 
@@ -117,9 +119,11 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 
 	foreach (c; table.members) {
 		builder.appendLine();
-		builder.tabs(2).appendLine("private {0} _{1};", getTypeFromSqlType(c.sqlType, c.isNullable), c.name);
-		builder.generateBindingMetadata(c.transport.isNullOrWhitespace() ? c.name : c.transport, !c.isNullable, c.isTypeEnum(), opts, tabLevel);
-		builder.tabs(2).appendLine("public {0} {1} { get { return _{1}; } set { {2} } }", getTypeFromSqlType(c.sqlType, c.isNullable), c.name, generateSetter(c.name, opts.uiBindings));
+		if (opts.compatibility == CSharpCompatibility.NET80) builder.generateBindingMetadata(c.transport.isNullOrWhitespace() ? c.name : c.transport, !c.isNullable, c.isTypeEnum(), opts, tabLevel);
+		builder.tabs(tabLevel).appendLine("private {0} _{1};", getTypeFromSqlType(c.sqlType, c.isNullable), c.name);
+		builder.tabs(tabLevel).appendLine("[System.Diagnostics.DebuggerNonUserCode()]");
+		if (opts.compatibility != CSharpCompatibility.NET80) builder.generateBindingMetadata(c.transport.isNullOrWhitespace() ? c.name : c.transport, !c.isNullable, c.isTypeEnum(), opts, tabLevel);
+		builder.tabs(tabLevel).appendLine("public {0} {1} { get { return _{1}; } set { {2} } }", getTypeFromSqlType(c.sqlType, c.isNullable), c.name, generateSetter(c.name, opts.uiBindings));
 	}
 	if (table.modifications !is null) {
 		foreach (c; table.modifications.additions) {
@@ -130,27 +134,35 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 	foreach (fk; fkTarget) {
 		builder.appendLine();
 		if (fk.direction != ForeignKeyDirection.OneToOne) {
-			builder.tabs(2).appendLine("private ICollection<{0}> _{1};", fk.sourceTable.getCSharpFullName(), fk.targetId());
-			builder.generateBindingMetadata(fk.targetId(), false, false, opts, tabLevel);
-			builder.tabs(2).appendLine("public virtual ICollection<{0}> {1} { get { return _{1}; } set { {2} } }", fk.sourceTable.getCSharpFullName(), fk.targetId(), generateSetter(fk.targetId(), opts.uiBindings));
+			if (opts.compatibility == CSharpCompatibility.NET80) builder.generateBindingMetadata(fk.targetId(), false, false, opts, tabLevel);
+			builder.tabs(tabLevel).appendLine("private ICollection<{0}> _{1};", fk.sourceTable.getCSharpFullName(), fk.targetId());
+			builder.tabs(tabLevel).appendLine("[System.Diagnostics.DebuggerNonUserCode()]");
+			if (opts.compatibility != CSharpCompatibility.NET80) builder.generateBindingMetadata(fk.targetId(), false, false, opts, tabLevel);
+			builder.tabs(tabLevel).appendLine("public virtual ICollection<{0}> {1} { get { return _{1}; } set { {2} } }", fk.sourceTable.getCSharpFullName(), fk.targetId(), generateSetter(fk.targetId(), opts.uiBindings));
 		}
 		else {
-			builder.tabs(2).appendLine("private {0} _{1};", fk.sourceTable.getCSharpFullName(), fk.targetId());
-			builder.generateBindingMetadata(fk.targetId(), false, false, opts, tabLevel);
-			builder.tabs(2).appendLine("public virtual {0} {1} { get { return _{1}; } set { {2} } }", fk.sourceTable.getCSharpFullName(), fk.targetId(), generateSetter(fk.targetId(), opts.uiBindings));
+			if (opts.compatibility == CSharpCompatibility.NET80) builder.generateBindingMetadata(fk.targetId(), false, false, opts, tabLevel);
+			builder.tabs(tabLevel).appendLine("private {0} _{1};", fk.sourceTable.getCSharpFullName(), fk.targetId());
+			builder.tabs(tabLevel).appendLine("[System.Diagnostics.DebuggerNonUserCode()]");
+			if (opts.compatibility != CSharpCompatibility.NET80) builder.generateBindingMetadata(fk.targetId(), false, false, opts, tabLevel);
+			builder.tabs(tabLevel).appendLine("public virtual {0} {1} { get { return _{1}; } set { {2} } }", fk.sourceTable.getCSharpFullName(), fk.targetId(), generateSetter(fk.targetId(), opts.uiBindings));
 		}
 	}
 
 	foreach (fk; fkSource) {
 		builder.appendLine();
 		if (fk.direction != ForeignKeyDirection.ManyToMany) {
+			if (opts.compatibility == CSharpCompatibility.NET80) builder.generateBindingMetadata(fk.sourceId(), false, false, opts, tabLevel);
 			builder.tabs(tabLevel).appendLine("private {0} _{1};", fk.targetTable.getCSharpFullName(), fk.sourceId());
-			builder.generateBindingMetadata(fk.sourceId(), false, false, opts, tabLevel);
+			builder.tabs(tabLevel).appendLine("[System.Diagnostics.DebuggerNonUserCode()]");
+			if (opts.compatibility != CSharpCompatibility.NET80) builder.generateBindingMetadata(fk.sourceId(), false, false, opts, tabLevel);
 			builder.tabs(tabLevel).appendLine("public virtual {0} {1} { get { return _{1}; } set { {2} } }", fk.targetTable.getCSharpFullName(), fk.sourceId(), generateSetter(fk.sourceId(), opts.uiBindings));
 		}
 		else {
+			if (opts.compatibility == CSharpCompatibility.NET80) builder.generateBindingMetadata(fk.sourceId(), false, false, opts, tabLevel);
 			builder.tabs(tabLevel).appendLine("private ICollection<{0}> _{1};", fk.targetTable.getCSharpFullName(), fk.sourceId());
-			builder.generateBindingMetadata(fk.sourceId(), false, false, opts, tabLevel);
+			builder.tabs(tabLevel).appendLine("[System.Diagnostics.DebuggerNonUserCode()]");
+			if (opts.compatibility != CSharpCompatibility.NET80) builder.generateBindingMetadata(fk.sourceId(), false, false, opts, tabLevel);
 			builder.tabs(tabLevel).appendLine("public virtual ICollection<{0}> {1} { get { return _{1}; } set { {2} } }", fk.targetTable.getCSharpFullName(), fk.sourceId(), generateSetter(fk.sourceId(), opts.uiBindings));
 		}
 	}
@@ -226,13 +238,14 @@ private void generateDataSqlMember(DataMember mm, StringBuilder builder, CSharpP
 	if (mm.hidden) return;
 
 	builder.appendLine();
+	if (opts.compatibility == CSharpCompatibility.NET80) builder.generateBindingMetadata(mm.transport.isNullOrWhitespace() ? mm.name : mm.transport, !mm.isNullable, mm.isTypeEnum(), opts, tabLevel);
 	builder.tabs(tabLevel).appendLine("private {0} _{1};", getTypeFromSqlType(mm.sqlType, mm.isNullable), mm.name);
-	builder.generateBindingMetadata(mm.transport.isNullOrWhitespace() ? mm.name : mm.transport, !mm.isNullable, mm.isTypeEnum(), opts, tabLevel);
+	builder.tabs(tabLevel).appendLine("[System.Diagnostics.DebuggerNonUserCode()]");
+	if (opts.compatibility != CSharpCompatibility.NET80) builder.generateBindingMetadata(mm.transport.isNullOrWhitespace() ? mm.name : mm.transport, !mm.isNullable, mm.isTypeEnum(), opts, tabLevel);
 	builder.tabs(tabLevel).appendLine("public {0} {1} { get { return _{1}; } {2}set { {3} } }", getTypeFromSqlType(mm.sqlType, mm.isNullable), mm.name, mm.isReadOnly ? "private " : string.init, generateSetter(mm.name, opts.uiBindings));
 }
 
 private void generateBindingMetadata(StringBuilder builder, string transport, bool isRequired, bool stringEnum, CSharpProjectOptions opts, ushort tabLevel) {
-	builder.tabs(tabLevel).appendLine("[System.Diagnostics.DebuggerNonUserCode()]");
 	if (opts.hasSerializer(CSharpSerializers.NewtonsoftJson) || opts.hasSerializer(CSharpSerializers.DataContract)) {
 		builder.tabs(tabLevel).appendLine("[DataMember(Name = \"{0}\", IsRequired = {1})]", transport, isRequired ? "false" : "true");
 	}

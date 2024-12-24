@@ -33,8 +33,8 @@ public enum CSharpOutputMode {
 }
 
 public enum CSharpCompatibility {
-	NETCore31,
 	NET60,
+	NET80
 }
 
 public enum CSharpGeneratorMode {
@@ -64,15 +64,15 @@ public final class CSharpProjectOptions {
 		this.namespace = root.getAttributeValue!string("namespace", databaseName);
 		this.uiBindings = root.getAttributeValue!bool("uiBindings", false);
 		this.enableEFExtensions = root.getAttributeValue!bool("enableEFExtensions", false);
-		this.compatibility = to!CSharpCompatibility(root.getAttributeValue!string("compatibility", "NET60"));
-        try {
-            version(Posix) {
-            this.outputPath = buildNormalizedPath(projectRoot, root.expectAttributeValue!string("outputPath").replace("\\", "/"));
-            }
-            version(Windows) {
-            this.outputPath = buildNormalizedPath(projectRoot, root.expectAttributeValue!string("outputPath").replace("/", "\\"));
-            }
-        } catch (Exception ex) { }
+		this.compatibility = to!CSharpCompatibility(root.getAttributeValue!string("compatibility", "NET80"));
+		try {
+			version(Posix) {
+			this.outputPath = buildNormalizedPath(projectRoot, root.expectAttributeValue!string("outputPath").replace("\\", "/"));
+			}
+			version(Windows) {
+			this.outputPath = buildNormalizedPath(projectRoot, root.expectAttributeValue!string("outputPath").replace("/", "\\"));
+			}
+		} catch (Exception ex) { }
 		foreach(sop; root.getNodeValues("serializers")) {
 			this.serializers ~= to!CSharpSerializers(sop.value!string());
 		}
