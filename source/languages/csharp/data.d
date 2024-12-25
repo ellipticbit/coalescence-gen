@@ -79,10 +79,10 @@ private void generateDataNetworkMember(DataMember mm, StringBuilder builder, CSh
 	if (mm.hidden) return;
 
 	builder.appendLine();
-	if (opts.serializerFieldAttributes) builder.generateBindingMetadata(mm.transport.isNullOrWhitespace() ? mm.name : mm.transport, !mm.isNullable, mm.isTypeEnum(), opts, tabLevel);
+	if (opts.serializerFieldAttributes) builder.generateBindingMetadata(mm.transport, !mm.isNullable, mm.isTypeEnum(), opts, tabLevel);
 	builder.tabs(tabLevel).appendLine("private {0} _{1};", generateType(mm.type, false), mm.name);
 	builder.tabs(tabLevel).appendLine("[System.Diagnostics.DebuggerNonUserCode()]");
-	if (!opts.serializerFieldAttributes) builder.generateBindingMetadata(mm.transport.isNullOrWhitespace() ? mm.name : mm.transport, !mm.isNullable, mm.isTypeEnum(), opts, tabLevel);
+	if (!opts.serializerFieldAttributes) builder.generateBindingMetadata(mm.transport, !mm.isNullable, mm.isTypeEnum(), opts, tabLevel);
 	builder.tabs(tabLevel).appendLine("public {0} {1} { get { return _{1}; } {2}set { {3} } }", generateType(mm.type, false), mm.name, mm.isReadOnly ? "private " : string.init, generateSetter(mm.name, opts.uiBindings));
 }
 
@@ -119,10 +119,10 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 
 	foreach (c; table.members) {
 		builder.appendLine();
-		if (opts.serializerFieldAttributes) builder.generateBindingMetadata(c.transport.isNullOrWhitespace() ? c.name : c.transport, !c.isNullable, c.isTypeEnum(), opts, tabLevel);
+		if (opts.serializerFieldAttributes) builder.generateBindingMetadata(c.transport, !c.isNullable, c.isTypeEnum(), opts, tabLevel);
 		builder.tabs(tabLevel).appendLine("private {0} _{1};", getTypeFromSqlType(c.sqlType, c.isNullable), c.name);
 		builder.tabs(tabLevel).appendLine("[System.Diagnostics.DebuggerNonUserCode()]");
-		if (!opts.serializerFieldAttributes) builder.generateBindingMetadata(c.transport.isNullOrWhitespace() ? c.name : c.transport, !c.isNullable, c.isTypeEnum(), opts, tabLevel);
+		if (!opts.serializerFieldAttributes) builder.generateBindingMetadata(c.transport, !c.isNullable, c.isTypeEnum(), opts, tabLevel);
 		builder.tabs(tabLevel).appendLine("public {0} {1} { get { return _{1}; } set { {2} } }", getTypeFromSqlType(c.sqlType, c.isNullable), c.name, generateSetter(c.name, opts.uiBindings));
 	}
 	if (table.modifications !is null) {
@@ -238,22 +238,22 @@ private void generateDataSqlMember(DataMember mm, StringBuilder builder, CSharpP
 	if (mm.hidden) return;
 
 	builder.appendLine();
-	if (opts.serializerFieldAttributes) builder.generateBindingMetadata(mm.transport.isNullOrWhitespace() ? mm.name : mm.transport, !mm.isNullable, mm.isTypeEnum(), opts, tabLevel);
+	if (opts.serializerFieldAttributes) builder.generateBindingMetadata(mm.transport, !mm.isNullable, mm.isTypeEnum(), opts, tabLevel);
 	builder.tabs(tabLevel).appendLine("private {0} _{1};", getTypeFromSqlType(mm.sqlType, mm.isNullable), mm.name);
 	builder.tabs(tabLevel).appendLine("[System.Diagnostics.DebuggerNonUserCode()]");
-	if (!opts.serializerFieldAttributes) builder.generateBindingMetadata(mm.transport.isNullOrWhitespace() ? mm.name : mm.transport, !mm.isNullable, mm.isTypeEnum(), opts, tabLevel);
+	if (!opts.serializerFieldAttributes) builder.generateBindingMetadata(mm.transport, !mm.isNullable, mm.isTypeEnum(), opts, tabLevel);
 	builder.tabs(tabLevel).appendLine("public {0} {1} { get { return _{1}; } {2}set { {3} } }", getTypeFromSqlType(mm.sqlType, mm.isNullable), mm.name, mm.isReadOnly ? "private " : string.init, generateSetter(mm.name, opts.uiBindings));
 }
 
 private void generateBindingMetadata(StringBuilder builder, string transport, bool isRequired, bool stringEnum, CSharpProjectOptions opts, ushort tabLevel) {
 	if (opts.hasSerializer(CSharpSerializers.NewtonsoftJson) || opts.hasSerializer(CSharpSerializers.DataContract)) {
-		builder.tabs(tabLevel).appendLine("[DataMember(Name = \"{0}\", IsRequired = {1})]", transport, isRequired ? "false" : "true");
+		if (!transport.isNullOrWhitespace()) builder.tabs(tabLevel).appendLine("[DataMember(Name = \"{0}\", IsRequired = {1})]", transport, isRequired ? "false" : "true");
 	}
 	if (opts.hasSerializer(CSharpSerializers.NewtonsoftJson) ) {
 		if (stringEnum) builder.tabs(tabLevel).appendLine("[JsonConverter(typeof(JsonStringEnumConverter))]");
 	}
 	if (opts.hasSerializer(CSharpSerializers.SystemTextJson)) {
-		builder.tabs(tabLevel).appendLine("[JsonPropertyName(\"{0}\")]", transport);
+		if (!transport.isNullOrWhitespace()) builder.tabs(tabLevel).appendLine("[JsonPropertyName(\"{0}\")]", transport);
 		builder.tabs(tabLevel).appendLine("[JsonInclude]");
 		if (isRequired) builder.tabs(tabLevel).appendLine("[JsonRequired]");
 		if (stringEnum) builder.tabs(tabLevel).appendLine("[JsonConverter(typeof(JsonStringEnumConverter))]");
