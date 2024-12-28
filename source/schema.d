@@ -488,7 +488,7 @@ public final class DataMember
 	{
 		this.parent = parent;
 		this.sqlId = id;
-		this.transport = this.name = this.sqlName = name;
+		this.name = this.sqlName = name;
 		this.sqlType = type;
 		this.maxLength = maxLength;
 		if (type == SqlDbType.Decimal || type == SqlDbType.Float)
@@ -512,7 +512,7 @@ public final class DataMember
 		this.parent = parent;
 		this.sqlId = -1;
 		this.name = this.sqlName = root.name();
-		this.transport = root.getAttributeValue!string("transport", this.name);
+		this.transport = root.getAttributeValue!string("transport", string.init);
 		this.type = new TypeComplex(this.name, root.expectAttributeValue!string("type"), root.location);
 		this.enumAsString = root.getAttributeValue!bool("enumString", false);
 		this.sqlType = SqlDbType.None;
