@@ -123,7 +123,7 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 		builder.tabs(tabLevel).appendLine("private {0} {1};", getTypeFromSqlType(c.sqlType, c.isNullable), c.name.toLower());
 		builder.tabs(tabLevel).appendLine("[System.Diagnostics.DebuggerNonUserCode()]");
 		if (!opts.serializerFieldAttributes) builder.generateBindingMetadata(c.transport, !c.isNullable, c.isTypeEnum(), opts, tabLevel);
-		builder.tabs(tabLevel).appendLine("public {0} {1} { get { return {1}; } set { {2} } }", getTypeFromSqlType(c.sqlType, c.isNullable), c.name.toLower(), generateSetter(c.name.toLower(), opts.uiBindings));
+		builder.tabs(tabLevel).appendLine("public {0} {1} { get { return {2}; } set { {3} } }", getTypeFromSqlType(c.sqlType, c.isNullable), c.name, c.name.toLower(), generateSetter(c.name.toLower(), opts.uiBindings));
 	}
 	if (table.modifications !is null) {
 		foreach (c; table.modifications.additions) {
@@ -138,14 +138,14 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 			builder.tabs(tabLevel).appendLine("private ICollection<{0}> {1};", fk.sourceTable.getCSharpFullName(), fk.targetId().toLower());
 			builder.tabs(tabLevel).appendLine("[System.Diagnostics.DebuggerNonUserCode()]");
 			if (!opts.serializerFieldAttributes) builder.generateBindingMetadata(fk.targetId(), false, false, opts, tabLevel);
-			builder.tabs(tabLevel).appendLine("public virtual ICollection<{0}> {1} { get { return {1}; } set { {2} } }", fk.sourceTable.getCSharpFullName(), fk.targetId().toLower(), generateSetter(fk.targetId().toLower(), opts.uiBindings));
+			builder.tabs(tabLevel).appendLine("public virtual ICollection<{0}> {1} { get { return {2}; } set { {3} } }", fk.sourceTable.getCSharpFullName(), fk.targetId(), fk.targetId().toLower(), generateSetter(fk.targetId().toLower(), opts.uiBindings));
 		}
 		else {
 			if (opts.serializerFieldAttributes) builder.generateBindingMetadata(fk.targetId(), false, false, opts, tabLevel);
 			builder.tabs(tabLevel).appendLine("private {0} {1};", fk.sourceTable.getCSharpFullName(), fk.targetId().toLower());
 			builder.tabs(tabLevel).appendLine("[System.Diagnostics.DebuggerNonUserCode()]");
 			if (!opts.serializerFieldAttributes) builder.generateBindingMetadata(fk.targetId(), false, false, opts, tabLevel);
-			builder.tabs(tabLevel).appendLine("public virtual {0} {1} { get { return {1}; } set { {2} } }", fk.sourceTable.getCSharpFullName(), fk.targetId().toLower(), generateSetter(fk.targetId().toLower(), opts.uiBindings));
+			builder.tabs(tabLevel).appendLine("public virtual {0} {1} { get { return {2}; } set { {3} } }", fk.sourceTable.getCSharpFullName(), fk.targetId(), fk.targetId().toLower(), generateSetter(fk.targetId().toLower(), opts.uiBindings));
 		}
 	}
 
@@ -156,14 +156,14 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 			builder.tabs(tabLevel).appendLine("private {0} {1};", fk.targetTable.getCSharpFullName(), fk.sourceId().toLower());
 			builder.tabs(tabLevel).appendLine("[System.Diagnostics.DebuggerNonUserCode()]");
 			if (!opts.serializerFieldAttributes) builder.generateBindingMetadata(fk.sourceId(), false, false, opts, tabLevel);
-			builder.tabs(tabLevel).appendLine("public virtual {0} {1} { get { return {1}; } set { {2} } }", fk.targetTable.getCSharpFullName(), fk.sourceId().toLower(), generateSetter(fk.sourceId().toLower(), opts.uiBindings));
+			builder.tabs(tabLevel).appendLine("public virtual {0} {1} { get { return {2}; } set { {3} } }", fk.targetTable.getCSharpFullName(), fk.sourceId(), fk.sourceId().toLower(), generateSetter(fk.sourceId().toLower(), opts.uiBindings));
 		}
 		else {
 			if (opts.serializerFieldAttributes) builder.generateBindingMetadata(fk.sourceId(), false, false, opts, tabLevel);
 			builder.tabs(tabLevel).appendLine("private ICollection<{0}> {1};", fk.targetTable.getCSharpFullName(), fk.sourceId().toLower());
 			builder.tabs(tabLevel).appendLine("[System.Diagnostics.DebuggerNonUserCode()]");
 			if (!opts.serializerFieldAttributes) builder.generateBindingMetadata(fk.sourceId(), false, false, opts, tabLevel);
-			builder.tabs(tabLevel).appendLine("public virtual ICollection<{0}> {1} { get { return {1}; } set { {2} } }", fk.targetTable.getCSharpFullName(), fk.sourceId().toLower(), generateSetter(fk.sourceId().toLower(), opts.uiBindings));
+			builder.tabs(tabLevel).appendLine("public virtual ICollection<{0}> {1} { get { return {2}; } set { {3} } }", fk.targetTable.getCSharpFullName(), fk.sourceId(), fk.sourceId().toLower(), generateSetter(fk.sourceId().toLower(), opts.uiBindings));
 		}
 	}
 
@@ -242,7 +242,7 @@ private void generateDataSqlMember(DataMember mm, StringBuilder builder, CSharpP
 	builder.tabs(tabLevel).appendLine("private {0} {1};", getTypeFromSqlType(mm.sqlType, mm.isNullable), mm.name.toLower());
 	builder.tabs(tabLevel).appendLine("[System.Diagnostics.DebuggerNonUserCode()]");
 	if (!opts.serializerFieldAttributes) builder.generateBindingMetadata(mm.transport, !mm.isNullable, mm.isTypeEnum(), opts, tabLevel);
-	builder.tabs(tabLevel).appendLine("public {0} {1} { get { return {1}; } {2}set { {3} } }", getTypeFromSqlType(mm.sqlType, mm.isNullable), mm.name.toLower(), mm.isReadOnly ? "private " : string.init, generateSetter(mm.name.toLower(), opts.uiBindings));
+	builder.tabs(tabLevel).appendLine("public {0} {1} { get { return {2}; } {3}set { {4} } }", getTypeFromSqlType(mm.sqlType, mm.isNullable), mm.name, mm.name.toLower(), mm.isReadOnly ? "private " : string.init, generateSetter(mm.name.toLower(), opts.uiBindings));
 }
 
 private void generateBindingMetadata(StringBuilder builder, string transport, bool isRequired, bool stringEnum, CSharpProjectOptions opts, ushort tabLevel) {
