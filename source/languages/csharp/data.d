@@ -80,10 +80,10 @@ private void generateDataNetworkMember(DataMember mm, StringBuilder builder, CSh
 
 	builder.appendLine();
 	if (opts.serializerFieldAttributes) builder.generateBindingMetadata(mm.transport, !mm.isNullable, mm.isTypeEnum(), opts, tabLevel);
-	builder.tabs(tabLevel).appendLine("private {0} _{1};", generateType(mm.type, false), mm.name);
+	builder.tabs(tabLevel).appendLine("private {0} {1};", generateType(mm.type, false), mm.name.toLower());
 	builder.tabs(tabLevel).appendLine("[System.Diagnostics.DebuggerNonUserCode()]");
 	if (!opts.serializerFieldAttributes) builder.generateBindingMetadata(mm.transport, !mm.isNullable, mm.isTypeEnum(), opts, tabLevel);
-	builder.tabs(tabLevel).appendLine("public {0} {1} { get { return _{1}; } {2}set { {3} } }", generateType(mm.type, false), mm.name, mm.isReadOnly ? "private " : string.init, generateSetter(mm.name, opts.uiBindings));
+	builder.tabs(tabLevel).appendLine("public {0} {1} { get { return {2}; } {3}set { {4} } }", generateType(mm.type, false), mm.name, mm.name.toLower(), mm.isReadOnly ? "private " : string.init, generateSetter(mm.name.toLower(), opts.uiBindings));
 }
 
 public void generateDataTable(Table table, StringBuilder builder, CSharpProjectOptions opts, Project prj, bool isClient, ushort tabLevel) {
