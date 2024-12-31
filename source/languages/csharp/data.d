@@ -81,7 +81,7 @@ private void generateDataNetworkMember(DataMember mm, StringBuilder builder, CSh
 
 	builder.appendLine();
 	builder.generateBindingMetadata(getTransportName(mm.name, mm.transport), !mm.isNullable, mm.isTypeEnum(), opts, tabLevel, false);
-	builder.tabs(tabLevel).appendLine("private {0} _{1};", generateType(mm.type, false), getFieldName(mm.name));
+	builder.tabs(tabLevel).appendLine("private {0} {1};", generateType(mm.type, false), getFieldName(mm.name));
 	builder.generateBindingMetadata(getTransportName(mm.name, mm.transport), !mm.isNullable, mm.isTypeEnum(), opts, tabLevel, true);
 	builder.tabs(tabLevel).appendLine("public {0} {1} { get { return {2}; } {3}set { {4} } }", generateType(mm.type, false), mm.name, getFieldName(mm.name), mm.isReadOnly ? "private " : string.init, generateSetter(getFieldName(mm.name), opts.uiBindings));
 }
@@ -120,7 +120,7 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 	foreach (c; table.members) {
 		builder.appendLine();
 		builder.generateBindingMetadata(getTransportName(c.name, c.transport), !c.isNullable, c.isTypeEnum(), opts, tabLevel, false);
-		builder.tabs(tabLevel).appendLine("private {0} _{1};", getTypeFromSqlType(c.sqlType, c.isNullable), getFieldName(c.name));
+		builder.tabs(tabLevel).appendLine("private {0} {1};", getTypeFromSqlType(c.sqlType, c.isNullable), getFieldName(c.name));
 		builder.generateBindingMetadata(getTransportName(c.name, c.transport), !c.isNullable, c.isTypeEnum(), opts, tabLevel, true);
 		builder.tabs(tabLevel).appendLine("public {0} {1} { get { return {2}; } set { {3} } }", getTypeFromSqlType(c.sqlType, c.isNullable), c.name, getFieldName(c.name), generateSetter(getFieldName(c.name), opts.uiBindings));
 	}
@@ -134,13 +134,13 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 		builder.appendLine();
 		if (fk.direction != ForeignKeyDirection.OneToOne) {
 			builder.generateBindingMetadata(getTransportName(fk.targetId(), string.init), false, false, opts, tabLevel, false);
-			builder.tabs(tabLevel).appendLine("private ICollection<{0}> _{1};", fk.sourceTable.getCSharpFullName(), getFieldName(fk.targetId()));
+			builder.tabs(tabLevel).appendLine("private ICollection<{0}> {1};", fk.sourceTable.getCSharpFullName(), getFieldName(fk.targetId()));
 			builder.generateBindingMetadata(getTransportName(fk.targetId(), string.init), false, false, opts, tabLevel, true);
 			builder.tabs(tabLevel).appendLine("public virtual ICollection<{0}> {1} { get { return {2}; } set { {3} } }", fk.sourceTable.getCSharpFullName(), fk.targetId(), getFieldName(fk.targetId()), generateSetter(getFieldName(fk.targetId()), opts.uiBindings));
 		}
 		else {
 			builder.generateBindingMetadata(getTransportName(fk.targetId(), string.init), false, false, opts, tabLevel, false);
-			builder.tabs(tabLevel).appendLine("private {0} _{1};", fk.sourceTable.getCSharpFullName(), getFieldName(fk.targetId()));
+			builder.tabs(tabLevel).appendLine("private {0} {1};", fk.sourceTable.getCSharpFullName(), getFieldName(fk.targetId()));
 			builder.generateBindingMetadata(getTransportName(fk.targetId(), string.init), false, false, opts, tabLevel, true);
 			builder.tabs(tabLevel).appendLine("public virtual {0} {1} { get { return {2}; } set { {3} } }", fk.sourceTable.getCSharpFullName(), fk.targetId(), getFieldName(fk.targetId()), generateSetter(getFieldName(fk.targetId()), opts.uiBindings));
 		}
@@ -150,13 +150,13 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 		builder.appendLine();
 		if (fk.direction != ForeignKeyDirection.ManyToMany) {
 			builder.generateBindingMetadata(getTransportName(fk.sourceId(), string.init), false, false, opts, tabLevel, false);
-			builder.tabs(tabLevel).appendLine("private {0} _{1};", fk.targetTable.getCSharpFullName(), getFieldName(fk.sourceId()));
+			builder.tabs(tabLevel).appendLine("private {0} {1};", fk.targetTable.getCSharpFullName(), getFieldName(fk.sourceId()));
 			builder.generateBindingMetadata(getTransportName(fk.sourceId(), string.init), false, false, opts, tabLevel, true);
 			builder.tabs(tabLevel).appendLine("public virtual {0} {1} { get { return {2}; } set { {3} } }", fk.targetTable.getCSharpFullName(), fk.sourceId(), getFieldName(fk.sourceId()), generateSetter(getFieldName(fk.sourceId()), opts.uiBindings));
 		}
 		else {
 			builder.generateBindingMetadata(getTransportName(fk.sourceId(), string.init), false, false, opts, tabLevel, false);
-			builder.tabs(tabLevel).appendLine("private ICollection<{0}> _{1};", fk.targetTable.getCSharpFullName(), getFieldName(fk.sourceId()));
+			builder.tabs(tabLevel).appendLine("private ICollection<{0}> {1};", fk.targetTable.getCSharpFullName(), getFieldName(fk.sourceId()));
 			builder.generateBindingMetadata(getTransportName(fk.sourceId(), string.init), false, false, opts, tabLevel, true);
 			builder.tabs(tabLevel).appendLine("public virtual ICollection<{0}> {1} { get { return {2}; } set { {3} } }", fk.targetTable.getCSharpFullName(), fk.sourceId(), getFieldName(fk.sourceId()), generateSetter(getFieldName(fk.sourceId()), opts.uiBindings));
 		}
@@ -234,7 +234,7 @@ private void generateDataSqlMember(DataMember mm, StringBuilder builder, CSharpP
 
 	builder.appendLine();
 	builder.generateBindingMetadata(getTransportName(mm.name, mm.transport), !mm.isNullable, mm.isTypeEnum(), opts, tabLevel, false);
-	builder.tabs(tabLevel).appendLine("private {0} _{1};", getTypeFromSqlType(mm.sqlType, mm.isNullable), getFieldName(mm.name));
+	builder.tabs(tabLevel).appendLine("private {0} {1};", getTypeFromSqlType(mm.sqlType, mm.isNullable), getFieldName(mm.name));
 	builder.generateBindingMetadata(getTransportName(mm.name, mm.transport), !mm.isNullable, mm.isTypeEnum(), opts, tabLevel, true);
 	builder.tabs(tabLevel).appendLine("public {0} {1} { get { return {2}; } {3}set { {4} } }", getTypeFromSqlType(mm.sqlType, mm.isNullable), mm.name, getFieldName(mm.name), mm.isReadOnly ? "private " : string.init, generateSetter(getFieldName(mm.name), opts.uiBindings));
 }

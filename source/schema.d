@@ -472,7 +472,7 @@ public final class Database
 				string tsn = sn = sn.toLower();
 				int c = 1;
 				while (pmtl.count(tsn) > 0) {
-					tsn = sn ~ to!string(c);
+					tsn = sn ~ to!string(c++);
 				}
 				pmtl ~= tsn;
 				//writeln(tsn);
