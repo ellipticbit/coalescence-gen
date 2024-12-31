@@ -46,7 +46,7 @@ public final class CSharpProjectOptions {
 	public string namespace;
 	public bool uiBindings;
 	public bool enableEFExtensions;
-	public bool serializerFieldAttributes;
+	public bool serializeFieldAttributes;
 	public CSharpSerializers[] serializers;
 
 	public this (SDLNode root, string databaseName, string projectRoot) {
@@ -58,7 +58,7 @@ public final class CSharpProjectOptions {
 		this.contextName = root.getAttributeValue!string("contextName", databaseName);
 		this.namespace = root.getAttributeValue!string("namespace", databaseName);
 		this.uiBindings = root.getAttributeValue!bool("uiBindings", false);
-		this.serializerFieldAttributes = root.getAttributeValue!bool("serializerFieldAttributes", true);
+		this.serializeFieldAttributes = root.getAttributeValue!bool("serializeFieldAttributes", true);
 		this.enableEFExtensions = root.getAttributeValue!bool("enableEFExtensions", false);
 		try {
 			version(Posix) {
