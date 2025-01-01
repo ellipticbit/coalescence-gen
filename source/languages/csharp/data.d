@@ -241,7 +241,7 @@ private void generateDataSqlMember(DataMember mm, StringBuilder builder, CSharpP
 
 private void generateBindingMetadata(StringBuilder builder, DataMember mm, CSharpProjectOptions opts, ushort tabLevel, bool isProperty) {
 	string transport = getTransportName(mm.name, mm.transport);
-	if ((opts.serializeFieldAttributes && !isProperty) || (!opts.serializeFieldAttributes && isProperty)) {
+	if ((opts.serializeFields && !isProperty) || (!opts.serializeFields && isProperty)) {
 		if (opts.hasSerializer(CSharpSerializers.NewtonsoftJson) || opts.hasSerializer(CSharpSerializers.DataContract)) {
 			if (!transport.isNullOrWhitespace()) {
 				builder.tabs(tabLevel).appendLine("[DataMember(Name = \"{0}\", IsRequired = {1})]", transport, mm.isNullable ? "false" : "true");
@@ -265,7 +265,7 @@ private void generateBindingMetadata(StringBuilder builder, DataMember mm, CShar
 
 private void generateBindingMetadata(StringBuilder builder, ForeignKey fk, CSharpProjectOptions opts, ushort tabLevel, bool isProperty) {
 	string transport = getTransportName(fk.name, string.init);
-	if ((opts.serializeFieldAttributes && !isProperty) || (!opts.serializeFieldAttributes && isProperty)) {
+	if ((opts.serializeFields && !isProperty) || (!opts.serializeFields && isProperty)) {
 		if (opts.hasSerializer(CSharpSerializers.NewtonsoftJson) || opts.hasSerializer(CSharpSerializers.DataContract)) {
 			if (!transport.isNullOrWhitespace()) {
 				builder.tabs(tabLevel).appendLine("[DataMember(Name = \"{0}\", IsRequired = false]", transport);
@@ -283,10 +283,10 @@ private void generateBindingMetadata(StringBuilder builder, ForeignKey fk, CShar
 }
 
 private void generatePropertyMetadata(StringBuilder builder, CSharpProjectOptions opts, ushort tabLevel) {
-	if (opts.serializeFieldAttributes && (opts.hasSerializer(CSharpSerializers.NewtonsoftJson) || opts.hasSerializer(CSharpSerializers.DataContract))) {
+	if (opts.serializeFields && (opts.hasSerializer(CSharpSerializers.NewtonsoftJson) || opts.hasSerializer(CSharpSerializers.DataContract))) {
 		builder.tabs(tabLevel).appendLine("[IgnoreDataMember]");
 	}
-	if (opts.serializeFieldAttributes && opts.hasSerializer(CSharpSerializers.SystemTextJson)) {
+	if (opts.serializeFields && opts.hasSerializer(CSharpSerializers.SystemTextJson)) {
 		builder.tabs(tabLevel).appendLine("[JsonIgnore]");
 	}
 	builder.tabs(tabLevel).appendLine("[System.Diagnostics.DebuggerNonUserCode()]");
