@@ -28,20 +28,8 @@ public void generateDataNetwork(Network m, StringBuilder builder, CSharpProjectO
 		pmtl.length = m.members.length;
 		foreach(pm; m.members) {
 			if (pm.transport.isNullOrWhitespace()) {
-				string sn = string.init;
-				foreach(c; pm.name) {
-					if (c.isUpper()) {
-						sn ~= c;
-					}
-				}
-				string tsn = sn = sn.toLower();
-				int c = 1;
-				while (pmtl.count(tsn) > 0) {
-					tsn = sn ~ to!string(c++);
-				}
-				pmtl ~= tsn;
-				//writeln(tsn);
-				pm.transport = tsn;
+				pm.transport = getShortTransport(pmtl, pm.name);
+				pmtl ~= pm.transport;
 			}
 		}
 	}
@@ -115,23 +103,17 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 	// Create short transport names
 	if (opts.shortTransports) {
 		string[] pmtl;
-		pmtl.length = table.members.length;
+		pmtl.length = table.members.length + table.foreignKeys.length;
 		foreach(pm; table.members) {
 			if (pm.transport.isNullOrWhitespace()) {
-				string sn = string.init;
-				foreach(c; pm.name) {
-					if (c.isUpper()) {
-						sn ~= c;
-					}
-				}
-				string tsn = sn = sn.toLower();
-				int c = 1;
-				while (pmtl.count(tsn) > 0) {
-					tsn = sn ~ to!string(c++);
-				}
-				pmtl ~= tsn;
-				//writeln(tsn);
-				pm.transport = tsn;
+				pm.transport = getShortTransport(pmtl, pm.name);
+				pmtl ~= pm.transport;
+			}
+		}
+		foreach(fk; table.foreignKeys) {
+			if (fk.transport.isNullOrWhitespace()) {
+				fk.transport = getShortTransport(pmtl, fk.name);
+				pmtl ~= fk.transport;
 			}
 		}
 	}
@@ -313,11 +295,11 @@ private void generateBindingMetadata(StringBuilder builder, DataMember mm, CShar
 }
 
 private void generateBindingMetadata(StringBuilder builder, ForeignKey fk, CSharpProjectOptions opts, ushort tabLevel, bool isProperty) {
-	string transport = getTransportName(fk.name, string.init);
+	string transport = getTransportName(fk.name, fk.transport);
 	if ((opts.serializeFields && !isProperty) || (!opts.serializeFields && isProperty)) {
 		if (opts.hasSerializer(CSharpSerializers.NewtonsoftJson) || opts.hasSerializer(CSharpSerializers.DataContract)) {
 			if (!transport.isNullOrWhitespace()) {
-				builder.tabs(tabLevel).appendLine("[DataMember(Name = \"{0}\", IsRequired = false]", transport);
+				builder.tabs(tabLevel).appendLine("[DataMember(Name = \"{0}\", IsRequired = false)]", transport);
 			} else {
 				builder.tabs(tabLevel).appendLine("[DataMember(IsRequired = false)]");
 			}
@@ -360,4 +342,20 @@ private bool isCSharpKeyword(string name) {
 private string getTransportName(string name, string transport) {
 	if (transport.isNullOrWhitespace && isCSharpKeyword(name)) return name.toLower();
 	return transport;
+}
+
+private string getShortTransport(string[] pmtl, string name) {
+	string sn = string.init;
+	foreach(c; name) {
+		if (c.isUpper()) {
+			sn ~= c;
+		}
+	}
+	string tsn = sn = sn.toLower();
+	int c = 1;
+	while (pmtl.count(tsn) > 0) {
+		tsn = sn ~ to!string(c++);
+	}
+	//writeln(tsn);
+	return tsn;
 }

@@ -3,7 +3,7 @@ project {
 		client outputPath="..\\output\\client" namespace="Coalescence.Test.Client" uiBindings=true {
 			serializers "SystemTextJson" "NewtonsoftJson" "DataContract"
 		}
-		server outputPath="..\\output\\server" namespace="Coalescence.Test.Server" {
+		server outputPath="..\\output\\server" namespace="Coalescence.Test.Server" shortTransports=true {
 			serializers "SystemTextJson" "NewtonsoftJson" "DataContract"
 		}
 	}

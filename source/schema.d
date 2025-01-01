@@ -587,6 +587,7 @@ public class ForeignKey
 
 	public string name;
 	public string sqlName;
+	public string transport;
 	public Table sourceTable;
 	public Table targetTable;
 	private DataMember sourceColumn() {
