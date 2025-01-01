@@ -11,6 +11,7 @@ import coalescence.utility;
 import coalescence.languages.csharp.extensions;
 import coalescence.languages.csharp.generator;
 
+import std.ascii;
 import std.array;
 import std.algorithm.comparison;
 import std.algorithm.iteration;
@@ -21,6 +22,30 @@ import std.conv;
 
 public void generateDataNetwork(Network m, StringBuilder builder, CSharpProjectOptions opts, bool isClient, ushort tabLevel)
 {
+	// Create short transport names
+	if (opts.shortTransports) {
+		string[] pmtl;
+		pmtl.length = m.members.length;
+		foreach(pm; m.members) {
+			if (pm.transport.isNullOrWhitespace()) {
+				string sn = string.init;
+				foreach(c; pm.name) {
+					if (c.isUpper()) {
+						sn ~= c;
+					}
+				}
+				string tsn = sn = sn.toLower();
+				int c = 1;
+				while (pmtl.count(tsn) > 0) {
+					tsn = sn ~ to!string(c++);
+				}
+				pmtl ~= tsn;
+				//writeln(tsn);
+				pm.transport = tsn;
+			}
+		}
+	}
+
     builder.appendLine();
 	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.3.3.0\")]");
     if (opts.hasSerializer(CSharpSerializers.NewtonsoftJson) || opts.hasSerializer(CSharpSerializers.DataContract)) {
@@ -87,6 +112,30 @@ private void generateDataNetworkMember(DataMember mm, StringBuilder builder, CSh
 }
 
 public void generateDataTable(Table table, StringBuilder builder, CSharpProjectOptions opts, Project prj, bool isClient, ushort tabLevel) {
+	// Create short transport names
+	if (opts.shortTransports) {
+		string[] pmtl;
+		pmtl.length = table.members.length;
+		foreach(pm; table.members) {
+			if (pm.transport.isNullOrWhitespace()) {
+				string sn = string.init;
+				foreach(c; pm.name) {
+					if (c.isUpper()) {
+						sn ~= c;
+					}
+				}
+				string tsn = sn = sn.toLower();
+				int c = 1;
+				while (pmtl.count(tsn) > 0) {
+					tsn = sn ~ to!string(c++);
+				}
+				pmtl ~= tsn;
+				//writeln(tsn);
+				pm.transport = tsn;
+			}
+		}
+	}
+
 	auto fkTarget = getForeignKeysTargetTable(table.sqlId, isClient ? prj.clientSchema : prj.serverSchema);
 	auto fkSource = getForeignKeysSourceTable(table.sqlId, isClient ? prj.clientSchema : prj.serverSchema);
 

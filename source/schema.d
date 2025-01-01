@@ -9,7 +9,6 @@ import coalescence.database.utility;
 // Extensions
 import coalescence.languages.csharp.extensions;
 
-import std.ascii;
 import std.algorithm.iteration;
 import std.algorithm.searching;
 import std.algorithm.sorting;
@@ -455,27 +454,6 @@ public final class Database
 		if (!al.isNull) {
 			foreach (member; al.get().children) {
 				additions ~= new DataMember(parent, member);
-			}
-		}
-
-		// Create short transport names
-		string[] pmtl;
-		pmtl.length = parent.members.length;
-		foreach(pm; parent.members) {
-			if (pm.transport.isNullOrWhitespace()) {
-				string sn = string.init;
-				foreach(c; pm.name) {
-					if (c.isUpper()) {
-						sn ~= c;
-					}
-				}
-				string tsn = sn = sn.toLower();
-				int c = 1;
-				while (pmtl.count(tsn) > 0) {
-					tsn = sn ~ to!string(c++);
-				}
-				pmtl ~= tsn;
-				//writeln(tsn);
 			}
 		}
 	}
