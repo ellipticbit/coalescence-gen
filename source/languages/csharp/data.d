@@ -100,26 +100,32 @@ private void generateDataNetworkMember(DataMember mm, StringBuilder builder, CSh
 }
 
 public void generateDataTable(Table table, StringBuilder builder, CSharpProjectOptions opts, Project prj, bool isClient, ushort tabLevel) {
+	auto fkTarget = getForeignKeysTargetTable(table.sqlId, isClient ? prj.clientSchema : prj.serverSchema);
+	auto fkSource = getForeignKeysSourceTable(table.sqlId, isClient ? prj.clientSchema : prj.serverSchema);
+
 	// Create short transport names
 	if (opts.shortTransports) {
 		string[] pmtl;
-		pmtl.length = table.members.length + table.foreignKeys.length;
+		pmtl.length = table.members.length + fkTarget.length + fkSource.length;
 		foreach(pm; table.members) {
 			if (pm.transport.isNullOrWhitespace()) {
 				pm.transport = getShortTransport(pmtl, pm.name);
 				pmtl ~= pm.transport;
 			}
 		}
-		foreach(fk; table.foreignKeys) {
+		foreach(fk; fkTarget) {
+			if (fk.transport.isNullOrWhitespace()) {
+				fk.transport = getShortTransport(pmtl, fk.name);
+				pmtl ~= fk.transport;
+			}
+		}
+		foreach(fk; fkSource) {
 			if (fk.transport.isNullOrWhitespace()) {
 				fk.transport = getShortTransport(pmtl, fk.name);
 				pmtl ~= fk.transport;
 			}
 		}
 	}
-
-	auto fkTarget = getForeignKeysTargetTable(table.sqlId, isClient ? prj.clientSchema : prj.serverSchema);
-	auto fkSource = getForeignKeysSourceTable(table.sqlId, isClient ? prj.clientSchema : prj.serverSchema);
 
 	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.3.3.0\")]");
     if (opts.hasSerializer(CSharpSerializers.NewtonsoftJson) || opts.hasSerializer(CSharpSerializers.DataContract)) {
@@ -272,6 +278,8 @@ private void generateDataSqlMember(DataMember mm, StringBuilder builder, CSharpP
 
 private void generateBindingMetadata(StringBuilder builder, DataMember mm, CSharpProjectOptions opts, ushort tabLevel, bool isProperty) {
 	string transport = getTransportName(mm.name, mm.transport);
+	if (!isProperty && transport.isNullOrWhitespace()) transport = mm.name;
+
 	if ((opts.serializeFields && !isProperty) || (!opts.serializeFields && isProperty)) {
 		if (opts.hasSerializer(CSharpSerializers.NewtonsoftJson) || opts.hasSerializer(CSharpSerializers.DataContract)) {
 			if (!transport.isNullOrWhitespace()) {
@@ -296,6 +304,8 @@ private void generateBindingMetadata(StringBuilder builder, DataMember mm, CShar
 
 private void generateBindingMetadata(StringBuilder builder, ForeignKey fk, CSharpProjectOptions opts, ushort tabLevel, bool isProperty) {
 	string transport = getTransportName(fk.name, fk.transport);
+	if (!isProperty && transport.isNullOrWhitespace()) transport = fk.name;
+
 	if ((opts.serializeFields && !isProperty) || (!opts.serializeFields && isProperty)) {
 		if (opts.hasSerializer(CSharpSerializers.NewtonsoftJson) || opts.hasSerializer(CSharpSerializers.DataContract)) {
 			if (!transport.isNullOrWhitespace()) {
@@ -328,11 +338,7 @@ private string generateSetter(string name, bool binding) {
 }
 
 private string getFieldName(string name) {
-	name = "_" ~ name.toLower();
-	if (isCSharpKeyword(name)) {
-		return name ~ "_";
-	}
-	return name;
+	return "_" ~ name.toLower();
 }
 
 private bool isCSharpKeyword(string name) {
