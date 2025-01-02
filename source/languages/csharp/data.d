@@ -115,13 +115,13 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 		}
 		foreach(fk; fkTarget) {
 			if (fk.transport.isNullOrWhitespace()) {
-				fk.transport = getShortTransport(pmtl, fk.name);
+				fk.transport = getShortTransport(pmtl, fk.targetId());
 				pmtl ~= fk.transport;
 			}
 		}
 		foreach(fk; fkSource) {
 			if (fk.transport.isNullOrWhitespace()) {
-				fk.transport = getShortTransport(pmtl, fk.name);
+				fk.transport = getShortTransport(pmtl, fk.sourceId());
 				pmtl ~= fk.transport;
 			}
 		}
@@ -170,15 +170,15 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 	foreach (fk; fkTarget) {
 		builder.appendLine();
 		if (fk.direction != ForeignKeyDirection.OneToOne) {
-			builder.generateBindingMetadata(fk, opts, tabLevel, false);
+			builder.generateBindingMetadata(fk, opts, tabLevel, false, false);
 			builder.tabs(tabLevel).appendLine("private ICollection<{0}> {1};", fk.sourceTable.getCSharpFullName(), getFieldName(fk.targetId()));
-			builder.generateBindingMetadata(fk, opts, tabLevel, true);
+			builder.generateBindingMetadata(fk, opts, tabLevel, false, true);
 			builder.tabs(tabLevel).appendLine("public virtual ICollection<{0}> {1} { get { return {2}; } set { {3} } }", fk.sourceTable.getCSharpFullName(), fk.targetId(), getFieldName(fk.targetId()), generateSetter(getFieldName(fk.targetId()), opts.uiBindings));
 		}
 		else {
-			builder.generateBindingMetadata(fk, opts, tabLevel, false);
+			builder.generateBindingMetadata(fk, opts, tabLevel, false, false);
 			builder.tabs(tabLevel).appendLine("private {0} {1};", fk.sourceTable.getCSharpFullName(), getFieldName(fk.targetId()));
-			builder.generateBindingMetadata(fk, opts, tabLevel, true);
+			builder.generateBindingMetadata(fk, opts, tabLevel, false, true);
 			builder.tabs(tabLevel).appendLine("public virtual {0} {1} { get { return {2}; } set { {3} } }", fk.sourceTable.getCSharpFullName(), fk.targetId(), getFieldName(fk.targetId()), generateSetter(getFieldName(fk.targetId()), opts.uiBindings));
 		}
 	}
@@ -186,15 +186,15 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 	foreach (fk; fkSource) {
 		builder.appendLine();
 		if (fk.direction != ForeignKeyDirection.ManyToMany) {
-			builder.generateBindingMetadata(fk, opts, tabLevel, false);
+			builder.generateBindingMetadata(fk, opts, tabLevel, true, false);
 			builder.tabs(tabLevel).appendLine("private {0} {1};", fk.targetTable.getCSharpFullName(), getFieldName(fk.sourceId()));
-			builder.generateBindingMetadata(fk, opts, tabLevel, true);
+			builder.generateBindingMetadata(fk, opts, tabLevel, true, true);
 			builder.tabs(tabLevel).appendLine("public virtual {0} {1} { get { return {2}; } set { {3} } }", fk.targetTable.getCSharpFullName(), fk.sourceId(), getFieldName(fk.sourceId()), generateSetter(getFieldName(fk.sourceId()), opts.uiBindings));
 		}
 		else {
-			builder.generateBindingMetadata(fk, opts, tabLevel, false);
+			builder.generateBindingMetadata(fk, opts, tabLevel, true, false);
 			builder.tabs(tabLevel).appendLine("private ICollection<{0}> {1};", fk.targetTable.getCSharpFullName(), getFieldName(fk.sourceId()));
-			builder.generateBindingMetadata(fk, opts, tabLevel, true);
+			builder.generateBindingMetadata(fk, opts, tabLevel, true, true);
 			builder.tabs(tabLevel).appendLine("public virtual ICollection<{0}> {1} { get { return {2}; } set { {3} } }", fk.targetTable.getCSharpFullName(), fk.sourceId(), getFieldName(fk.sourceId()), generateSetter(getFieldName(fk.sourceId()), opts.uiBindings));
 		}
 	}
@@ -302,9 +302,9 @@ private void generateBindingMetadata(StringBuilder builder, DataMember mm, CShar
 	if (isProperty) builder.generatePropertyMetadata(opts, tabLevel);
 }
 
-private void generateBindingMetadata(StringBuilder builder, ForeignKey fk, CSharpProjectOptions opts, ushort tabLevel, bool isProperty) {
-	string transport = getTransportName(fk.name, fk.transport);
-	if (!isProperty && transport.isNullOrWhitespace()) transport = fk.name;
+private void generateBindingMetadata(StringBuilder builder, ForeignKey fk, CSharpProjectOptions opts, ushort tabLevel, bool isSource, bool isProperty) {
+	string transport = getTransportName(isSource ? fk.sourceId() : fk.targetId(), fk.transport);
+	if (!isProperty && transport.isNullOrWhitespace()) transport = isSource ? fk.sourceId() : fk.targetId();
 
 	if ((opts.serializeFields && !isProperty) || (!opts.serializeFields && isProperty)) {
 		if (opts.hasSerializer(CSharpSerializers.NewtonsoftJson) || opts.hasSerializer(CSharpSerializers.DataContract)) {
