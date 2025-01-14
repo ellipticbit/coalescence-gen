@@ -1,6 +1,6 @@
 project {
 	generators:csharp {
-		client outputPath="..\\output\\client" namespace="Coalescence.Test.Client" uiBindings=true {
+		client outputPath="..\\output\\client" namespace="Coalescence.Test.Client" uiBindings=true changeTracking=true {
 			serializers "SystemTextJson" "NewtonsoftJson" "DataContract"
 		}
 		server outputPath="..\\output\\server" namespace="Coalescence.Test.Server" shortTransports=true {

@@ -291,6 +291,7 @@ private void generateSchemaClient(Schema ns, StringBuilder schemaBuilder, Projec
 private void generateUsingsServerComplete(StringBuilder builder, Project prj, CSharpProjectOptions opts) {
 	builder.appendLine("using System;");
 	builder.appendLine("using System.Collections.Generic;");
+	if (opts.changeTracking) builder.appendLine("using System.Collections.ObjectModel;");
 	builder.appendLine("using System.Linq;");
 	builder.appendLine("using System.IO;");
 	if (opts.serializers.any!(a => a == CSharpSerializers.DataContract)) {
@@ -316,6 +317,9 @@ private void generateUsingsServerComplete(StringBuilder builder, Project prj, CS
 		}
 	}
 	builder.appendLine("using EllipticBit.Coalescence.Shared;");
+	if (opts.changeTracking) {
+		builder.appendLine("using EllipticBit.Coalescence.Windows;");
+	}
 	if (opts.enableEFExtensions) builder.appendLine("using EllipticBit.Services.Database;");
 	builder.appendLine();
 }
@@ -323,6 +327,7 @@ private void generateUsingsServerComplete(StringBuilder builder, Project prj, CS
 private void generateUsingsClientComplete(StringBuilder builder, Project prj, CSharpProjectOptions opts) {
 	builder.appendLine("using System;");
 	builder.appendLine("using System.Collections.Generic;");
+	if (opts.changeTracking) builder.appendLine("using System.Collections.ObjectModel;");
 	builder.appendLine("using System.Linq;");
 	builder.appendLine("using System.IO;");
 	if (opts.serializers.any!(a => a == CSharpSerializers.DataContract)) {
@@ -353,12 +358,16 @@ private void generateUsingsClientComplete(StringBuilder builder, Project prj, CS
 	if (opts.uiBindings) {
 		builder.appendLine("using EllipticBit.Coalescence.Shared;");
 	}
+	if (opts.changeTracking) {
+		builder.appendLine("using EllipticBit.Coalescence.Windows;");
+	}
 	builder.appendLine();
 }
 
 private void generateUsingsServerData(StringBuilder builder, CSharpProjectOptions opts) {
 	builder.appendLine("using System;");
 	builder.appendLine("using System.Collections.Generic;");
+	if (opts.changeTracking) builder.appendLine("using System.Collections.ObjectModel;");
 	builder.appendLine("using System.Linq;");
 	builder.appendLine("using System.IO;");
 	if (opts.serializers.any!(a => a == CSharpSerializers.DataContract)) {
@@ -371,13 +380,19 @@ private void generateUsingsServerData(StringBuilder builder, CSharpProjectOption
 		builder.appendLine("using Newtonsoft.Json;");
 	}
 	if (opts.enableEFExtensions) builder.appendLine("using EllipticBit.Services.Database;");
-	if (opts.uiBindings) builder.appendLine("using EllipticBit.Coalescence.Shared;");
+	if (opts.uiBindings) {
+		builder.appendLine("using EllipticBit.Coalescence.Shared;");
+	}
+	if (opts.changeTracking) {
+		builder.appendLine("using EllipticBit.Coalescence.Windows;");
+	}
 	builder.appendLine();
 }
 
 private void generateUsingsClientData(StringBuilder builder, CSharpProjectOptions opts) {
 	builder.appendLine("using System;");
 	builder.appendLine("using System.Collections.Generic;");
+	if (opts.changeTracking) builder.appendLine("using System.Collections.ObjectModel;");
 	builder.appendLine("using System.Linq;");
 	builder.appendLine("using System.IO;");
 	if (opts.serializers.any!(a => a == CSharpSerializers.DataContract)) {
@@ -389,7 +404,12 @@ private void generateUsingsClientData(StringBuilder builder, CSharpProjectOption
 	if (opts.serializers.any!(a => a == CSharpSerializers.NewtonsoftJson)) {
 		builder.appendLine("using Newtonsoft.Json;");
 	}
-	if (opts.uiBindings) builder.appendLine("using EllipticBit.Coalescence.Shared;");
+	if (opts.uiBindings) {
+		builder.appendLine("using EllipticBit.Coalescence.Shared;");
+	}
+	if (opts.changeTracking) {
+		builder.appendLine("using EllipticBit.Coalescence.Windows;");
+	}
 	builder.appendLine();
 }
 
@@ -475,7 +495,7 @@ public void generateAuthorization(StringBuilder builder, immutable(AspNetCoreAut
 	}
 }
 
-public string generateType(TypeComplex type, bool base64external = false, bool forceOptional = false)
+public string generateType(TypeComplex type, bool base64external = false, bool forceOptional = false, bool isTracking = false)
 {
 	if (typeid(type.type) == typeid(TypePrimitive)) {
 		TypePrimitive p = cast(TypePrimitive)type.type;
@@ -517,6 +537,7 @@ public string generateType(TypeComplex type, bool base64external = false, bool f
 
 	else if(typeid(type.type) == typeid(TypeCollection)) {
 		TypeCollection t = cast(TypeCollection)(type.type);
+		if (isTracking) return "ObservableCollection<" ~ generateType(t.collectionType, base64external, forceOptional) ~ ">";
 		return "List<" ~ generateType(t.collectionType, base64external, forceOptional) ~ ">";
 	}
 

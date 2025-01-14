@@ -35,14 +35,15 @@ public void generateDataNetwork(Network m, StringBuilder builder, CSharpProjectO
 	}
 
     builder.appendLine();
-	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.3.3.0\")]");
+	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.4.0.0\")]");
     if (opts.hasSerializer(CSharpSerializers.NewtonsoftJson) || opts.hasSerializer(CSharpSerializers.DataContract)) {
         builder.tabs(tabLevel).appendLine("[DataContract]");
     }
-	if (opts.uiBindings) {
+	if (opts.changeTracking) {
+		builder.tabs(tabLevel).appendLine("public sealed partial class {0} : TrackingObject", m.name);
+	} else if (opts.uiBindings) {
 		builder.tabs(tabLevel).appendLine("public sealed partial class {0} : BindingObject", m.name);
-	}
-	else {
+	} else {
 		builder.tabs(tabLevel).appendLine("public sealed partial class {0}", m.name);
 	}
     builder.tabs(tabLevel++).appendLine("{");
@@ -56,10 +57,21 @@ public void generateDataNetwork(Network m, StringBuilder builder, CSharpProjectO
 		builder.tabs(tabLevel).appendLine("[JsonConstructor]");
 	}
 	builder.tabs(tabLevel++).appendLine("public {0}() {", m.name);
+	if (opts.changeTracking) {
+		foreach (mm; m.members) {
+			if (mm.type.isCollection) {
+				TypeCollection t = cast(TypeCollection)(mm.type.type);
+				builder.tabs(tabLevel).appendLine("{0} = RegisterCollectionProperty<{1}>(nameof({2}));", getFieldName(mm.name), generateType(t.collectionType), mm.name);
+			} else {
+				builder.tabs(tabLevel).appendLine("{0} = RegisterValueProperty<{1}>(nameof({2}), {3});", getFieldName(mm.name), generateType(mm.type), mm.name, mm.isKey ? "true" : "false");
+			}
+		}
+	}
+	if (opts.changeTracking) builder.tabs(tabLevel).appendLine("CompleteRegistration();");
 	builder.tabs(tabLevel).appendLine("PostInitializer();");
 	builder.tabs(--tabLevel).appendLine("}");
 	builder.tabs(tabLevel).appendLine("partial void PostInitializer();");
-    builder.appendLine();
+	builder.appendLine();
 
     if (!isClient)
     {
@@ -94,9 +106,13 @@ private void generateDataNetworkMember(DataMember mm, StringBuilder builder, CSh
 
 	builder.appendLine();
 	builder.generateBindingMetadata(mm, opts, tabLevel, false);
-	builder.tabs(tabLevel).appendLine("private {0} {1};", generateType(mm.type, false), getFieldName(mm.name));
+	if (opts.changeTracking) {
+		builder.tabs(tabLevel).appendLine("private {0}<{1}> {2};", mm.type.isCollection ? "TrackingCollection" : "TrackingValue", generateType(mm.type), getFieldName(mm.name));
+	} else {
+		builder.tabs(tabLevel).appendLine("private {0} {1};", generateType(mm.type), getFieldName(mm.name));
+	}
 	builder.generateBindingMetadata(mm, opts, tabLevel, true);
-	builder.tabs(tabLevel).appendLine("public {0} {1} { get { return {2}; } {3}set { {4} } }", generateType(mm.type, false), mm.name, getFieldName(mm.name), mm.isReadOnly ? "private " : string.init, generateSetter(getFieldName(mm.name), opts.uiBindings));
+	builder.tabs(tabLevel).appendLine("public {0} {1} { get { return {2}{3}; } {4}set { {5} } }", generateType(mm.type, false, false, opts.changeTracking), mm.name, getFieldName(mm.name), opts.changeTracking ? ".Value" : string.init, mm.isReadOnly ? "private " : string.init, generateSetter(getFieldName(mm.name), opts));
 }
 
 public void generateDataTable(Table table, StringBuilder builder, CSharpProjectOptions opts, Project prj, bool isClient, ushort tabLevel) {
@@ -127,18 +143,18 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 		}
 	}
 
-	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.3.3.0\")]");
+	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.4.0.0\")]");
     if (opts.hasSerializer(CSharpSerializers.NewtonsoftJson) || opts.hasSerializer(CSharpSerializers.DataContract)) {
         builder.tabs(tabLevel).appendLine("[DataContract]");
     }
 	if (!isClient && opts.enableEFExtensions) {
-		builder.tabs(tabLevel).appendLine("public partial class {0} : {1}IDatabaseMergeable<{0}>", table.name, opts.uiBindings ? "BindingObject, " : string.init);
-	}
-	else if (opts.uiBindings) {
-		builder.tabs(tabLevel).appendLine("public partial class {0} : BindingObject", table.name);
-	}
-	else {
-		builder.tabs(tabLevel).appendLine("public partial class {0}", table.name);
+		builder.tabs(tabLevel).appendLine("public sealed partial class {0} : {1}IDatabaseMergeable<{0}>", table.name, opts.changeTracking ? "TrackingObject, " : (opts.uiBindings ? "BindingObject, " : string.init));
+	} else if (opts.changeTracking) {
+		builder.tabs(tabLevel).appendLine("public sealed partial class {0} : TrackingObject", table.name);
+	} else if (opts.uiBindings) {
+		builder.tabs(tabLevel).appendLine("public sealed partial class {0} : BindingObject", table.name);
+	} else {
+		builder.tabs(tabLevel).appendLine("public sealed partial class {0}", table.name);
 	}
 
 	builder.tabs(tabLevel++).appendLine("{");
@@ -147,9 +163,44 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 		builder.tabs(tabLevel).appendLine("[JsonConstructor]");
 	}
 	builder.tabs(tabLevel++).appendLine("public {0}() {", table.name);
-	foreach (fk; fkTarget.filter!(a => a.targetTable.sqlId == table.sqlId && a.direction != ForeignKeyDirection.OneToOne)) {
-		builder.tabs(tabLevel).appendLine("this.{0} = new HashSet<{1}>();", fk.targetId(), fk.sourceTable.getCSharpFullName());
+	if (opts.changeTracking) {
+		foreach (mm; table.members) {
+			builder.tabs(tabLevel).appendLine("{0} = RegisterValueProperty<{1}>(nameof({2}), {3});", getFieldName(mm.name), generateType(mm.type), mm.name, mm.isKey ? "true" : "false");
+		}
+
+		if (table.modifications !is null) {
+			foreach (mm; table.modifications.additions) {
+				if (mm.type.isCollection) {
+					TypeCollection t = cast(TypeCollection)(mm.type.type);
+					builder.tabs(tabLevel).appendLine("{0} = RegisterCollectionProperty<{1}>(nameof({2}));", getFieldName(mm.name), generateType(t.collectionType), mm.name);
+				} else {
+					builder.tabs(tabLevel).appendLine("{0} = RegisterValueProperty<{1}>(nameof({2}), {3});", getFieldName(mm.name), generateType(mm.type), mm.name, mm.isKey ? "true" : "false");
+				}
+			}
+		}
+
+		foreach (fk; fkTarget) {
+			if (fk.direction != ForeignKeyDirection.OneToOne) {
+				builder.tabs(tabLevel).appendLine("{0} = RegisterCollectionProperty<{1}>(nameof({2}));", getFieldName(fk.targetId()), fk.sourceTable.getCSharpFullName(), fk.targetId());
+			} else {
+				builder.tabs(tabLevel).appendLine("{0} = RegisterValueProperty<{1}>(nameof({2}), false);", getFieldName(fk.targetId()), fk.sourceTable.getCSharpFullName(), fk.targetId());
+			}
+		}
+
+		foreach (fk; fkSource) {
+			if (fk.direction != ForeignKeyDirection.ManyToMany) {
+				builder.tabs(tabLevel).appendLine("{0} = RegisterValueProperty<{1}>(nameof({2}), false);", getFieldName(fk.sourceId()), fk.targetTable.getCSharpFullName(), fk.sourceId());
+			} else {
+				builder.tabs(tabLevel).appendLine("{0} = RegisterCollectionProperty<{1}>(nameof({2}));", getFieldName(fk.sourceId()), fk.targetTable.getCSharpFullName(), fk.sourceId());
+			}
+		}
+		
+	} else {
+		foreach (fk; fkTarget.filter!(a => a.targetTable.sqlId == table.sqlId && a.direction != ForeignKeyDirection.OneToOne)) {
+			builder.tabs(tabLevel).appendLine("this.{0} = new HashSet<{1}>();", fk.targetId(), fk.sourceTable.getCSharpFullName());
+		}
 	}
+	if (opts.changeTracking) builder.tabs(tabLevel).appendLine("CompleteRegistration();");
 	builder.tabs(tabLevel).appendLine("PostInitializer();");
 	builder.tabs(--tabLevel).appendLine("}");
 	builder.tabs(tabLevel).appendLine("partial void PostInitializer();");
@@ -157,9 +208,13 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 	foreach (c; table.members) {
 		builder.appendLine();
 		builder.generateBindingMetadata(c, opts, tabLevel, false);
-		builder.tabs(tabLevel).appendLine("private {0} {1};", getTypeFromSqlType(c.sqlType, c.isNullable), getFieldName(c.name));
+		if (opts.changeTracking) {
+			builder.tabs(tabLevel).appendLine("private TrackingValue<{0}> {1};", getTypeFromSqlType(c.sqlType, c.isNullable), getFieldName(c.name));
+		} else {
+			builder.tabs(tabLevel).appendLine("private {0} {1};", getTypeFromSqlType(c.sqlType, c.isNullable), getFieldName(c.name));
+		}
 		builder.generateBindingMetadata(c, opts, tabLevel, true);
-		builder.tabs(tabLevel).appendLine("public {0} {1} { get { return {2}; } set { {3} } }", getTypeFromSqlType(c.sqlType, c.isNullable), c.name, getFieldName(c.name), generateSetter(getFieldName(c.name), opts.uiBindings));
+		builder.tabs(tabLevel).appendLine("public {0} {1} { get { return {2}{3}; } set { {4} } }", getTypeFromSqlType(c.sqlType, c.isNullable), c.name, getFieldName(c.name), opts.changeTracking ? ".Value" : string.init, generateSetter(getFieldName(c.name), opts, c.type.isCollection));
 	}
 	if (table.modifications !is null) {
 		foreach (c; table.modifications.additions) {
@@ -171,15 +226,23 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 		builder.appendLine();
 		if (fk.direction != ForeignKeyDirection.OneToOne) {
 			builder.generateBindingMetadata(fk, opts, tabLevel, false, false);
-			builder.tabs(tabLevel).appendLine("private ICollection<{0}> {1};", fk.sourceTable.getCSharpFullName(), getFieldName(fk.targetId()));
+			if (opts.changeTracking) {
+				builder.tabs(tabLevel).appendLine("private TrackingCollection<{0}> {1};", fk.sourceTable.getCSharpFullName(), getFieldName(fk.targetId()));
+			} else {
+				builder.tabs(tabLevel).appendLine("private ICollection<{0}> {1};", fk.sourceTable.getCSharpFullName(), getFieldName(fk.targetId()));
+			}
 			builder.generateBindingMetadata(fk, opts, tabLevel, false, true);
-			builder.tabs(tabLevel).appendLine("public virtual ICollection<{0}> {1} { get { return {2}; } set { {3} } }", fk.sourceTable.getCSharpFullName(), fk.targetId(), getFieldName(fk.targetId()), generateSetter(getFieldName(fk.targetId()), opts.uiBindings));
+			builder.tabs(tabLevel).appendLine("public virtual {0}<{1}> {2} { get { return {3}{4}; } set { {5} } }", opts.changeTracking ? "ObservableCollection" : "ICollection", fk.sourceTable.getCSharpFullName(), fk.targetId(), getFieldName(fk.targetId()), opts.changeTracking ? ".Value" : string.init, generateSetter(getFieldName(fk.targetId()), opts, true));
 		}
 		else {
 			builder.generateBindingMetadata(fk, opts, tabLevel, false, false);
-			builder.tabs(tabLevel).appendLine("private {0} {1};", fk.sourceTable.getCSharpFullName(), getFieldName(fk.targetId()));
+			if (opts.changeTracking) {
+				builder.tabs(tabLevel).appendLine("private TrackingValue<{0}> {1};", fk.sourceTable.getCSharpFullName(), getFieldName(fk.targetId()));
+			} else {
+				builder.tabs(tabLevel).appendLine("private {0} {1};", fk.sourceTable.getCSharpFullName(), getFieldName(fk.targetId()));
+			}
 			builder.generateBindingMetadata(fk, opts, tabLevel, false, true);
-			builder.tabs(tabLevel).appendLine("public virtual {0} {1} { get { return {2}; } set { {3} } }", fk.sourceTable.getCSharpFullName(), fk.targetId(), getFieldName(fk.targetId()), generateSetter(getFieldName(fk.targetId()), opts.uiBindings));
+			builder.tabs(tabLevel).appendLine("public virtual {0} {1} { get { return {2}{3}; } set { {4} } }", fk.sourceTable.getCSharpFullName(), fk.targetId(), getFieldName(fk.targetId()), opts.changeTracking ? ".Value" : string.init, generateSetter(getFieldName(fk.targetId()), opts, false));
 		}
 	}
 
@@ -187,15 +250,23 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 		builder.appendLine();
 		if (fk.direction != ForeignKeyDirection.ManyToMany) {
 			builder.generateBindingMetadata(fk, opts, tabLevel, true, false);
-			builder.tabs(tabLevel).appendLine("private {0} {1};", fk.targetTable.getCSharpFullName(), getFieldName(fk.sourceId()));
+			if (opts.changeTracking) {
+				builder.tabs(tabLevel).appendLine("private TrackingValue<{0}> {1};", fk.targetTable.getCSharpFullName(), getFieldName(fk.sourceId()));
+			} else {
+				builder.tabs(tabLevel).appendLine("private {0} {1};", fk.targetTable.getCSharpFullName(), getFieldName(fk.sourceId()));
+			}
 			builder.generateBindingMetadata(fk, opts, tabLevel, true, true);
-			builder.tabs(tabLevel).appendLine("public virtual {0} {1} { get { return {2}; } set { {3} } }", fk.targetTable.getCSharpFullName(), fk.sourceId(), getFieldName(fk.sourceId()), generateSetter(getFieldName(fk.sourceId()), opts.uiBindings));
+			builder.tabs(tabLevel).appendLine("public virtual {0} {1} { get { return {2}{3}; } set { {4} } }", fk.targetTable.getCSharpFullName(), fk.sourceId(), getFieldName(fk.sourceId()), opts.changeTracking ? ".Value" : string.init, generateSetter(getFieldName(fk.sourceId()), opts, false));
 		}
 		else {
 			builder.generateBindingMetadata(fk, opts, tabLevel, true, false);
-			builder.tabs(tabLevel).appendLine("private ICollection<{0}> {1};", fk.targetTable.getCSharpFullName(), getFieldName(fk.sourceId()));
+			if (opts.changeTracking) {
+				builder.tabs(tabLevel).appendLine("private TrackingCollection<{0}> {1};", fk.targetTable.getCSharpFullName(), getFieldName(fk.sourceId()));
+			} else {
+				builder.tabs(tabLevel).appendLine("private ICollection<{0}> {1};", fk.targetTable.getCSharpFullName(), getFieldName(fk.sourceId()));
+			}
 			builder.generateBindingMetadata(fk, opts, tabLevel, true, true);
-			builder.tabs(tabLevel).appendLine("public virtual ICollection<{0}> {1} { get { return {2}; } set { {3} } }", fk.targetTable.getCSharpFullName(), fk.sourceId(), getFieldName(fk.sourceId()), generateSetter(getFieldName(fk.sourceId()), opts.uiBindings));
+			builder.tabs(tabLevel).appendLine("public virtual {0}<{1}> {2} { get { return {3}{4}; } set { {5} } }", opts.changeTracking ? "ObservableCollection" : "ICollection", fk.targetTable.getCSharpFullName(), fk.sourceId(), getFieldName(fk.sourceId()), opts.changeTracking ? ".Value" : string.init, generateSetter(getFieldName(fk.sourceId()), opts, true));
 		}
 	}
 
@@ -224,11 +295,16 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 
 public void generateDataView(View table, StringBuilder builder, CSharpProjectOptions opts, bool isClient, ushort tabLevel)
 {
-	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.3.3.0\")]");
-	builder.tabs(tabLevel).appendLine("[System.Diagnostics.DebuggerNonUserCode()]");
-	builder.tabs(tabLevel).appendLine("public partial class {0}{1}", table.name, opts.uiBindings ? " : BindingObject" : string.init);
+	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.4.0.0\")]");
+	builder.tabs(tabLevel).appendLine("public sealed partial class {0}{1}", table.name, opts.changeTracking ? " : TrackingObject" : (opts.uiBindings ? " : BindingObject" : string.init));
 	builder.tabs(tabLevel++).appendLine("{");
 	builder.tabs(tabLevel++).appendLine("public {0}() {", table.name);
+	if (opts.changeTracking) {
+		foreach (mm; table.members) {
+			builder.tabs(tabLevel).appendLine("{0} = RegisterValueProperty<{1}>(nameof({2}));", getFieldName(mm.name), generateType(mm.type), mm.name);
+		}
+	}
+	if (opts.changeTracking) builder.tabs(tabLevel).appendLine("CompleteRegistration();");
 	builder.tabs(tabLevel).appendLine("PostInitializer();");
 	builder.tabs(--tabLevel).appendLine("}");
 	builder.tabs(tabLevel).appendLine("partial void PostInitializer();");
@@ -245,11 +321,16 @@ public void generateDataView(View table, StringBuilder builder, CSharpProjectOpt
 
 public void generateDataUdt(Udt udt, StringBuilder builder, CSharpProjectOptions opts, bool isClient, ushort tabLevel)
 {
-	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.3.3.0\")]");
-	builder.tabs(tabLevel).appendLine("[System.Diagnostics.DebuggerNonUserCode()]");
-	builder.tabs(tabLevel).appendLine("public partial class {0}Udt{1}", udt.name, opts.uiBindings ? " : BindingObject" : string.init);
+	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.4.0.0\")]");
+	builder.tabs(tabLevel).appendLine("public sealed partial class {0}Udt{1}", udt.name, opts.changeTracking ? " : TrackingObject" : (opts.uiBindings ? " : BindingObject" : string.init));
 	builder.tabs(tabLevel++).appendLine("{");
 	builder.tabs(tabLevel++).appendLine("public {0}() {", udt.name);
+	if (opts.changeTracking) {
+		foreach (mm; udt.members) {
+			builder.tabs(tabLevel).appendLine("{0} = RegisterValueProperty<{1}>(nameof({2}));", getFieldName(mm.name), generateType(mm.type), mm.name);
+		}
+	}
+	if (opts.changeTracking) builder.tabs(tabLevel).appendLine("CompleteRegistration();");
 	builder.tabs(tabLevel).appendLine("PostInitializer();");
 	builder.tabs(--tabLevel).appendLine("}");
 	builder.tabs(tabLevel).appendLine("partial void PostInitializer();");
@@ -271,9 +352,14 @@ private void generateDataSqlMember(DataMember mm, StringBuilder builder, CSharpP
 
 	builder.appendLine();
 	builder.generateBindingMetadata(mm, opts, tabLevel, false);
+	if (opts.changeTracking) {
+		builder.tabs(tabLevel).appendLine("private TrackingValue<{0}> {1};", getTypeFromSqlType(mm.sqlType, mm.isNullable), getFieldName(mm.name));
+	} else {
+		builder.tabs(tabLevel).appendLine("private {0} {1};", getTypeFromSqlType(mm.sqlType, mm.isNullable), getFieldName(mm.name));
+	}
 	builder.tabs(tabLevel).appendLine("private {0} {1};", getTypeFromSqlType(mm.sqlType, mm.isNullable), getFieldName(mm.name));
 	builder.generateBindingMetadata(mm, opts, tabLevel, true);
-	builder.tabs(tabLevel).appendLine("public {0} {1} { get { return {2}; } {3}set { {4} } }", getTypeFromSqlType(mm.sqlType, mm.isNullable), mm.name, getFieldName(mm.name), mm.isReadOnly ? "private " : string.init, generateSetter(getFieldName(mm.name), opts.uiBindings));
+	builder.tabs(tabLevel).appendLine("public {0} {1} { get { return {2}{3}; } {4}set { {5} } }", getTypeFromSqlType(mm.sqlType, mm.isNullable), mm.name, getFieldName(mm.name), opts.changeTracking ? ".Value" : string.init, mm.isReadOnly ? "private " : string.init, generateSetter(getFieldName(mm.name), opts, false));
 }
 
 private void generateBindingMetadata(StringBuilder builder, DataMember mm, CSharpProjectOptions opts, ushort tabLevel, bool isProperty) {
@@ -299,7 +385,11 @@ private void generateBindingMetadata(StringBuilder builder, DataMember mm, CShar
 		}
 	}
 
-	if (isProperty) builder.generatePropertyMetadata(opts, tabLevel);
+	if (isProperty) {
+		builder.generatePropertyMetadata(opts, tabLevel);
+	} else {
+		builder.generateFieldMetadata(opts, tabLevel);
+	}
 }
 
 private void generateBindingMetadata(StringBuilder builder, ForeignKey fk, CSharpProjectOptions opts, ushort tabLevel, bool isSource, bool isProperty) {
@@ -320,7 +410,11 @@ private void generateBindingMetadata(StringBuilder builder, ForeignKey fk, CShar
 		}
 	}
 
-	if (isProperty) builder.generatePropertyMetadata(opts, tabLevel);
+	if (isProperty) {
+		builder.generatePropertyMetadata(opts, tabLevel);
+	} else {
+		builder.generateFieldMetadata(opts, tabLevel);
+	}
 }
 
 private void generatePropertyMetadata(StringBuilder builder, CSharpProjectOptions opts, ushort tabLevel) {
@@ -333,8 +427,20 @@ private void generatePropertyMetadata(StringBuilder builder, CSharpProjectOption
 	builder.tabs(tabLevel).appendLine("[System.Diagnostics.DebuggerNonUserCode()]");
 }
 
-private string generateSetter(string name, bool binding) {
-	return binding ? "SetField(ref " ~ name ~ ", value);" : name ~ " = value;";
+private void generateFieldMetadata(StringBuilder builder, CSharpProjectOptions opts, ushort tabLevel) {
+	if (!opts.serializeFields && (opts.hasSerializer(CSharpSerializers.NewtonsoftJson) || opts.hasSerializer(CSharpSerializers.DataContract))) {
+		builder.tabs(tabLevel).appendLine("[IgnoreDataMember]");
+	}
+	if (!opts.serializeFields && opts.hasSerializer(CSharpSerializers.SystemTextJson)) {
+		builder.tabs(tabLevel).appendLine("[JsonIgnore]");
+	}
+}
+
+private string generateSetter(string name, CSharpProjectOptions opts, bool isCollection = false) {
+	if (opts.changeTracking) {
+		return isCollection ? "SetCollection(" ~ name ~ ", value)" : "SetValue(" ~ name ~ ", value);";
+	}
+	return opts.uiBindings ? "SetField(ref " ~ name ~ ", value);" : name ~ " = value;";
 }
 
 private string getFieldName(string name) {
@@ -362,6 +468,6 @@ private string getShortTransport(string[] pmtl, string name) {
 	while (pmtl.count(tsn) > 0) {
 		tsn = sn ~ to!string(c++);
 	}
-	//writeln(tsn);
+
 	return tsn;
 }

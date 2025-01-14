@@ -3,6 +3,7 @@ module coalescence.languages.csharp.extensions;
 import coalescence.schema;
 import coalescence.stringbuilder;
 import coalescence.utility;
+import coalescence.globals;
 
 import std.algorithm.iteration;
 import std.algorithm.searching;
@@ -48,6 +49,7 @@ public final class CSharpProjectOptions {
 	public bool enableEFExtensions;
 	public bool serializeFields;
     public bool shortTransports;
+    public bool changeTracking;
 	public CSharpSerializers[] serializers;
 
 	public this (SDLNode root, string databaseName, string projectRoot) {
@@ -59,8 +61,9 @@ public final class CSharpProjectOptions {
 		this.contextName = root.getAttributeValue!string("contextName", databaseName);
 		this.namespace = root.getAttributeValue!string("namespace", databaseName);
 		this.uiBindings = root.getAttributeValue!bool("uiBindings", false);
-		this.serializeFields = root.getAttributeValue!bool("serializeFields", true);
+		this.serializeFields = root.getAttributeValue!bool("serializeFields", false);
 		this.shortTransports = root.getAttributeValue!bool("shortTransports", false);
+		this.changeTracking = root.getAttributeValue!bool("changeTracking", false);
 		this.enableEFExtensions = root.getAttributeValue!bool("enableEFExtensions", false);
 		try {
 			version(Posix) {
@@ -72,6 +75,16 @@ public final class CSharpProjectOptions {
 		} catch (Exception ex) { }
 		foreach(sop; root.getNodeValues("serializers")) {
 			this.serializers ~= to!CSharpSerializers(sop.value!string());
+		}
+
+		if (this.changeTracking && this.serializeFields) {
+			writeParseWarning("Enabling Change Tracking will disable Field Serialization.", root.location);
+			this.serializeFields = false;
+		}
+
+		if (this.changeTracking && mode == CSharpGeneratorMode.Server) {
+			writeParseWarning("Change Tracking is not available in Server generation mode and will be disabled.", root.location);
+			this.changeTracking = false;
 		}
 	}
 

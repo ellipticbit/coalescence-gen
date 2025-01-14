@@ -230,6 +230,7 @@ public final class TypeComplex : TypeBase {
 	public @property string defaultValue() { return _defaultValue; }
 
 	public @property bool hasDefault() { return _defaultInit || _defaultNull || _defaultValue !is null; }
+	public @property bool isCollection() { return typeid(_type) == typeid(TypeCollection); }
 
 	// Test Cases
 	// [[(datetimetz, (int, TestModel))]]=init

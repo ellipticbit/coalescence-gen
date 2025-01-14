@@ -474,6 +474,7 @@ public final class DataMember
 	public string sqlName;
 	public SqlDbType sqlType;
 
+	private bool isUserKey;
 	public bool isNullable;
 	public bool hasDefault;
 	public int maxLength;
@@ -484,6 +485,19 @@ public final class DataMember
 	public bool isReadOnly;
 
 	public bool isTypeEnum() { return typeid(type.type) == typeid(TypeEnum); }
+	public @property bool isKey() {
+		if (isUserKey) return true;
+
+		if (typeid(parent) == typeid(Table)) {
+			Table t = cast(Table)parent;
+			foreach(idx; t.indexes) {
+				if (!idx.isPrimaryKey) continue;
+				if (idx.columns.any!(a => a.sqlId == sqlId)()) return true;
+			}
+		}
+
+		return false;
+	}
 
 	public this(DataObject parent, int id, string name, SqlDbType type, int maxLength, byte precision, byte scale, bool hasDefault, bool isNullable, bool isIdentity, bool isComputed)
 	{
@@ -523,6 +537,7 @@ public final class DataMember
 		this.isComputed = false;
 		this.isIdentity = false;
 		this.isReadOnly = root.getAttributeValue!bool("readonly", false);
+		this.isUserKey = root.getAttributeValue!bool("isKey", false);
 		this.isNullable = this.type.nullable;
 	}
 

@@ -23,7 +23,7 @@ public void generateWebsocketClient(StringBuilder builder, WebsocketService s, u
 	foreach(ns; s.namespaces) {
 		if (ns.server.length != 0) {
 			builder.appendLine();
-			builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.3.3.0\")]");
+			builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.4.0.0\")]");
 			builder.tabs(tabLevel).appendLine("{2} interface I{0}{1}Server", cleanName(s.name), cleanName(ns.name), s.isPublic ? "public" : "internal");
 			builder.tabs(tabLevel++).appendLine("{");
 			foreach(m; ns.server) {
@@ -32,7 +32,7 @@ public void generateWebsocketClient(StringBuilder builder, WebsocketService s, u
 			builder.tabs(--tabLevel).appendLine("}");
 			builder.appendLine();
 
-			builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.3.3.0\")]");
+			builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.4.0.0\")]");
 			builder.tabs(tabLevel).appendLine("[System.Diagnostics.DebuggerNonUserCode()]");
 			builder.tabs(tabLevel).appendLine("{2} class {0}{1}Server : I{0}{1}Server", cleanName(s.name), cleanName(ns.name), s.isPublic ? "public" : "internal");
 			builder.tabs(tabLevel++).appendLine("{");
@@ -54,7 +54,7 @@ public void generateWebsocketClient(StringBuilder builder, WebsocketService s, u
 
 		if (ns.client.length != 0) {
 			builder.appendLine();
-			builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.3.3.0\")]");
+			builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.4.0.0\")]");
 			builder.tabs(tabLevel).appendLine("{2} interface I{0}{1}Client", cleanName(s.name), cleanName(ns.name), s.isPublic ? "public" : "internal");
 			builder.tabs(tabLevel++).appendLine("{");
 			foreach(m; ns.client) {
@@ -65,7 +65,7 @@ public void generateWebsocketClient(StringBuilder builder, WebsocketService s, u
 	}
 
 	builder.appendLine();
-	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.3.3.0\")]");
+	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.4.0.0\")]");
 	builder.tabs(tabLevel).appendLine("{1} static class {0}ClientExtensions", cleanName(s.name), s.isPublic ? "public" : "internal");
 	builder.tabs(tabLevel++).appendLine("{");
 	builder.tabs(tabLevel).append("public static void Register{0}ClientServices<", cleanName(s.name));
