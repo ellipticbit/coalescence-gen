@@ -40,11 +40,11 @@ public void generateDataNetwork(Network m, StringBuilder builder, CSharpProjectO
         builder.tabs(tabLevel).appendLine("[DataContract]");
     }
 	if (opts.changeTracking) {
-		builder.tabs(tabLevel).appendLine("public sealed partial class {0} : TrackingObject<{0}>", m.name);
+		builder.tabs(tabLevel).appendLine("public partial class {0} : TrackingObject<{0}>", m.name);
 	} else if (opts.uiBindings) {
-		builder.tabs(tabLevel).appendLine("public sealed partial class {0} : BindingObject", m.name);
+		builder.tabs(tabLevel).appendLine("public partial class {0} : BindingObject", m.name);
 	} else {
-		builder.tabs(tabLevel).appendLine("public sealed partial class {0}", m.name);
+		builder.tabs(tabLevel).appendLine("public partial class {0}", m.name);
 	}
     builder.tabs(tabLevel++).appendLine("{");
 
@@ -150,11 +150,11 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 	if (!isClient && opts.enableEFExtensions) {
 		builder.tabs(tabLevel).appendLine("public partial class {0} : {1}IDatabaseMergeable<{0}>", table.name, opts.changeTracking ? "TrackingObject, " : (opts.uiBindings ? "BindingObject, " : string.init));
 	} else if (opts.changeTracking) {
-		builder.tabs(tabLevel).appendLine("public sealed partial class {0} : TrackingObject<{0}>", table.name);
+		builder.tabs(tabLevel).appendLine("public partial class {0} : TrackingObject<{0}>", table.name);
 	} else if (opts.uiBindings) {
-		builder.tabs(tabLevel).appendLine("public sealed partial class {0} : BindingObject", table.name);
+		builder.tabs(tabLevel).appendLine("public partial class {0} : BindingObject", table.name);
 	} else {
-		builder.tabs(tabLevel).appendLine("public sealed partial class {0}", table.name);
+		builder.tabs(tabLevel).appendLine("public partial class {0}", table.name);
 	}
 
 	builder.tabs(tabLevel++).appendLine("{");
