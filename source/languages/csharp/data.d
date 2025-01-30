@@ -437,9 +437,9 @@ private void generateFieldMetadata(StringBuilder builder, CSharpProjectOptions o
 
 private string generateSetter(string name, CSharpProjectOptions opts, bool isCollection = false) {
 	if (opts.changeTracking) {
-		return isCollection ? "SetCollection(" ~ name ~ ", value)" : "SetValue(" ~ name ~ ", value);";
+		return isCollection ? "SetCollection(" ~ name ~ ", value)" : "SetValue(" ~ name ~ ", value)";
 	}
-	return opts.uiBindings ? "SetField(ref " ~ name ~ ", value);" : name ~ " = value;";
+	return opts.uiBindings ? "SetField(ref " ~ name ~ ", value)" : name ~ " = value";
 }
 
 private string getFieldName(string name) {
