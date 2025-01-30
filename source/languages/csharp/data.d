@@ -40,7 +40,7 @@ public void generateDataNetwork(Network m, StringBuilder builder, CSharpProjectO
         builder.tabs(tabLevel).appendLine("[DataContract]");
     }
 	if (opts.changeTracking) {
-		builder.tabs(tabLevel).appendLine("public sealed partial class {0} : TrackingObject", m.name);
+		builder.tabs(tabLevel).appendLine("public sealed partial class {0} : TrackingObject<{0}>", m.name);
 	} else if (opts.uiBindings) {
 		builder.tabs(tabLevel).appendLine("public sealed partial class {0} : BindingObject", m.name);
 	} else {
@@ -67,7 +67,7 @@ public void generateDataNetwork(Network m, StringBuilder builder, CSharpProjectO
 			}
 		}
 	}
-	if (opts.changeTracking) builder.tabs(tabLevel).appendLine("CompleteRegistration();");
+	if (opts.changeTracking) builder.tabs(tabLevel).appendLine("RegistrationCompleted();");
 	builder.tabs(tabLevel).appendLine("PostInitializer();");
 	builder.tabs(--tabLevel).appendLine("}");
 	builder.tabs(tabLevel).appendLine("partial void PostInitializer();");
@@ -107,12 +107,12 @@ private void generateDataNetworkMember(DataMember mm, StringBuilder builder, CSh
 	builder.appendLine();
 	builder.generateBindingMetadata(mm, opts, tabLevel, false);
 	if (opts.changeTracking) {
-		builder.tabs(tabLevel).appendLine("private {0}<{1}> {2};", mm.type.isCollection ? "TrackingCollection" : "TrackingValue", generateType(mm.type), getFieldName(mm.name));
+		builder.tabs(tabLevel).appendLine("private readonly {0}<{1}> {2};", mm.type.isCollection ? "TrackingCollection" : "TrackingValue", generateType(mm.type), getFieldName(mm.name));
 	} else {
 		builder.tabs(tabLevel).appendLine("private {0} {1};", generateType(mm.type), getFieldName(mm.name));
 	}
 	builder.generateBindingMetadata(mm, opts, tabLevel, true);
-	builder.tabs(tabLevel).appendLine("public {0} {1} { get { return {2}{3}; } {4}set { {5} } }", generateType(mm.type, false, false, opts.changeTracking), mm.name, getFieldName(mm.name), opts.changeTracking ? ".Value" : string.init, mm.isReadOnly ? "private " : string.init, generateSetter(getFieldName(mm.name), opts));
+	builder.tabs(tabLevel).appendLine("public {0} {1} { get => {2}{3}; {4}set => {5}; }", generateType(mm.type, false, false, opts.changeTracking), mm.name, getFieldName(mm.name), opts.changeTracking ? ".Value" : string.init, mm.isReadOnly ? "private " : string.init, generateSetter(getFieldName(mm.name), opts));
 }
 
 public void generateDataTable(Table table, StringBuilder builder, CSharpProjectOptions opts, Project prj, bool isClient, ushort tabLevel) {
@@ -150,7 +150,7 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 	if (!isClient && opts.enableEFExtensions) {
 		builder.tabs(tabLevel).appendLine("public sealed partial class {0} : {1}IDatabaseMergeable<{0}>", table.name, opts.changeTracking ? "TrackingObject, " : (opts.uiBindings ? "BindingObject, " : string.init));
 	} else if (opts.changeTracking) {
-		builder.tabs(tabLevel).appendLine("public sealed partial class {0} : TrackingObject", table.name);
+		builder.tabs(tabLevel).appendLine("public sealed partial class {0} : TrackingObject<{0}>", table.name);
 	} else if (opts.uiBindings) {
 		builder.tabs(tabLevel).appendLine("public sealed partial class {0} : BindingObject", table.name);
 	} else {
@@ -200,7 +200,7 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 			builder.tabs(tabLevel).appendLine("this.{0} = new HashSet<{1}>();", fk.targetId(), fk.sourceTable.getCSharpFullName());
 		}
 	}
-	if (opts.changeTracking) builder.tabs(tabLevel).appendLine("CompleteRegistration();");
+	if (opts.changeTracking) builder.tabs(tabLevel).appendLine("RegistrationCompleted();");
 	builder.tabs(tabLevel).appendLine("PostInitializer();");
 	builder.tabs(--tabLevel).appendLine("}");
 	builder.tabs(tabLevel).appendLine("partial void PostInitializer();");
@@ -209,12 +209,12 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 		builder.appendLine();
 		builder.generateBindingMetadata(c, opts, tabLevel, false);
 		if (opts.changeTracking) {
-			builder.tabs(tabLevel).appendLine("private TrackingValue<{0}> {1};", getTypeFromSqlType(c.sqlType, c.isNullable), getFieldName(c.name));
+			builder.tabs(tabLevel).appendLine("private readonly TrackingValue<{0}> {1};", getTypeFromSqlType(c.sqlType, c.isNullable), getFieldName(c.name));
 		} else {
 			builder.tabs(tabLevel).appendLine("private {0} {1};", getTypeFromSqlType(c.sqlType, c.isNullable), getFieldName(c.name));
 		}
 		builder.generateBindingMetadata(c, opts, tabLevel, true);
-		builder.tabs(tabLevel).appendLine("public {0} {1} { get { return {2}{3}; } set { {4} } }", getTypeFromSqlType(c.sqlType, c.isNullable), c.name, getFieldName(c.name), opts.changeTracking ? ".Value" : string.init, generateSetter(getFieldName(c.name), opts, c.type.isCollection));
+		builder.tabs(tabLevel).appendLine("public {0} {1} { get => {2}{3}; set => {4}; }", getTypeFromSqlType(c.sqlType, c.isNullable), c.name, getFieldName(c.name), opts.changeTracking ? ".Value" : string.init, generateSetter(getFieldName(c.name), opts, c.type.isCollection));
 	}
 	if (table.modifications !is null) {
 		foreach (c; table.modifications.additions) {
@@ -227,22 +227,22 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 		if (fk.direction != ForeignKeyDirection.OneToOne) {
 			builder.generateBindingMetadata(fk, opts, tabLevel, false, false);
 			if (opts.changeTracking) {
-				builder.tabs(tabLevel).appendLine("private TrackingCollection<{0}> {1};", fk.sourceTable.getCSharpFullName(), getFieldName(fk.targetId()));
+				builder.tabs(tabLevel).appendLine("private readonly TrackingCollection<{0}> {1};", fk.sourceTable.getCSharpFullName(), getFieldName(fk.targetId()));
 			} else {
 				builder.tabs(tabLevel).appendLine("private ICollection<{0}> {1};", fk.sourceTable.getCSharpFullName(), getFieldName(fk.targetId()));
 			}
 			builder.generateBindingMetadata(fk, opts, tabLevel, false, true);
-			builder.tabs(tabLevel).appendLine("public virtual {0}<{1}> {2} { get { return {3}{4}; } set { {5} } }", opts.changeTracking ? "ObservableCollection" : "ICollection", fk.sourceTable.getCSharpFullName(), fk.targetId(), getFieldName(fk.targetId()), opts.changeTracking ? ".Value" : string.init, generateSetter(getFieldName(fk.targetId()), opts, true));
+			builder.tabs(tabLevel).appendLine("public virtual {0}<{1}> {2} { get => {3}{4}; set => {5}; }", opts.changeTracking ? "ObservableCollection" : "ICollection", fk.sourceTable.getCSharpFullName(), fk.targetId(), getFieldName(fk.targetId()), opts.changeTracking ? ".Value" : string.init, generateSetter(getFieldName(fk.targetId()), opts, true));
 		}
 		else {
 			builder.generateBindingMetadata(fk, opts, tabLevel, false, false);
 			if (opts.changeTracking) {
-				builder.tabs(tabLevel).appendLine("private TrackingValue<{0}> {1};", fk.sourceTable.getCSharpFullName(), getFieldName(fk.targetId()));
+				builder.tabs(tabLevel).appendLine("private readonly TrackingValue<{0}> {1};", fk.sourceTable.getCSharpFullName(), getFieldName(fk.targetId()));
 			} else {
 				builder.tabs(tabLevel).appendLine("private {0} {1};", fk.sourceTable.getCSharpFullName(), getFieldName(fk.targetId()));
 			}
 			builder.generateBindingMetadata(fk, opts, tabLevel, false, true);
-			builder.tabs(tabLevel).appendLine("public virtual {0} {1} { get { return {2}{3}; } set { {4} } }", fk.sourceTable.getCSharpFullName(), fk.targetId(), getFieldName(fk.targetId()), opts.changeTracking ? ".Value" : string.init, generateSetter(getFieldName(fk.targetId()), opts, false));
+			builder.tabs(tabLevel).appendLine("public virtual {0} {1} { get => {2}{3}; set => {4}; }", fk.sourceTable.getCSharpFullName(), fk.targetId(), getFieldName(fk.targetId()), opts.changeTracking ? ".Value" : string.init, generateSetter(getFieldName(fk.targetId()), opts, false));
 		}
 	}
 
@@ -251,22 +251,22 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 		if (fk.direction != ForeignKeyDirection.ManyToMany) {
 			builder.generateBindingMetadata(fk, opts, tabLevel, true, false);
 			if (opts.changeTracking) {
-				builder.tabs(tabLevel).appendLine("private TrackingValue<{0}> {1};", fk.targetTable.getCSharpFullName(), getFieldName(fk.sourceId()));
+				builder.tabs(tabLevel).appendLine("private readonly TrackingValue<{0}> {1};", fk.targetTable.getCSharpFullName(), getFieldName(fk.sourceId()));
 			} else {
 				builder.tabs(tabLevel).appendLine("private {0} {1};", fk.targetTable.getCSharpFullName(), getFieldName(fk.sourceId()));
 			}
 			builder.generateBindingMetadata(fk, opts, tabLevel, true, true);
-			builder.tabs(tabLevel).appendLine("public virtual {0} {1} { get { return {2}{3}; } set { {4} } }", fk.targetTable.getCSharpFullName(), fk.sourceId(), getFieldName(fk.sourceId()), opts.changeTracking ? ".Value" : string.init, generateSetter(getFieldName(fk.sourceId()), opts, false));
+			builder.tabs(tabLevel).appendLine("public virtual {0} {1} { get => {2}{3}; set => {4}; }", fk.targetTable.getCSharpFullName(), fk.sourceId(), getFieldName(fk.sourceId()), opts.changeTracking ? ".Value" : string.init, generateSetter(getFieldName(fk.sourceId()), opts, false));
 		}
 		else {
 			builder.generateBindingMetadata(fk, opts, tabLevel, true, false);
 			if (opts.changeTracking) {
-				builder.tabs(tabLevel).appendLine("private TrackingCollection<{0}> {1};", fk.targetTable.getCSharpFullName(), getFieldName(fk.sourceId()));
+				builder.tabs(tabLevel).appendLine("private readonly TrackingCollection<{0}> {1};", fk.targetTable.getCSharpFullName(), getFieldName(fk.sourceId()));
 			} else {
 				builder.tabs(tabLevel).appendLine("private ICollection<{0}> {1};", fk.targetTable.getCSharpFullName(), getFieldName(fk.sourceId()));
 			}
 			builder.generateBindingMetadata(fk, opts, tabLevel, true, true);
-			builder.tabs(tabLevel).appendLine("public virtual {0}<{1}> {2} { get { return {3}{4}; } set { {5} } }", opts.changeTracking ? "ObservableCollection" : "ICollection", fk.targetTable.getCSharpFullName(), fk.sourceId(), getFieldName(fk.sourceId()), opts.changeTracking ? ".Value" : string.init, generateSetter(getFieldName(fk.sourceId()), opts, true));
+			builder.tabs(tabLevel).appendLine("public virtual {0}<{1}> {2} { get => {3}{4}; set => {5}; }", opts.changeTracking ? "ObservableCollection" : "ICollection", fk.targetTable.getCSharpFullName(), fk.sourceId(), getFieldName(fk.sourceId()), opts.changeTracking ? ".Value" : string.init, generateSetter(getFieldName(fk.sourceId()), opts, true));
 		}
 	}
 
@@ -296,7 +296,7 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 public void generateDataView(View table, StringBuilder builder, CSharpProjectOptions opts, bool isClient, ushort tabLevel)
 {
 	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.4.0.0\")]");
-	builder.tabs(tabLevel).appendLine("public sealed partial class {0}{1}", table.name, opts.changeTracking ? " : TrackingObject" : (opts.uiBindings ? " : BindingObject" : string.init));
+	builder.tabs(tabLevel).appendLine("public sealed partial class {0}{1}", table.name, opts.changeTracking ? " : TrackingObject<" ~ table.name ~ ">" : (opts.uiBindings ? " : BindingObject" : string.init));
 	builder.tabs(tabLevel++).appendLine("{");
 	builder.tabs(tabLevel++).appendLine("public {0}() {", table.name);
 	if (opts.changeTracking) {
@@ -304,7 +304,7 @@ public void generateDataView(View table, StringBuilder builder, CSharpProjectOpt
 			builder.tabs(tabLevel).appendLine("{0} = RegisterValueProperty<{1}>(nameof({2}));", getFieldName(mm.name), generateType(mm.type), mm.name);
 		}
 	}
-	if (opts.changeTracking) builder.tabs(tabLevel).appendLine("CompleteRegistration();");
+	if (opts.changeTracking) builder.tabs(tabLevel).appendLine("RegistrationCompleted();");
 	builder.tabs(tabLevel).appendLine("PostInitializer();");
 	builder.tabs(--tabLevel).appendLine("}");
 	builder.tabs(tabLevel).appendLine("partial void PostInitializer();");
@@ -322,7 +322,7 @@ public void generateDataView(View table, StringBuilder builder, CSharpProjectOpt
 public void generateDataUdt(Udt udt, StringBuilder builder, CSharpProjectOptions opts, bool isClient, ushort tabLevel)
 {
 	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.4.0.0\")]");
-	builder.tabs(tabLevel).appendLine("public sealed partial class {0}Udt{1}", udt.name, opts.changeTracking ? " : TrackingObject" : (opts.uiBindings ? " : BindingObject" : string.init));
+	builder.tabs(tabLevel).appendLine("public sealed partial class {0}Udt{1}", udt.name, opts.changeTracking ? " : TrackingObject<" ~ udt.name ~ ">" : (opts.uiBindings ? " : BindingObject" : string.init));
 	builder.tabs(tabLevel++).appendLine("{");
 	builder.tabs(tabLevel++).appendLine("public {0}() {", udt.name);
 	if (opts.changeTracking) {
@@ -330,7 +330,7 @@ public void generateDataUdt(Udt udt, StringBuilder builder, CSharpProjectOptions
 			builder.tabs(tabLevel).appendLine("{0} = RegisterValueProperty<{1}>(nameof({2}));", getFieldName(mm.name), generateType(mm.type), mm.name);
 		}
 	}
-	if (opts.changeTracking) builder.tabs(tabLevel).appendLine("CompleteRegistration();");
+	if (opts.changeTracking) builder.tabs(tabLevel).appendLine("RegistrationCompleted();");
 	builder.tabs(tabLevel).appendLine("PostInitializer();");
 	builder.tabs(--tabLevel).appendLine("}");
 	builder.tabs(tabLevel).appendLine("partial void PostInitializer();");
@@ -353,13 +353,12 @@ private void generateDataSqlMember(DataMember mm, StringBuilder builder, CSharpP
 	builder.appendLine();
 	builder.generateBindingMetadata(mm, opts, tabLevel, false);
 	if (opts.changeTracking) {
-		builder.tabs(tabLevel).appendLine("private TrackingValue<{0}> {1};", getTypeFromSqlType(mm.sqlType, mm.isNullable), getFieldName(mm.name));
+		builder.tabs(tabLevel).appendLine("private readonly TrackingValue<{0}> {1};", getTypeFromSqlType(mm.sqlType, mm.isNullable), getFieldName(mm.name));
 	} else {
 		builder.tabs(tabLevel).appendLine("private {0} {1};", getTypeFromSqlType(mm.sqlType, mm.isNullable), getFieldName(mm.name));
 	}
-	builder.tabs(tabLevel).appendLine("private {0} {1};", getTypeFromSqlType(mm.sqlType, mm.isNullable), getFieldName(mm.name));
 	builder.generateBindingMetadata(mm, opts, tabLevel, true);
-	builder.tabs(tabLevel).appendLine("public {0} {1} { get { return {2}{3}; } {4}set { {5} } }", getTypeFromSqlType(mm.sqlType, mm.isNullable), mm.name, getFieldName(mm.name), opts.changeTracking ? ".Value" : string.init, mm.isReadOnly ? "private " : string.init, generateSetter(getFieldName(mm.name), opts, false));
+	builder.tabs(tabLevel).appendLine("public {0} {1} { get => {2}{3}; {4}set => {5}; }", getTypeFromSqlType(mm.sqlType, mm.isNullable), mm.name, getFieldName(mm.name), opts.changeTracking ? ".Value" : string.init, mm.isReadOnly ? "private " : string.init, generateSetter(getFieldName(mm.name), opts, false));
 }
 
 private void generateBindingMetadata(StringBuilder builder, DataMember mm, CSharpProjectOptions opts, ushort tabLevel, bool isProperty) {
