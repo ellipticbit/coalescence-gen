@@ -148,7 +148,7 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
         builder.tabs(tabLevel).appendLine("[DataContract]");
     }
 	if (!isClient && opts.enableEFExtensions) {
-		builder.tabs(tabLevel).appendLine("public sealed partial class {0} : {1}IDatabaseMergeable<{0}>", table.name, opts.changeTracking ? "TrackingObject, " : (opts.uiBindings ? "BindingObject, " : string.init));
+		builder.tabs(tabLevel).appendLine("public partial class {0} : {1}IDatabaseMergeable<{0}>", table.name, opts.changeTracking ? "TrackingObject, " : (opts.uiBindings ? "BindingObject, " : string.init));
 	} else if (opts.changeTracking) {
 		builder.tabs(tabLevel).appendLine("public sealed partial class {0} : TrackingObject<{0}>", table.name);
 	} else if (opts.uiBindings) {
