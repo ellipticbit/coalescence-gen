@@ -304,17 +304,19 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 public void generateDataView(View table, StringBuilder builder, CSharpProjectOptions opts, bool isClient, ushort tabLevel)
 {
 	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.4.0.0\")]");
-	builder.tabs(tabLevel).appendLine("public sealed partial class {0}{1}", table.name, opts.changeTracking ? " : TrackingObject<" ~ table.name ~ ">" : (opts.uiBindings ? " : BindingObject" : string.init));
+	builder.tabs(tabLevel).appendLine("public sealed partial class {0}{1}", table.name, opts.changeTracking ? " : TrackingObject" : (opts.uiBindings ? " : BindingObject" : string.init));
 	builder.tabs(tabLevel++).appendLine("{");
 	builder.tabs(tabLevel++).appendLine("public {0}() {", table.name);
+	builder.tabs(tabLevel).appendLine("PreInitializer();");
 	if (opts.changeTracking) {
 		foreach (mm; table.members) {
 			builder.tabs(tabLevel).appendLine("{0} = RegisterProperty<{1}>(nameof({2}));", getFieldName(mm.name), generateType(mm.type), mm.name);
 		}
 	}
-	if (opts.changeTracking) builder.tabs(tabLevel).appendLine("RegistrationCompleted();");
 	builder.tabs(tabLevel).appendLine("PostInitializer();");
+	if (opts.changeTracking) builder.tabs(tabLevel).appendLine("RegistrationCompleted();");
 	builder.tabs(--tabLevel).appendLine("}");
+	builder.tabs(tabLevel).appendLine("partial void PreInitializer();");
 	builder.tabs(tabLevel).appendLine("partial void PostInitializer();");
 	foreach (c; table.members) {
 		c.generateDataSqlMember(builder, opts, isClient, tabLevel);
@@ -330,17 +332,19 @@ public void generateDataView(View table, StringBuilder builder, CSharpProjectOpt
 public void generateDataUdt(Udt udt, StringBuilder builder, CSharpProjectOptions opts, bool isClient, ushort tabLevel)
 {
 	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.4.0.0\")]");
-	builder.tabs(tabLevel).appendLine("public sealed partial class {0}Udt{1}", udt.name, opts.changeTracking ? " : TrackingObject<" ~ udt.name ~ ">" : (opts.uiBindings ? " : BindingObject" : string.init));
+	builder.tabs(tabLevel).appendLine("public sealed partial class {0}Udt{1}", udt.name, opts.changeTracking ? " : TrackingObject" : (opts.uiBindings ? " : BindingObject" : string.init));
 	builder.tabs(tabLevel++).appendLine("{");
 	builder.tabs(tabLevel++).appendLine("public {0}() {", udt.name);
+	builder.tabs(tabLevel).appendLine("PreInitializer();");
 	if (opts.changeTracking) {
 		foreach (mm; udt.members) {
 			builder.tabs(tabLevel).appendLine("{0} = RegisterProperty<{1}>(nameof({2}));", getFieldName(mm.name), generateType(mm.type), mm.name);
 		}
 	}
-	if (opts.changeTracking) builder.tabs(tabLevel).appendLine("RegistrationCompleted();");
 	builder.tabs(tabLevel).appendLine("PostInitializer();");
+	if (opts.changeTracking) builder.tabs(tabLevel).appendLine("RegistrationCompleted();");
 	builder.tabs(--tabLevel).appendLine("}");
+	builder.tabs(tabLevel).appendLine("partial void PreInitializer();");
 	builder.tabs(tabLevel).appendLine("partial void PostInitializer();");
 	foreach (c; udt.members) {
 		c.generateDataSqlMember(builder, opts, isClient, tabLevel);
