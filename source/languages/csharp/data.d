@@ -63,7 +63,7 @@ public void generateDataNetwork(Network m, StringBuilder builder, CSharpProjectO
 				TypeCollection t = cast(TypeCollection)(mm.type.type);
 				builder.tabs(tabLevel).appendLine("{0} = RegisterCollectionProperty<{1}>(nameof({2}));", getFieldName(mm.name), generateType(t.collectionType), mm.name);
 			} else {
-				builder.tabs(tabLevel).appendLine("{0} = RegisterValueProperty<{1}>(nameof({2}), {3});", getFieldName(mm.name), generateType(mm.type), mm.name, mm.isKey ? "true" : "false");
+				builder.tabs(tabLevel).appendLine("{0} = RegisterProperty<{1}>(nameof({2}), {3});", getFieldName(mm.name), generateType(mm.type), mm.name, mm.isKey ? "true" : "false");
 			}
 		}
 	}
@@ -165,7 +165,7 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 	builder.tabs(tabLevel++).appendLine("public {0}() {", table.name);
 	if (opts.changeTracking) {
 		foreach (mm; table.members) {
-			builder.tabs(tabLevel).appendLine("{0} = RegisterValueProperty<{1}>(nameof({2}), {3});", getFieldName(mm.name), generateType(mm.type), mm.name, mm.isKey ? "true" : "false");
+			builder.tabs(tabLevel).appendLine("{0} = RegisterProperty<{1}>(nameof({2}), {3});", getFieldName(mm.name), generateType(mm.type), mm.name, mm.isKey ? "true" : "false");
 		}
 
 		if (table.modifications !is null) {
@@ -174,7 +174,7 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 					TypeCollection t = cast(TypeCollection)(mm.type.type);
 					builder.tabs(tabLevel).appendLine("{0} = RegisterCollectionProperty<{1}>(nameof({2}));", getFieldName(mm.name), generateType(t.collectionType), mm.name);
 				} else {
-					builder.tabs(tabLevel).appendLine("{0} = RegisterValueProperty<{1}>(nameof({2}), {3});", getFieldName(mm.name), generateType(mm.type), mm.name, mm.isKey ? "true" : "false");
+					builder.tabs(tabLevel).appendLine("{0} = RegisterProperty<{1}>(nameof({2}), {3});", getFieldName(mm.name), generateType(mm.type), mm.name, mm.isKey ? "true" : "false");
 				}
 			}
 		}
@@ -183,13 +183,13 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 			if (fk.direction != ForeignKeyDirection.OneToOne) {
 				builder.tabs(tabLevel).appendLine("{0} = RegisterCollectionProperty<{1}>(nameof({2}));", getFieldName(fk.targetId()), fk.sourceTable.getCSharpFullName(), fk.targetId());
 			} else {
-				builder.tabs(tabLevel).appendLine("{0} = RegisterValueProperty<{1}>(nameof({2}), false);", getFieldName(fk.targetId()), fk.sourceTable.getCSharpFullName(), fk.targetId());
+				builder.tabs(tabLevel).appendLine("{0} = RegisterProperty<{1}>(nameof({2}), false);", getFieldName(fk.targetId()), fk.sourceTable.getCSharpFullName(), fk.targetId());
 			}
 		}
 
 		foreach (fk; fkSource) {
 			if (fk.direction != ForeignKeyDirection.ManyToMany) {
-				builder.tabs(tabLevel).appendLine("{0} = RegisterValueProperty<{1}>(nameof({2}), false);", getFieldName(fk.sourceId()), fk.targetTable.getCSharpFullName(), fk.sourceId());
+				builder.tabs(tabLevel).appendLine("{0} = RegisterProperty<{1}>(nameof({2}), false);", getFieldName(fk.sourceId()), fk.targetTable.getCSharpFullName(), fk.sourceId());
 			} else {
 				builder.tabs(tabLevel).appendLine("{0} = RegisterCollectionProperty<{1}>(nameof({2}));", getFieldName(fk.sourceId()), fk.targetTable.getCSharpFullName(), fk.sourceId());
 			}
@@ -301,7 +301,7 @@ public void generateDataView(View table, StringBuilder builder, CSharpProjectOpt
 	builder.tabs(tabLevel++).appendLine("public {0}() {", table.name);
 	if (opts.changeTracking) {
 		foreach (mm; table.members) {
-			builder.tabs(tabLevel).appendLine("{0} = RegisterValueProperty<{1}>(nameof({2}));", getFieldName(mm.name), generateType(mm.type), mm.name);
+			builder.tabs(tabLevel).appendLine("{0} = RegisterProperty<{1}>(nameof({2}));", getFieldName(mm.name), generateType(mm.type), mm.name);
 		}
 	}
 	if (opts.changeTracking) builder.tabs(tabLevel).appendLine("RegistrationCompleted();");
@@ -327,7 +327,7 @@ public void generateDataUdt(Udt udt, StringBuilder builder, CSharpProjectOptions
 	builder.tabs(tabLevel++).appendLine("public {0}() {", udt.name);
 	if (opts.changeTracking) {
 		foreach (mm; udt.members) {
-			builder.tabs(tabLevel).appendLine("{0} = RegisterValueProperty<{1}>(nameof({2}));", getFieldName(mm.name), generateType(mm.type), mm.name);
+			builder.tabs(tabLevel).appendLine("{0} = RegisterProperty<{1}>(nameof({2}));", getFieldName(mm.name), generateType(mm.type), mm.name);
 		}
 	}
 	if (opts.changeTracking) builder.tabs(tabLevel).appendLine("RegistrationCompleted();");
