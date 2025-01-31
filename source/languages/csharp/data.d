@@ -57,6 +57,7 @@ public void generateDataNetwork(Network m, StringBuilder builder, CSharpProjectO
 		builder.tabs(tabLevel).appendLine("[JsonConstructor]");
 	}
 	builder.tabs(tabLevel++).appendLine("public {0}() {", m.name);
+	builder.tabs(tabLevel).appendLine("PreInitializer();");
 	if (opts.changeTracking) {
 		foreach (mm; m.members) {
 			if (mm.type.isCollection) {
@@ -67,9 +68,10 @@ public void generateDataNetwork(Network m, StringBuilder builder, CSharpProjectO
 			}
 		}
 	}
-	if (opts.changeTracking) builder.tabs(tabLevel).appendLine("RegistrationCompleted();");
 	builder.tabs(tabLevel).appendLine("PostInitializer();");
+	if (opts.changeTracking) builder.tabs(tabLevel).appendLine("RegistrationCompleted();");
 	builder.tabs(--tabLevel).appendLine("}");
+	builder.tabs(tabLevel).appendLine("partial void PreInitializer();");
 	builder.tabs(tabLevel).appendLine("partial void PostInitializer();");
 	builder.appendLine();
 
@@ -167,6 +169,7 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 		builder.tabs(tabLevel).appendLine("[JsonConstructor]");
 	}
 	builder.tabs(tabLevel++).appendLine("public {0}() {", table.name);
+	builder.tabs(tabLevel).appendLine("PreInitializer();");
 	if (opts.changeTracking) {
 		foreach (mm; table.members) {
 			builder.tabs(tabLevel).appendLine("{0} = RegisterProperty<{1}>(nameof({2}){3});", getFieldName(mm.name), generateType(mm.type), mm.name, mm.isKey ? ", true" : string.init);
@@ -204,9 +207,10 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 			builder.tabs(tabLevel).appendLine("this.{0} = new HashSet<{1}>();", fk.targetId(), fk.sourceTable.getCSharpFullName());
 		}
 	}
-	if (opts.changeTracking) builder.tabs(tabLevel).appendLine("RegistrationCompleted();");
 	builder.tabs(tabLevel).appendLine("PostInitializer();");
+	if (opts.changeTracking) builder.tabs(tabLevel).appendLine("RegistrationCompleted();");
 	builder.tabs(--tabLevel).appendLine("}");
+	builder.tabs(tabLevel).appendLine("partial void PreInitializer();");
 	builder.tabs(tabLevel).appendLine("partial void PostInitializer();");
 
 	foreach (c; table.members) {
