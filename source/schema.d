@@ -397,6 +397,14 @@ public final class Network : DataObject
 
 		super(parent, root.expectValue!string(0), root.location);
 	}
+
+	public bool hasKey() {
+		foreach (t; members){
+			if (t.isKey) return true;
+		}
+
+		return false;
+	}
 }
 
 public final class Database
@@ -537,7 +545,7 @@ public final class DataMember
 		this.isComputed = false;
 		this.isIdentity = false;
 		this.isReadOnly = root.getAttributeValue!bool("readonly", false);
-		this.isUserKey = root.getAttributeValue!bool("isKey", false);
+		this.isUserKey = root.getAttributeValue!bool("key", false);
 		this.isNullable = this.type.nullable;
 	}
 

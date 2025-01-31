@@ -40,7 +40,7 @@ public void generateDataNetwork(Network m, StringBuilder builder, CSharpProjectO
         builder.tabs(tabLevel).appendLine("[DataContract]");
     }
 	if (opts.changeTracking) {
-		builder.tabs(tabLevel).appendLine("public partial class {0} : TrackingObject<{0}>", m.name);
+		builder.tabs(tabLevel).appendLine("public partial class {0} : TrackingObject{1}", m.name, m.hasKey ? "<" ~ m.name ~ ">" : string.init);
 	} else if (opts.uiBindings) {
 		builder.tabs(tabLevel).appendLine("public partial class {0} : BindingObject", m.name);
 	} else {
@@ -63,7 +63,7 @@ public void generateDataNetwork(Network m, StringBuilder builder, CSharpProjectO
 				TypeCollection t = cast(TypeCollection)(mm.type.type);
 				builder.tabs(tabLevel).appendLine("{0} = RegisterCollectionProperty<{1}>(nameof({2}));", getFieldName(mm.name), generateType(t.collectionType), mm.name);
 			} else {
-				builder.tabs(tabLevel).appendLine("{0} = RegisterProperty<{1}>(nameof({2}), {3});", getFieldName(mm.name), generateType(mm.type), mm.name, mm.isKey ? "true" : "false");
+				builder.tabs(tabLevel).appendLine("{0} = RegisterProperty<{1}>(nameof({2}){3});", getFieldName(mm.name), generateType(mm.type), mm.name, mm.isKey ? ", true" : string.init);
 			}
 		}
 	}
@@ -112,7 +112,7 @@ private void generateDataNetworkMember(DataMember mm, StringBuilder builder, CSh
 		builder.tabs(tabLevel).appendLine("private {0} {1};", generateType(mm.type), getFieldName(mm.name));
 	}
 	builder.generateBindingMetadata(mm, opts, tabLevel, true);
-	builder.tabs(tabLevel).appendLine("public {0} {1} { get => {2}{3}; {4}set => {5}; }", generateType(mm.type, false, false, opts.changeTracking), mm.name, getFieldName(mm.name), opts.changeTracking ? ".Value" : string.init, mm.isReadOnly ? "private " : string.init, generateSetter(getFieldName(mm.name), opts));
+	builder.tabs(tabLevel).appendLine("public {0} {1} { get => {2}{3}; {4}set => {5}; }", generateType(mm.type, false, false, opts.changeTracking), mm.name, getFieldName(mm.name), opts.changeTracking ? ".Value" : string.init, mm.isReadOnly ? "private " : string.init, generateSetter(getFieldName(mm.name), opts, mm.type.isCollection));
 }
 
 public void generateDataTable(Table table, StringBuilder builder, CSharpProjectOptions opts, Project prj, bool isClient, ushort tabLevel) {
@@ -150,7 +150,7 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 	if (!isClient && opts.enableEFExtensions) {
 		builder.tabs(tabLevel).appendLine("public partial class {0} : {1}IDatabaseMergeable<{0}>", table.name, opts.changeTracking ? "TrackingObject, " : (opts.uiBindings ? "BindingObject, " : string.init));
 	} else if (opts.changeTracking) {
-		builder.tabs(tabLevel).appendLine("public partial class {0} : TrackingObject<{0}>", table.name);
+		builder.tabs(tabLevel).appendLine("public partial class {0} : TrackingObject{1}", table.name, table.hasPrimaryKey ? "<" ~ table.name ~ ">" : string.init);
 	} else if (opts.uiBindings) {
 		builder.tabs(tabLevel).appendLine("public partial class {0} : BindingObject", table.name);
 	} else {
@@ -165,7 +165,7 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 	builder.tabs(tabLevel++).appendLine("public {0}() {", table.name);
 	if (opts.changeTracking) {
 		foreach (mm; table.members) {
-			builder.tabs(tabLevel).appendLine("{0} = RegisterProperty<{1}>(nameof({2}), {3});", getFieldName(mm.name), generateType(mm.type), mm.name, mm.isKey ? "true" : "false");
+			builder.tabs(tabLevel).appendLine("{0} = RegisterProperty<{1}>(nameof({2}){3});", getFieldName(mm.name), generateType(mm.type), mm.name, mm.isKey ? ", true" : string.init);
 		}
 
 		if (table.modifications !is null) {
@@ -174,7 +174,7 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 					TypeCollection t = cast(TypeCollection)(mm.type.type);
 					builder.tabs(tabLevel).appendLine("{0} = RegisterCollectionProperty<{1}>(nameof({2}));", getFieldName(mm.name), generateType(t.collectionType), mm.name);
 				} else {
-					builder.tabs(tabLevel).appendLine("{0} = RegisterProperty<{1}>(nameof({2}), {3});", getFieldName(mm.name), generateType(mm.type), mm.name, mm.isKey ? "true" : "false");
+					builder.tabs(tabLevel).appendLine("{0} = RegisterProperty<{1}>(nameof({2}){3});", getFieldName(mm.name), generateType(mm.type), mm.name, mm.isKey ? ", true" : string.init);
 				}
 			}
 		}
