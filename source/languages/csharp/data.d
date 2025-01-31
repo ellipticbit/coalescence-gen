@@ -107,11 +107,11 @@ private void generateDataNetworkMember(DataMember mm, StringBuilder builder, CSh
 	builder.appendLine();
 	builder.generateBindingMetadata(mm, opts, tabLevel, false);
 	if (opts.changeTracking) {
-		TypeComplex colType = null;
+		TypeComplex colType = mm.type;
 		if (mm.type.isCollection) {
-			colType = (cast(TypeCollection)mm.type).collectionType;
+			colType = (cast(TypeCollection)mm.type.type).collectionType;
 		}
-		builder.tabs(tabLevel).appendLine("private readonly {0}<{1}> {2};", mm.type.isCollection ? "TrackingCollection" : "TrackingValue", generateType(mm.type.isCollection ? colType : mm.type), getFieldName(mm.name));
+		builder.tabs(tabLevel).appendLine("private readonly {0}<{1}> {2};", mm.type.isCollection ? "TrackingCollection" : "TrackingValue", generateType(colType), getFieldName(mm.name));
 	} else {
 		builder.tabs(tabLevel).appendLine("private {0} {1};", generateType(mm.type), getFieldName(mm.name));
 	}
