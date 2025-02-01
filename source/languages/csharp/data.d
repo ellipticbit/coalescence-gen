@@ -312,6 +312,16 @@ public void generateDataView(View table, StringBuilder builder, CSharpProjectOpt
 		foreach (mm; table.members) {
 			builder.tabs(tabLevel).appendLine("{0} = RegisterProperty<{1}>(nameof({2}));", getFieldName(mm.name), generateType(mm.type), mm.name);
 		}
+		if (table.modifications !is null) {
+			foreach (mm; table.modifications.additions) {
+				if (mm.type.isCollection) {
+					TypeCollection t = cast(TypeCollection)(mm.type.type);
+					builder.tabs(tabLevel).appendLine("{0} = RegisterCollectionProperty<{1}>(nameof({2}));", getFieldName(mm.name), generateType(t.collectionType), mm.name);
+				} else {
+					builder.tabs(tabLevel).appendLine("{0} = RegisterProperty<{1}>(nameof({2}){3});", getFieldName(mm.name), generateType(mm.type), mm.name, mm.isKey ? ", true" : string.init);
+				}
+			}
+		}
 	}
 	builder.tabs(tabLevel).appendLine("PostInitializer();");
 	if (opts.changeTracking) builder.tabs(tabLevel).appendLine("RegistrationCompleted();");
@@ -339,6 +349,16 @@ public void generateDataUdt(Udt udt, StringBuilder builder, CSharpProjectOptions
 	if (opts.changeTracking) {
 		foreach (mm; udt.members) {
 			builder.tabs(tabLevel).appendLine("{0} = RegisterProperty<{1}>(nameof({2}));", getFieldName(mm.name), generateType(mm.type), mm.name);
+		}
+		if (udt.modifications !is null) {
+			foreach (mm; udt.modifications.additions) {
+				if (mm.type.isCollection) {
+					TypeCollection t = cast(TypeCollection)(mm.type.type);
+					builder.tabs(tabLevel).appendLine("{0} = RegisterCollectionProperty<{1}>(nameof({2}));", getFieldName(mm.name), generateType(t.collectionType), mm.name);
+				} else {
+					builder.tabs(tabLevel).appendLine("{0} = RegisterProperty<{1}>(nameof({2}){3});", getFieldName(mm.name), generateType(mm.type), mm.name, mm.isKey ? ", true" : string.init);
+				}
+			}
 		}
 	}
 	builder.tabs(tabLevel).appendLine("PostInitializer();");
