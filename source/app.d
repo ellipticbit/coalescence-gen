@@ -93,8 +93,26 @@ int main(string[] args)
 			string connectionStr = (dbname != string.init) ?
 				"ddbc:odbc://" ~ dbserver ~ "?database=" ~ dbname ~ ",user=" ~ dbuser ~ ",password=" ~ dbpassword ~ ",ssl=true,driver=ODBC Driver 17 for SQL Server" :
 				"ddbc:odbc://" ~ dbserver ~ "?user=" ~ dbuser ~ ",password=" ~ dbpassword ~ ",ssl=true,driver=ODBC Driver 17 for SQL Server";
-			auto connection = createConnection(connectionStr);
-			scope(exit) connection.close();
+			Connection connection = null;
+			int crc = 0;
+			while (connection is null && crc < 3) {
+				try {
+					writeln("Connecting to: " ~ dbserver ~ " - Attempt: " ~ to!string(++crc));
+					connection = createConnection(connectionStr);
+				} catch (Exception ex) {
+				}
+			}
+
+			if (connection is null) {
+				writeln("Unable to connect to database server: " ~ dbserver);
+				return 4;
+			}
+
+			scope(exit) {
+				if (connection !is null) {
+					connection.close();
+				}
+			} 
 
 			dbSchema = readMssqlSchemata(connection);
 		}
