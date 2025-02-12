@@ -91,8 +91,8 @@ int main(string[] args)
 	if (dbserver != string.init && dbuser != string.init && dbpassword != string.init)  {
 		if (dbmssql) {
 			string connectionStr = (dbname != string.init) ?
-				"ddbc:odbc://" ~ dbserver ~ "?database=" ~ dbname ~ ",user=" ~ dbuser ~ ",password=" ~ dbpassword ~ ",ssl=true,driver=ODBC Driver 17 for SQL Server" :
-				"ddbc:odbc://" ~ dbserver ~ "?user=" ~ dbuser ~ ",password=" ~ dbpassword ~ ",ssl=true,driver=ODBC Driver 17 for SQL Server";
+				"ddbc:odbc://" ~ dbserver ~ "?database=" ~ dbname ~ ",user=" ~ dbuser ~ ",password=" ~ dbpassword ~ ",ssl=true,driver=ODBC Driver 18 for SQL Server" :
+				"ddbc:odbc://" ~ dbserver ~ "?user=" ~ dbuser ~ ",password=" ~ dbpassword ~ ",ssl=true,driver=ODBC Driver 18 for SQL Server";
 			Connection connection = null;
 			int crc = 0;
 			while (connection is null && crc < 3) {
