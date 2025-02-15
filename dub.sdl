@@ -1,12 +1,12 @@
 name "coalesce"
 description "Coalesce is a cross-langauge code-generation tool for the Coalescence Web API ecosystem."
 authors "Adam Wilson"
-copyright "Copyright © EllipticBit 2022-2024"
+copyright "Copyright © EllipticBit 2022-2025"
 license "BSL-1.0"
 targetType "executable"
 
 dependency "sdlite" version="~>1.3.0"
-dependency "ddbc" version="~>0.6.2"
+dependency "ddbc" path="./ddbc/"
 subConfiguration "ddbc" "ODBC"
 
 buildType "plain" {

@@ -1,0 +1,3 @@
+[submodule "ddbc"]
+	path = ddbc
+	url = https://github.com/LightBender/ddbc-odbc.git
