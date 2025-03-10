@@ -718,6 +718,7 @@ public final class HttpService : TypeUser
 	public string scheme;
 	public string requestName;
 	public string requestParameterId;
+	public bool multitenant;
 
 	public this(Schema parent, SDLNode root) {
 		this.parent = parent;
@@ -728,6 +729,7 @@ public final class HttpService : TypeUser
 		this.scheme = root.getAttributeValue!string("scheme", string.init);
 		this.requestName = root.getAttributeValue!string("requestName", null);
 		this.requestParameterId = root.getAttributeValue!string("requestParameterId", null);
+		this.multitenant = root.getAttributeValue!bool("multitenant", false);
 
 		auto ancext = root.getNode("extensions:aspnetcore");
 		if (!ancext.isNull) extensions ~= new AspNetCoreHttpExtension(this, ancext.get());
@@ -738,16 +740,6 @@ public final class HttpService : TypeUser
 		}
 
 		super(name, root.location);
-	}
-
-	public string getRequest() {
-		if (requestName !is null && requestName != string.init) {
-			return "\"" ~ requestName ~ "\"";
-		} else if (requestParameterId !is null && requestParameterId != string.init) {
-			return requestParameterId ~ ".ToString()";
-		}
-
-		return string.init;
 	}
 }
 
@@ -774,6 +766,7 @@ public final class HttpServiceMethod : TypeUser
 	public uint timeout;
 	public bool noThrow;
 	public bool retry;
+	public bool multitenant;
 
 	public HttpServiceMethodVerb verb;
 	public string[] routeParts;
@@ -786,8 +779,6 @@ public final class HttpServiceMethod : TypeUser
 
 	public string requestEncoding;
 	public string responseEncoding;
-
-	public string tenantIdParameter;
 
 	public bool bodyForm;
 	public string bodyBoundary;
@@ -810,6 +801,7 @@ public final class HttpServiceMethod : TypeUser
 		this.retry = root.getAttributeValue!bool("retry", true);
 		this.requestEncoding = root.getAttributeValue!string("requestEncoding", string.init);
 		this.responseEncoding = root.getAttributeValue!string("responseEncoding", string.init);
+		this.multitenant = root.getAttributeValue!bool("multitenant", false);
 
 		auto ancext = root.getNode("extensions:aspnetcore");
 		if (!ancext.isNull) extensions ~= new AspNetCoreHttpMethodExtension(this, ancext.get());
@@ -854,11 +846,6 @@ public final class HttpServiceMethod : TypeUser
 				header ~= new TypeComplex(smp.name, smp.value.value!string(), root.location);
 			}
 		}
-
-		string rtid = !ptn.isNull ? ptn.get().getNodeAttributeValue!string("route", "tenantId", null) : null;
-		string qtid = !qtn.isNull ? qtn.get().getNodeAttributeValue!string("query", "tenantId", null) : null;
-		string htid = !htn.isNull ? htn.get().getNodeAttributeValue!string("header", "tenantId", null) : null;
-		this.tenantIdParameter = qtid !is null ? qtid : htid !is null ? htid : rtid;
 
 		auto btn = root.getNode("body");
 		if (!btn.isNull) {

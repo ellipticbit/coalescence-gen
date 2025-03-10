@@ -8,6 +8,7 @@ import coalescence.database.mssql.schemareader;
 
 import sdlite;
 import ddbc;
+import ddbc.drivers.odbcddbc;
 
 import std.algorithm.iteration;
 import std.algorithm.searching;
@@ -98,7 +99,7 @@ int main(string[] args)
 			while (connection is null && crc < 3) {
 				try {
 					writeln("Connecting to: " ~ dbserver ~ " - Attempt: " ~ to!string(++crc));
-					connection = new ddbc.drivers.odbcddbc.ODBCConnection(connectionStr);
+					connection = new ODBCConnection(connectionStr);
 				} catch (Exception ex) {
 				}
 			}

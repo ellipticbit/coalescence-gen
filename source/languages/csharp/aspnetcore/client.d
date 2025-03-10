@@ -24,7 +24,7 @@ public void generateHttpClient(StringBuilder builder, HttpService s, ushort tabL
 	builder.appendLine();
 	foreach(m; s.methods) {
 		if (m.query.length == 0 || m.queryAsParams) continue;
-		builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.4.0.0\")]");
+		builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.5.0.0\")]");
 		builder.tabs(tabLevel).appendLine("[System.Diagnostics.DebuggerNonUserCode()]");
 		builder.tabs(tabLevel).appendLine("public class {0}Query : ICoalescenceParameters", m.name);
 		builder.tabs(tabLevel++).appendLine("{");
@@ -61,7 +61,7 @@ public void generateHttpClient(StringBuilder builder, HttpService s, ushort tabL
 	builder.appendLine();
 	foreach(m; s.methods) {
 		if (m.header.length == 0) continue;
-		builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.4.0.0\")]");
+		builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.5.0.0\")]");
 		builder.tabs(tabLevel).appendLine("[System.Diagnostics.DebuggerNonUserCode()]");
 		builder.tabs(tabLevel).appendLine("public class {0}Header : ICoalescenceParameters", m.name);
 		builder.tabs(tabLevel++).appendLine("{");
@@ -95,7 +95,7 @@ public void generateHttpClient(StringBuilder builder, HttpService s, ushort tabL
 	}
 
 	builder.appendLine();
-	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.4.0.0\")]");
+	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.5.0.0\")]");
 	builder.tabs(tabLevel).appendLine("{1} interface I{0}", s.name, s.isPublic ? "public" : "internal");
 	builder.tabs(tabLevel++).appendLine("{");
 	foreach(m; s.methods) {
@@ -103,7 +103,7 @@ public void generateHttpClient(StringBuilder builder, HttpService s, ushort tabL
 	}
 	builder.tabs(--tabLevel).appendLine("}");
 	builder.appendLine();
-	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.4.0.0\")]");
+	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.5.0.0\")]");
 	builder.tabs(tabLevel).appendLine("{1} sealed partial class {0} : I{0}", s.name, s.isPublic ? "public" : "internal");
 	builder.tabs(tabLevel++).appendLine("{");
 	builder.tabs(tabLevel).appendLine("private readonly ICoalescenceRequestFactory requests;");
@@ -192,7 +192,7 @@ private void generateClientMethod(StringBuilder builder, HttpService s, HttpServ
 	generateClientMethodParams(builder, sm);
 	builder.appendLine(")");
 	builder.tabs(tabLevel++).appendLine("{");
-	builder.tabs(tabLevel++).appendLine("await using var response = await requests.CreateRequest({0}).{1}()", s.getRequest(), to!string(sm.verb).capitalize());
+	builder.tabs(tabLevel++).appendLine("await using var response = await requests.CreateRequest({0}).{1}()", getRequestParameters(sm), to!string(sm.verb).capitalize());
 
 	if (s.route.length > 0) {
 		builder.tabs(tabLevel).appendLine(".Path(\"{0}\")", s.route.join("\", \""));
@@ -368,5 +368,27 @@ private void generateClientMethodParams(StringBuilder builder, HttpServiceMethod
 		builder.append("{0} {1} = {2}, ", generateType(smp, false, false), cleanName(smp.name), getDefaultValue(smp));
 	}
 
-	if ((sm.route.length + sm.query.length + sm.header.length + sm.content.length) > 0) builder.removeRight(2);
+	if (sm.multitenant || sm.parent.multitenant) {
+		builder.append("string _tenantId = null  ");
+	}
+
+	if ((sm.route.length + sm.query.length + sm.header.length + sm.content.length) > 0 || sm.multitenant || sm.parent.multitenant) builder.removeRight(2);
+}
+
+public string getRequestParameters(HttpServiceMethod sm) {
+	string params = string.init;
+
+	if (sm.parent.requestName !is null && sm.parent.requestName != string.init) {
+		params ~= "\"" ~ sm.parent.requestName ~ "\"";
+	} else if (sm.parent.requestParameterId !is null && sm.parent.requestParameterId != string.init) {
+		params ~= sm.parent.requestParameterId ~ ".ToString()";
+	}
+
+	if ((sm.multitenant || sm.parent.multitenant) && params == string.init) {
+		params ~= "null, _tenantId";
+	} else if (sm.multitenant || sm.parent.multitenant) {
+		params ~= ", _tenantId";
+	}
+
+	return params;
 }

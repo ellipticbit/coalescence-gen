@@ -35,7 +35,7 @@ public void generateDataNetwork(Network m, StringBuilder builder, CSharpProjectO
 	}
 
     builder.appendLine();
-	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.4.0.0\")]");
+	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.5.0.0\")]");
     if (opts.hasSerializer(CSharpSerializers.NewtonsoftJson) || opts.hasSerializer(CSharpSerializers.DataContract)) {
         builder.tabs(tabLevel).appendLine("[DataContract]");
     }
@@ -149,7 +149,7 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 		}
 	}
 
-	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.4.0.0\")]");
+	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.5.0.0\")]");
     if (opts.hasSerializer(CSharpSerializers.NewtonsoftJson) || opts.hasSerializer(CSharpSerializers.DataContract)) {
         builder.tabs(tabLevel).appendLine("[DataContract]");
     }
@@ -303,7 +303,7 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 
 public void generateDataView(View table, StringBuilder builder, CSharpProjectOptions opts, bool isClient, ushort tabLevel)
 {
-	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.4.0.0\")]");
+	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.5.0.0\")]");
 	builder.tabs(tabLevel).appendLine("public sealed partial class {0}{1}", table.name, opts.changeTracking ? " : TrackingObject" : (opts.uiBindings ? " : BindingObject" : string.init));
 	builder.tabs(tabLevel++).appendLine("{");
 	builder.tabs(tabLevel++).appendLine("public {0}() {", table.name);
@@ -341,7 +341,7 @@ public void generateDataView(View table, StringBuilder builder, CSharpProjectOpt
 
 public void generateDataUdt(Udt udt, StringBuilder builder, CSharpProjectOptions opts, bool isClient, ushort tabLevel)
 {
-	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.4.0.0\")]");
+	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.5.0.0\")]");
 	builder.tabs(tabLevel).appendLine("public sealed partial class {0}Udt{1}", udt.name, opts.changeTracking ? " : TrackingObject" : (opts.uiBindings ? " : BindingObject" : string.init));
 	builder.tabs(tabLevel++).appendLine("{");
 	builder.tabs(tabLevel++).appendLine("public {0}() {", udt.name);

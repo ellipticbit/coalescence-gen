@@ -25,7 +25,7 @@ namespace "Service" {
 		}
 	}
 
-	http "TestService" route="/api/ts/" authenticate=true scheme="default" {
+	http "TestService" route="/api/ts/" authenticate=true scheme="default" multitenant=true {
 		extensions:aspnetcore {
 			authorization area="test" roles="role" allRoles=false policy="policy"
 		}
