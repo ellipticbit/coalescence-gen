@@ -32,10 +32,10 @@ public void generateEFContext(CSharpProjectOptions opts, Schema[] schemata) {
 	sb.appendLine();
 	sb.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.5.0.0\")]");
 	if (opts.enableEFExtensions) {
-		sb.tabs(tabLevel).appendLine("public class {0} : EfCoreDatabaseService<{0}>, IDatabaseService<{0}>", opts.contextName.cleanName());
+		sb.tabs(tabLevel).appendLine("public partial class {0} : EfCoreDatabaseService<{0}>, IDatabaseService<{0}>", opts.contextName.cleanName());
 	}
 	else {
-		sb.tabs(tabLevel).appendLine("public class {0} : DbContext", opts.contextName.cleanName());
+		sb.tabs(tabLevel).appendLine("public partial class {0} : DbContext", opts.contextName.cleanName());
 	}
 	sb.tabs(tabLevel++).appendLine("{");
 	sb.tabs(tabLevel).appendLine("private readonly string _connectionString;");
