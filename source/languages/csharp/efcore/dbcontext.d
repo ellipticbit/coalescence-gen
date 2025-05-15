@@ -73,7 +73,7 @@ public void generateEFContext(CSharpProjectOptions opts, Schema[] schemata) {
 		foreach (t; s.getTables()) {
 			sb.tabs(tabLevel).appendLine("modelBuilder.Entity<{1}.{0}>(entity =>", t.name, s.name.uppercaseFirst());
 			sb.tabs(tabLevel++).appendLine("{");
-			sb.tabs(tabLevel).appendLine("entity.ToTable(\"{0}\", \"{1}\");", t.name, s.name);
+			sb.tabs(tabLevel).appendLine("entity.ToTable(\"{0}\", \"{1}\"{2});", t.name, s.name, t.hasTrigger ? ", tb => tb.HasTrigger(\"" ~ t.name ~ "_Trigger\")" : string.init);
 			generateIndexModel(opts, sb, t, tabLevel + 1);
 			foreach (c; t.members)
 				generatePropertyModel(opts, sb, c, tabLevel + 1);

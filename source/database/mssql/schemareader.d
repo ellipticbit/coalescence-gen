@@ -21,7 +21,9 @@ public Schema[] readMssqlSchemata(Connection conn)
 {
 	static import std.algorithm.mutation;
 	auto stmt = conn.createStatement();
-	scope(exit) stmt.close();
+	scope(exit) {
+		stmt.close();
+	}
 
 	Schema[] sl;
 
@@ -36,7 +38,9 @@ public Schema[] readMssqlSchemata(Connection conn)
 	foreach (s; sl)
 	{
 		//Read tables
-		auto tablerdr = stmt.executeQuery("SELECT CONVERT(VARCHAR(256), syt.[name]), syt.[object_id] FROM [sys].[tables] AS syt WHERE syt.[schema_id] = " ~ to!string(s.sqlId) ~ " AND syt.[type] = 'U'");
+		auto tablerdr = stmt.executeQuery("SELECT CONVERT(VARCHAR(256), syt.[name]), syt.[object_id], MAX(trg.[object_id]) FROM [sys].[tables] AS syt " ~ 
+		"LEFT JOIN [sys].[triggers] AS trg ON trg.[parent_id] = syt.[object_id] " ~
+		"WHERE syt.[schema_id] = " ~ to!string(s.sqlId) ~ " AND syt.[type] = 'U' GROUP BY CONVERT(VARCHAR(256), syt.[name]), syt.[object_id]");
 
 		while (tablerdr.next())
 		{
@@ -46,6 +50,8 @@ public Schema[] readMssqlSchemata(Connection conn)
 			} else {
 				writeError("Table '" ~ nt.name ~ "' already exists in schema '" ~ s.name ~ "'");
 			}
+
+			nt.hasTrigger = !tablerdr.isNull(3);
 		}
 
 		foreach (t; s.tables.values)

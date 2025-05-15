@@ -357,6 +357,7 @@ public final class Table : DatabaseObject
 {
 	public Index[] indexes;
 	public ForeignKey[] foreignKeys;
+	public bool hasTrigger = false;
 
 	public bool hasPrimaryKey() {
 		foreach (t; indexes){
