@@ -40,11 +40,11 @@ public void generateDataNetwork(Network m, StringBuilder builder, CSharpProjectO
         builder.tabs(tabLevel).appendLine("[DataContract]");
     }
 	if (opts.changeTracking) {
-		builder.tabs(tabLevel).appendLine("public partial class {0} : TrackingObject{1}", m.name, m.hasKey ? "<" ~ m.name ~ ">" : string.init);
+		builder.tabs(tabLevel).appendLine("public sealed partial class {0} : TrackingObject{1}", m.name, m.hasKey ? "<" ~ m.name ~ ">" : string.init);
 	} else if (opts.uiBindings) {
-		builder.tabs(tabLevel).appendLine("public partial class {0} : BindingObject", m.name);
+		builder.tabs(tabLevel).appendLine("public sealed partial class {0} : BindingObject", m.name);
 	} else {
-		builder.tabs(tabLevel).appendLine("public partial class {0}", m.name);
+		builder.tabs(tabLevel).appendLine("public sealed partial class {0}", m.name);
 	}
     builder.tabs(tabLevel++).appendLine("{");
 
@@ -154,13 +154,13 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
         builder.tabs(tabLevel).appendLine("[DataContract]");
     }
 	if (!isClient && opts.enableEFExtensions) {
-		builder.tabs(tabLevel).appendLine("public partial class {0} : {1}IDatabaseMergeable<{0}>", table.name, opts.changeTracking ? "TrackingObject, " : (opts.uiBindings ? "BindingObject, " : string.init));
+		builder.tabs(tabLevel).appendLine("public {2}partial class {0} : {1}IDatabaseMergeable<{0}>", table.name, opts.changeTracking ? "TrackingObject, " : (opts.uiBindings ? "BindingObject, " : string.init), isClient ? "sealed " : string.init);
 	} else if (opts.changeTracking) {
-		builder.tabs(tabLevel).appendLine("public partial class {0} : TrackingObject{1}", table.name, table.hasPrimaryKey ? "<" ~ table.name ~ ">" : string.init);
+		builder.tabs(tabLevel).appendLine("public {2}partial class {0} : TrackingObject{1}", table.name, table.hasPrimaryKey ? "<" ~ table.name ~ ">" : string.init, isClient ? "sealed " : string.init);
 	} else if (opts.uiBindings) {
-		builder.tabs(tabLevel).appendLine("public partial class {0} : BindingObject", table.name);
+		builder.tabs(tabLevel).appendLine("public {1}partial class {0} : BindingObject", table.name, isClient ? "sealed " : string.init);
 	} else {
-		builder.tabs(tabLevel).appendLine("public partial class {0}", table.name);
+		builder.tabs(tabLevel).appendLine("public {1}partial class {0}", table.name, isClient ? "sealed " : string.init);
 	}
 
 	builder.tabs(tabLevel++).appendLine("{");
@@ -240,7 +240,7 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 				builder.tabs(tabLevel).appendLine("private ICollection<{0}> {1};", fk.sourceTable.getCSharpFullName(), getFieldName(fk.targetId()));
 			}
 			builder.generateBindingMetadata(fk, opts, tabLevel, false, true);
-			builder.tabs(tabLevel).appendLine("public virtual {0}<{1}> {2} { get => {3}{4}; set => {5}; }", opts.changeTracking ? "ObservableCollection" : "ICollection", fk.sourceTable.getCSharpFullName(), fk.targetId(), getFieldName(fk.targetId()), opts.changeTracking ? ".Value" : string.init, generateSetter(getFieldName(fk.targetId()), opts, true));
+			builder.tabs(tabLevel).appendLine("public {6}{0}<{1}> {2} { get => {3}{4}; set => {5}; }", opts.changeTracking ? "ObservableCollection" : "ICollection", fk.sourceTable.getCSharpFullName(), fk.targetId(), getFieldName(fk.targetId()), opts.changeTracking ? ".Value" : string.init, generateSetter(getFieldName(fk.targetId()), opts, true), isClient ? string.init : "virtual ");
 		}
 		else {
 			builder.generateBindingMetadata(fk, opts, tabLevel, false, false);
@@ -250,7 +250,7 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 				builder.tabs(tabLevel).appendLine("private {0} {1};", fk.sourceTable.getCSharpFullName(), getFieldName(fk.targetId()));
 			}
 			builder.generateBindingMetadata(fk, opts, tabLevel, false, true);
-			builder.tabs(tabLevel).appendLine("public virtual {0} {1} { get => {2}{3}; set => {4}; }", fk.sourceTable.getCSharpFullName(), fk.targetId(), getFieldName(fk.targetId()), opts.changeTracking ? ".Value" : string.init, generateSetter(getFieldName(fk.targetId()), opts, false));
+			builder.tabs(tabLevel).appendLine("public {5}{0} {1} { get => {2}{3}; set => {4}; }", fk.sourceTable.getCSharpFullName(), fk.targetId(), getFieldName(fk.targetId()), opts.changeTracking ? ".Value" : string.init, generateSetter(getFieldName(fk.targetId()), opts, false), isClient ? string.init : "virtual ");
 		}
 	}
 
@@ -264,7 +264,7 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 				builder.tabs(tabLevel).appendLine("private {0} {1};", fk.targetTable.getCSharpFullName(), getFieldName(fk.sourceId()));
 			}
 			builder.generateBindingMetadata(fk, opts, tabLevel, true, true);
-			builder.tabs(tabLevel).appendLine("public virtual {0} {1} { get => {2}{3}; set => {4}; }", fk.targetTable.getCSharpFullName(), fk.sourceId(), getFieldName(fk.sourceId()), opts.changeTracking ? ".Value" : string.init, generateSetter(getFieldName(fk.sourceId()), opts, false));
+			builder.tabs(tabLevel).appendLine("public {5}{0} {1} { get => {2}{3}; set => {4}; }", fk.targetTable.getCSharpFullName(), fk.sourceId(), getFieldName(fk.sourceId()), opts.changeTracking ? ".Value" : string.init, generateSetter(getFieldName(fk.sourceId()), opts, false), isClient ? string.init : "virtual ");
 		}
 		else {
 			builder.generateBindingMetadata(fk, opts, tabLevel, true, false);
@@ -274,7 +274,7 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 				builder.tabs(tabLevel).appendLine("private ICollection<{0}> {1};", fk.targetTable.getCSharpFullName(), getFieldName(fk.sourceId()));
 			}
 			builder.generateBindingMetadata(fk, opts, tabLevel, true, true);
-			builder.tabs(tabLevel).appendLine("public virtual {0}<{1}> {2} { get => {3}{4}; set => {5}; }", opts.changeTracking ? "ObservableCollection" : "ICollection", fk.targetTable.getCSharpFullName(), fk.sourceId(), getFieldName(fk.sourceId()), opts.changeTracking ? ".Value" : string.init, generateSetter(getFieldName(fk.sourceId()), opts, true));
+			builder.tabs(tabLevel).appendLine("public {6}{0}<{1}> {2} { get => {3}{4}; set => {5}; }", opts.changeTracking ? "ObservableCollection" : "ICollection", fk.targetTable.getCSharpFullName(), fk.sourceId(), getFieldName(fk.sourceId()), opts.changeTracking ? ".Value" : string.init, generateSetter(getFieldName(fk.sourceId()), opts, true), isClient ? string.init : "virtual ");
 		}
 	}
 
