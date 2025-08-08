@@ -38,7 +38,6 @@ public void generateEFContext(CSharpProjectOptions opts, Schema[] schemata) {
 		sb.tabs(tabLevel).appendLine("public partial class {0} : DbContext", opts.contextName.cleanName());
 	}
 	sb.tabs(tabLevel++).appendLine("{");
-	sb.tabs(tabLevel).appendLine("private readonly string _connectionString;");
 	foreach (s; schemata.filter!(a => a.hasDatabaseItems)) {
 		foreach (t; s.getTables())
 			sb.tabs(tabLevel).appendLine("internal virtual DbSet<{1}.{0}> {1}_{0} { get; set; }", t.name, s.name.uppercaseFirst());
@@ -51,20 +50,10 @@ public void generateEFContext(CSharpProjectOptions opts, Schema[] schemata) {
 	foreach (s; schemata.filter!(a => a.hasDatabaseItems))
 		generateSchemaModel(opts, sb, s, tabLevel);
 	sb.appendLine();
-	if (opts.enableEFExtensions) {
-		sb.tabs(tabLevel).appendLine("public {0}() : base() { }", opts.contextName.cleanName());
-		sb.appendLine();
-		sb.tabs(tabLevel).appendLine("{0} IDatabaseService<{0}>.GetDatabase(IDatabaseServiceOptions options, IDatabaseConflictDetection detector, IDatabaseConflictResolver resolver) => new {0}(options, detector, resolver);", opts.contextName.cleanName());
-		sb.appendLine();
-		sb.tabs(tabLevel).appendLine("private {0}(IDatabaseServiceOptions options, IDatabaseConflictDetection detector, IDatabaseConflictResolver resolver) : base(options, detector, resolver)", opts.contextName.cleanName());
-	}
-	else {
-		sb.tabs(tabLevel).appendLine("public {0}(DbContextOptions<{0}> options) : base(options)", opts.contextName.cleanName());
-	}
+	sb.tabs(tabLevel).appendLine("public {0}(DbContextOptions<{0}> options) : base(options)", opts.contextName.cleanName());
 	sb.tabs(tabLevel++).appendLine("{");
 	foreach (s; schemata.filter!(a => a.hasDatabaseItems))
 		sb.tabs(tabLevel).appendLine("this.{0} = new {0}Schema(this);", s.name.uppercaseFirst());
-	sb.tabs(tabLevel).appendLine("this._connectionString = this.Database.GetDbConnection().ConnectionString;");
 	sb.tabs(--tabLevel).appendLine("}");
 	sb.appendLine();
 	sb.tabs(tabLevel).appendLine("protected override void OnModelCreating(ModelBuilder modelBuilder)");
@@ -286,7 +275,7 @@ private void generateStoredProcedure(StringBuilder sb, Procedure p, int tabLevel
 		}
 	}
 	sb.tabs(tabLevel++).appendLine("{");
-	sb.tabs(tabLevel).appendLine("var dbc = new SqlConnection(_parent._connectionString);");
+	sb.tabs(tabLevel).appendLine("var dbc = new SqlConnection(_parent.Database.GetDbConnection().ConnectionString);");
 	sb.tabs(tabLevel).appendLine("var cmd = dbc.CreateCommand();");
 	sb.tabs(tabLevel).appendLine("await dbc.OpenAsync();");
 	sb.tabs(tabLevel).appendLine("cmd.CommandText = \"[{0}].[{1}]\";", p.parent.sqlName, p.sqlName);
