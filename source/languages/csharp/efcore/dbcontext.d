@@ -32,17 +32,17 @@ public void generateEFContext(CSharpProjectOptions opts, Schema[] schemata) {
 	sb.appendLine();
 	sb.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.5.0.0\")]");
 	if (opts.enableEFExtensions) {
-		sb.tabs(tabLevel).appendLine("public partial class {0} : EfCoreDatabaseService<{0}>, IDatabaseService<{0}>", opts.contextName.cleanName());
+		sb.tabs(tabLevel).appendLine("public {1}partial class {0} : EfCoreDatabaseService<{0}>", opts.contextName.cleanName(), opts.enableEFContextMocking ? string.init : "sealed ");
 	}
 	else {
-		sb.tabs(tabLevel).appendLine("public partial class {0} : DbContext", opts.contextName.cleanName());
+		sb.tabs(tabLevel).appendLine("public {1}partial class {0} : DbContext", opts.contextName.cleanName(), opts.enableEFContextMocking ? string.init : "sealed ");
 	}
 	sb.tabs(tabLevel++).appendLine("{");
 	foreach (s; schemata.filter!(a => a.hasDatabaseItems)) {
 		foreach (t; s.getTables())
-			sb.tabs(tabLevel).appendLine("internal virtual DbSet<{1}.{0}> {1}_{0} { get; set; }", t.name, s.name.uppercaseFirst());
+			sb.tabs(tabLevel).appendLine("{2} DbSet<{1}.{0}> {1}_{0} { get; set; }", t.name, s.name.uppercaseFirst(), opts.enableEFContextMocking ? "public virtual" : "internal");
 		foreach (t; s.getViews())
-			sb.tabs(tabLevel).appendLine("internal virtual DbSet<{1}.{0}> {1}_{0} { get; set; }", t.name, s.name.uppercaseFirst());
+			sb.tabs(tabLevel).appendLine("{2} DbSet<{1}.{0}> {1}_{0} { get; set; }", t.name, s.name.uppercaseFirst(), opts.enableEFContextMocking ? "public virtual" : "internal");
 	}
 	sb.appendLine();
 	foreach (s; schemata.filter!(a => a.hasDatabaseItems))

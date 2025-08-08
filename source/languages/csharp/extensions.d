@@ -47,6 +47,8 @@ public final class CSharpProjectOptions {
 	public string namespace;
 	public bool uiBindings;
 	public bool enableEFExtensions;
+	public bool enableEFLazyLoading;
+	public bool enableEFContextMocking;
 	public bool serializeFields;
     public bool shortTransports;
     public bool changeTracking;
@@ -65,6 +67,8 @@ public final class CSharpProjectOptions {
 		this.shortTransports = root.getAttributeValue!bool("shortTransports", false);
 		this.changeTracking = root.getAttributeValue!bool("changeTracking", false);
 		this.enableEFExtensions = root.getAttributeValue!bool("enableEFExtensions", false);
+		this.enableEFLazyLoading = root.getAttributeValue!bool("enableEFLazyLoading", false);
+		this.enableEFContextMocking = root.getAttributeValue!bool("enableEFContextMocking", false);
 		try {
 			version(Posix) {
 			this.outputPath = buildNormalizedPath(projectRoot, root.expectAttributeValue!string("outputPath").replace("\\", "/"));
