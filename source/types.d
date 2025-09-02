@@ -344,8 +344,8 @@ public final class TypeComplex : TypeBase {
 			_type = new TypePrimitive(TypePrimitives.Base64String);
 			_nullable = true;
 		}
-		else if (typeStr.toLower().startsWith("datetime".toLower())) _type = new TypePrimitive(TypePrimitives.DateTime);
 		else if (typeStr.toLower().startsWith("datetimetz".toLower())) _type = new TypePrimitive(TypePrimitives.DateTimeTz);
+		else if (typeStr.toLower().startsWith("datetime".toLower())) _type = new TypePrimitive(TypePrimitives.DateTime);
 		else if (typeStr.toLower().startsWith("timespan".toLower())) _type = new TypePrimitive(TypePrimitives.TimeSpan);
 		else if (typeStr.toLower().startsWith("guid".toLower())) _type = new TypePrimitive(TypePrimitives.Guid);
 		else {
