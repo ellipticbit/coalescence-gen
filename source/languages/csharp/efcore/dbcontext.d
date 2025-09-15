@@ -275,7 +275,7 @@ private void generateStoredProcedure(StringBuilder sb, Procedure p, int tabLevel
 		}
 	}
 	sb.tabs(tabLevel++).appendLine("{");
-	sb.tabs(tabLevel).appendLine("var dbc = new SqlConnection(_parent.Database.GetDbConnection().ConnectionString);");
+	sb.tabs(tabLevel).appendLine("var dbc = new SqlConnection(_parent.Database.GetConnectionString());");
 	sb.tabs(tabLevel).appendLine("var cmd = dbc.CreateCommand();");
 	sb.tabs(tabLevel).appendLine("await dbc.OpenAsync();");
 	sb.tabs(tabLevel).appendLine("cmd.CommandText = \"[{0}].[{1}]\";", p.parent.sqlName, p.sqlName);
