@@ -151,7 +151,7 @@ public Schema[] readMssqlSchemata(Connection conn)
 			auto paramrdr = stmt.executeQuery(
 				"SELECT [typeName] = CONVERT(VARCHAR(256), CASE syp.[system_type_id] WHEN 243 THEN 'TABLE TYPE' ELSE syt.[name] END), CONVERT(VARCHAR(256), syp.[name]), syp.[parameter_id], CONVERT(SMALLINT, syp.[system_type_id]), syp.[max_length], syp.[precision], syp.[scale], CONVERT(TINYINT, syp.[is_output]), CONVERT(TINYINT, syp.[is_readonly]), [udtOid] = CONVERT(INT, CASE syp.[system_type_id] WHEN 243 THEN sytt.[type_table_object_id] ELSE -1 END)" ~
 				"FROM [sys].[parameters] AS syp INNER JOIN sys.[types] AS syt ON syt.[user_type_id] = syp.[user_type_id] AND syt.[user_type_id] <> 240 LEFT JOIN sys.[table_types] AS sytt ON sytt.[user_type_id] = syp.[user_type_id]" ~
-				"WHERE syp.[object_id] = " ~ to!string(t.sqlId) ~ " ORDER BY syp.[name]");
+				"WHERE syp.[object_id] = " ~ to!string(t.sqlId) ~ " ORDER BY syp.[parameter_id]");
 			while (paramrdr.next())
 			{
 				auto udt = paramrdr.isNull(10) ? null : getUdt(paramrdr.getInt(10), sl);
