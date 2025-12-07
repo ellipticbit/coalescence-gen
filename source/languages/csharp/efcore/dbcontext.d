@@ -218,6 +218,7 @@ private void generatePropertyModel(CSharpProjectOptions opts, StringBuilder sb, 
 
 	if (c.hasDefault) {
 		sb.appendLine();
+		sb.tabs(tabLevel).append(".ValueGeneratedOnAdd()");
 		if (c.sqlType == SqlDbType.Bit) {
 			sb.tabs(tabLevel).append(".HasDefaultValue({0})", c.getDefaultValue());
 		} else {
