@@ -12,6 +12,7 @@ import coalescence.stringbuilder;
 import coalescence.schema;
 import coalescence.utility;
 import coalescence.database.mssql.types;
+import coalescence.database.utility;
 import coalescence.languages.csharp.extensions;
 import coalescence.languages.csharp.language;
 import coalescence.languages.csharp.data;
@@ -217,13 +218,16 @@ private void generatePropertyModel(CSharpProjectOptions opts, StringBuilder sb, 
 	}
 
 	if (c.hasDefault) {
+		if (!c.isKey) {
+			sb.appendLine();
+			if (c.sqlType == SqlDbType.Bit) {
+				sb.tabs(tabLevel).append(".HasDefaultValue({0})", getMssqlDefaultValue(c));
+			} else {
+				sb.tabs(tabLevel).append(".HasDefaultValue()");
+			}
+		}
 		sb.appendLine();
 		sb.tabs(tabLevel).append(".ValueGeneratedOnAdd()");
-		if (c.sqlType == SqlDbType.Bit) {
-			sb.tabs(tabLevel).append(".HasDefaultValue({0})", c.getDefaultValue());
-		} else {
-			sb.tabs(tabLevel).append(".HasDefaultValue()");
-		}
 	}
 
 	if (!c.isNullable) {

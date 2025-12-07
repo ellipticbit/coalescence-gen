@@ -495,6 +495,7 @@ public final class DataMember
 	public bool isReadOnly;
 
 	public bool isTypeEnum() { return typeid(type.type) == typeid(TypeEnum); }
+
 	public @property bool isKey() {
 		if (isUserKey) return true;
 
@@ -507,18 +508,6 @@ public final class DataMember
 		}
 
 		return false;
-	}
-
-	public string getDefaultValue() {
-		if (defaultValue is null || defaultValue.length < 5 || defaultValue == "(N'')") return string.init;
-		string modified = defaultValue[2..$-2];
-		if (modified[0] == '\'') modified = modified[1..$];
-
-		if (sqlType == SqlDbType.Bit) return modified == "0" ? "false" : "true";
-		if (sqlType == SqlDbType.VarChar || sqlType == SqlDbType.NVarChar || sqlType == SqlDbType.Char || sqlType == SqlDbType.NChar || sqlType == SqlDbType.Text || sqlType == SqlDbType.NText) return "\"" ~ modified ~ "\"";
-		if (sqlType == SqlDbType.Decimal) return modified ~ "M";
-
-		return modified;
 	}
 
 	public this(DataObject parent, int id, string name, SqlDbType type, int maxLength, byte precision, byte scale, bool hasDefault, string defaultValue, bool isNullable, bool isIdentity, bool isComputed)
