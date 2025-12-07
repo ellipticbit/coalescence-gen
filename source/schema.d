@@ -486,6 +486,7 @@ public final class DataMember
 	private bool isUserKey;
 	public bool isNullable;
 	public bool hasDefault;
+	public string defaultValue = null;
 	public int maxLength;
 	public byte precision;
 	public byte scale;
@@ -508,7 +509,19 @@ public final class DataMember
 		return false;
 	}
 
-	public this(DataObject parent, int id, string name, SqlDbType type, int maxLength, byte precision, byte scale, bool hasDefault, bool isNullable, bool isIdentity, bool isComputed)
+	public string getDefaultValue() {
+		if (defaultValue is null || defaultValue.length < 5 || defaultValue == "(N'')") return string.init;
+		string modified = defaultValue[2..$-2];
+		if (modified[0] == '\'') modified = modified[1..$];
+
+		if (sqlType == SqlDbType.Bit) return modified == "0" ? "false" : "true";
+		if (sqlType == SqlDbType.VarChar || sqlType == SqlDbType.NVarChar || sqlType == SqlDbType.Char || sqlType == SqlDbType.NChar || sqlType == SqlDbType.Text || sqlType == SqlDbType.NText) return "\"" ~ modified ~ "\"";
+		if (sqlType == SqlDbType.Decimal) return modified ~ "M";
+
+		return modified;
+	}
+
+	public this(DataObject parent, int id, string name, SqlDbType type, int maxLength, byte precision, byte scale, bool hasDefault, string defaultValue, bool isNullable, bool isIdentity, bool isComputed)
 	{
 		this.parent = parent;
 		this.sqlId = id;
@@ -525,6 +538,7 @@ public final class DataMember
 			this.precision = scale;
 		}
 		this.hasDefault = hasDefault;
+		this.defaultValue = defaultValue;
 		this.isNullable = isNullable;
 		this.isIdentity = isIdentity;
 		this.isComputed = isComputed;

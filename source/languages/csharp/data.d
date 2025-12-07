@@ -214,6 +214,8 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 	builder.tabs(tabLevel).appendLine("partial void PostInitializer();");
 
 	foreach (c; table.members) {
+		generateDataSqlMember(c, builder, opts, isClient, tabLevel);
+/*
 		builder.appendLine();
 		builder.generateBindingMetadata(c, opts, tabLevel, false);
 		if (opts.changeTracking) {
@@ -223,7 +225,7 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 		}
 		builder.generateBindingMetadata(c, opts, tabLevel, true);
 		builder.tabs(tabLevel).appendLine("public {0} {1} { get => {2}{3}; set => {4}; }", getTypeFromSqlType(c.sqlType, c.isNullable), c.name, getFieldName(c.name), opts.changeTracking ? ".Value" : string.init, generateSetter(getFieldName(c.name), opts, c.type.isCollection));
-	}
+*/	}
 	if (table.modifications !is null) {
 		foreach (c; table.modifications.additions) {
 			c.generateDataNetworkMember(builder, opts, tabLevel);
@@ -387,7 +389,7 @@ private void generateDataSqlMember(DataMember mm, StringBuilder builder, CSharpP
 	if (opts.changeTracking) {
 		builder.tabs(tabLevel).appendLine("private readonly TrackingValue<{0}> {1};", getTypeFromSqlType(mm.sqlType, mm.isNullable), getFieldName(mm.name));
 	} else {
-		builder.tabs(tabLevel).appendLine("private {0} {1};", getTypeFromSqlType(mm.sqlType, mm.isNullable), getFieldName(mm.name));
+		builder.tabs(tabLevel).appendLine("private {0} {1}{2};", getTypeFromSqlType(mm.sqlType, mm.isNullable), getFieldName(mm.name), (mm.hasDefault && mm.sqlType == SqlDbType.Bit) ? " = " ~ mm.getDefaultValue() : string.init);
 	}
 	builder.generateBindingMetadata(mm, opts, tabLevel, true);
 	builder.tabs(tabLevel).appendLine("public {0} {1} { get => {2}{3}; {4}set => {5}; }", getTypeFromSqlType(mm.sqlType, mm.isNullable), mm.name, getFieldName(mm.name), opts.changeTracking ? ".Value" : string.init, mm.isReadOnly ? "private " : string.init, generateSetter(getFieldName(mm.name), opts, false));
@@ -474,7 +476,7 @@ private string generateSetter(string name, CSharpProjectOptions opts, bool isCol
 	return opts.uiBindings ? "SetField(ref " ~ name ~ ", value)" : name ~ " = value";
 }
 
-private string getFieldName(string name) {
+public string getFieldName(string name) {
 	return "_" ~ name.toLower();
 }
 

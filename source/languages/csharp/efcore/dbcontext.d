@@ -14,6 +14,7 @@ import coalescence.utility;
 import coalescence.database.mssql.types;
 import coalescence.languages.csharp.extensions;
 import coalescence.languages.csharp.language;
+import coalescence.languages.csharp.data;
 
 public void generateEFContext(CSharpProjectOptions opts, Schema[] schemata) {
 	auto sb = new StringBuilder(8_388_608);
@@ -180,6 +181,8 @@ private void generatePropertyModel(CSharpProjectOptions opts, StringBuilder sb, 
 	sb.appendLine();
 	sb.tabs(tabLevel - 1).append("entity.Property(e => e.{0})", c.name);
 	sb.appendLine();
+	sb.tabs(tabLevel).append(".HasField(\"{0}\")", getFieldName(c.name));
+	sb.appendLine();
 	sb.tabs(tabLevel).append(".HasColumnName(\"{0}\")", c.name);
 	sb.appendLine();
 	sb.tabs(tabLevel).append(".HasColumnType(\"{0}\")", getMssqlTypeFromColumn(c));
@@ -215,7 +218,11 @@ private void generatePropertyModel(CSharpProjectOptions opts, StringBuilder sb, 
 
 	if (c.hasDefault) {
 		sb.appendLine();
-		sb.tabs(tabLevel).append(".HasDefaultValue()");
+		if (c.sqlType == SqlDbType.Bit) {
+			sb.tabs(tabLevel).append(".HasDefaultValue({0})", c.getDefaultValue());
+		} else {
+			sb.tabs(tabLevel).append(".HasDefaultValue()");
+		}
 	}
 
 	if (!c.isNullable) {

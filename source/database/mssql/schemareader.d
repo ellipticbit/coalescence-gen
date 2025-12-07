@@ -28,7 +28,7 @@ public Schema[] readMssqlSchemata(Connection conn)
 	Schema[] sl;
 
 	//Read schemas
-	auto schemardr = stmt.executeQuery("SELECT [Name] = CONVERT(VARCHAR(256), ss.[name]), [ID] = ss.[schema_id] FROM [sys].[schemas] AS ss WHERE ss.[name] <> 'sys' AND ss.[name] <> 'guest' AND ss.[name] <> 'INFORMATION_SCHEMA' AND ss.[name] NOT LIKE 'db[_]%'");
+	auto schemardr = stmt.executeQuery("SELECT [Name] = CONVERT(VARCHAR(256), ss.[name]), [ID] = ss.[schema_id] FROM [sys].[schemas] AS ss WHERE ss.[name] <> 'sys' AND ss.[name] <> 'guest' AND ss.[name] <> 'INFORMATION_SCHEMA' AND ss.[name] NOT LIKE 'db[_]%' ORDER BY ss.[name]");
 	while (schemardr.next())
 	{
 		sl ~= new Schema(schemardr.getInt(2), schemardr.getString(1));
@@ -40,7 +40,7 @@ public Schema[] readMssqlSchemata(Connection conn)
 		//Read tables
 		auto tablerdr = stmt.executeQuery("SELECT CONVERT(VARCHAR(256), syt.[name]), syt.[object_id], MAX(trg.[object_id]) FROM [sys].[tables] AS syt " ~ 
 		"LEFT JOIN [sys].[triggers] AS trg ON trg.[parent_id] = syt.[object_id] " ~
-		"WHERE syt.[schema_id] = " ~ to!string(s.sqlId) ~ " AND syt.[type] = 'U' GROUP BY CONVERT(VARCHAR(256), syt.[name]), syt.[object_id]");
+		"WHERE syt.[schema_id] = " ~ to!string(s.sqlId) ~ " AND syt.[type] = 'U' GROUP BY CONVERT(VARCHAR(256), syt.[name]), syt.[object_id] ORDER BY CONVERT(VARCHAR(256), syt.[name])");
 
 		while (tablerdr.next())
 		{
@@ -70,7 +70,7 @@ public Schema[] readMssqlSchemata(Connection conn)
 		auto nopk = s.tables.values.filter!(t => !t.indexes.any!(a => a.isPrimaryKey)).array;
 		foreach (t; nopk)
 		{
-			writeln("Table [" ~ s.name ~ "].[" ~ t.name ~ "] does not have a primary key defined.");
+			writeln("WARN: Table [" ~ s.name ~ "].[" ~ t.name ~ "] does not have a primary key defined. Skipping.");
 			s.tables.remove(t.name);
 		}
 	}
@@ -81,7 +81,7 @@ public Schema[] readMssqlSchemata(Connection conn)
 		//Read views
 		auto viewrdr = stmt.executeQuery(
 			"SELECT CONVERT(VARCHAR(256), syt.[name]), syt.[object_id] FROM [sys].[views] AS syt " ~
-			"WHERE syt.[schema_id] = " ~ to!string(s.sqlId) ~ " AND syt.[type] = 'V'");
+			"WHERE syt.[schema_id] = " ~ to!string(s.sqlId) ~ " AND syt.[type] = 'V' ORDER BY syt.[name]");
 
 		while (viewrdr.next())
 		{
@@ -105,7 +105,7 @@ public Schema[] readMssqlSchemata(Connection conn)
 		//Read tables
 		auto udtrdr = stmt.executeQuery(
 			"SELECT CONVERT(VARCHAR(256), syt.[name]), syt.[type_table_object_id] FROM [sys].[table_types] AS syt " ~
-			"WHERE syt.[schema_id] = " ~ to!string(s.sqlId));
+			"WHERE syt.[schema_id] = " ~ to!string(s.sqlId) ~ " ORDER BY syt.[name]");
 
 		while (udtrdr.next())
 		{
@@ -135,7 +135,7 @@ public Schema[] readMssqlSchemata(Connection conn)
 	//Read stored procedures
 	foreach (s; sl)
 	{
-		auto procrdr = stmt.executeQuery("SELECT CONVERT(VARCHAR(256), syp.[name]), syp.[object_id] FROM sys.[procedures] AS syp WHERE syp.[schema_id] = " ~ to!string(s.sqlId));
+		auto procrdr = stmt.executeQuery("SELECT CONVERT(VARCHAR(256), syp.[name]), syp.[object_id] FROM sys.[procedures] AS syp WHERE syp.[schema_id] = " ~ to!string(s.sqlId) ~ " ORDER BY syp.[name]");
 
 		while (procrdr.next()) {
 			auto np = new Procedure(s, procrdr.getInt(2), procrdr.getString(1));
@@ -151,7 +151,7 @@ public Schema[] readMssqlSchemata(Connection conn)
 			auto paramrdr = stmt.executeQuery(
 				"SELECT [typeName] = CONVERT(VARCHAR(256), CASE syp.[system_type_id] WHEN 243 THEN 'TABLE TYPE' ELSE syt.[name] END), CONVERT(VARCHAR(256), syp.[name]), syp.[parameter_id], CONVERT(SMALLINT, syp.[system_type_id]), syp.[max_length], syp.[precision], syp.[scale], CONVERT(TINYINT, syp.[is_output]), CONVERT(TINYINT, syp.[is_readonly]), [udtOid] = CONVERT(INT, CASE syp.[system_type_id] WHEN 243 THEN sytt.[type_table_object_id] ELSE -1 END)" ~
 				"FROM [sys].[parameters] AS syp INNER JOIN sys.[types] AS syt ON syt.[user_type_id] = syp.[user_type_id] AND syt.[user_type_id] <> 240 LEFT JOIN sys.[table_types] AS sytt ON sytt.[user_type_id] = syp.[user_type_id]" ~
-				"WHERE syp.[object_id] = " ~ to!string(t.sqlId) ~ " ORDER BY syp.[parameter_id]");
+				"WHERE syp.[object_id] = " ~ to!string(t.sqlId) ~ " ORDER BY syp.[name]");
 			while (paramrdr.next())
 			{
 				auto udt = paramrdr.isNull(10) ? null : getUdt(paramrdr.getInt(10), sl);
@@ -176,9 +176,9 @@ public Schema[] readMssqlSchemata(Connection conn)
 private DataMember[] readColumns(DataObject t, Statement stmt)
 {
 	auto crdr = stmt.executeQuery(
-		"SELECT CONVERT(VARCHAR(256), syt.[name]), CONVERT(VARCHAR(256), syc.[name]), syc.[column_id], syc.[max_length], syc.[precision], syc.[scale], CONVERT(TINYINT, CASE syc.[default_object_id] WHEN 0 THEN 0 ELSE 1 END), CONVERT(TINYINT, syc.[is_nullable]), CONVERT(TINYINT, syc.[is_identity]), CONVERT(TINYINT, syc.[is_computed]) FROM sys.[columns] AS syc " ~
-		"INNER JOIN [sys].[types] AS syt ON syt.[user_type_id] = syc.[user_type_id] AND syt.[user_type_id] <> 240" ~
-		"WHERE syc.[object_id] = " ~ to!string(t.sqlId) ~ " ORDER BY syc.[column_id]");
+		"SELECT CONVERT(VARCHAR(256), syt.[name]), CONVERT(VARCHAR(256), syc.[name]), syc.[column_id], syc.[max_length], syc.[precision], syc.[scale], CONVERT(TINYINT, CASE syc.[default_object_id] WHEN 0 THEN 0 ELSE 1 END), COALESCE(CONVERT(VARCHAR(512), sdc.[definition]), ''), CONVERT(TINYINT, syc.[is_nullable]), CONVERT(TINYINT, syc.[is_identity]), CONVERT(TINYINT, syc.[is_computed]) FROM sys.[columns] AS syc " ~
+		"INNER JOIN [sys].[types] AS syt ON syt.[user_type_id] = syc.[user_type_id] AND syt.[user_type_id] <> 240 LEFT JOIN [sys].[default_constraints] AS sdc ON sdc.[object_id] = syc.[default_object_id]" ~
+		"WHERE syc.[object_id] = " ~ to!string(t.sqlId) ~ " ORDER BY syc.[name]");
 
 	DataMember[] cl;
 	while (crdr.next())
@@ -191,9 +191,10 @@ private DataMember[] readColumns(DataObject t, Statement stmt)
 			crdr.getByte(5),
 			crdr.getByte(6),
 			to!bool(crdr.getByte(7)),
-			to!bool(crdr.getByte(8)),
+			crdr.getString(8),
 			to!bool(crdr.getByte(9)),
-			to!bool(crdr.getByte(10))
+			to!bool(crdr.getByte(10)),
+			to!bool(crdr.getByte(11))
 		);
 	}
 	return cl;
@@ -204,7 +205,7 @@ private Index[] readIndexes(int oid, DataMember[] cols, Statement stmt)
 	auto irdr = stmt.executeQuery(
 		"SELECT [Name] = CONVERT(VARCHAR(256), syi.[name]), [IsUnique] = CONVERT(TINYINT, syi.[is_unique]), [IsPrimary] = CONVERT(TINYINT, syi.[is_primary_key]), [CID] = sic.[column_id] FROM [sys].[index_columns] AS sic " ~
 		"INNER JOIN [sys].[indexes] AS syi ON syi.[object_id] = sic.[object_id] AND syi.[index_id] = sic.[index_id] " ~
-		"WHERE sic.[object_id] = " ~ to!string(oid) ~ " ORDER BY sic.[column_id]");
+		"WHERE sic.[object_id] = " ~ to!string(oid) ~ " ORDER BY syi.[name]");
 
 	Index[] il;
 	while (irdr.next())
@@ -235,7 +236,7 @@ private ForeignKey[] readForeignKeys(Table t, Schema[] schemata, Statement stmt)
 	auto fkrdr = stmt.executeQuery(
 		"SELECT CONVERT(VARCHAR(256), sfk.[name]), sfc.[parent_object_id], sfc.[parent_column_id], sfc.[referenced_object_id], sfc.[referenced_column_id], sfk.[update_referential_action], sfk.[delete_referential_action] FROM [sys].[foreign_key_columns] AS sfc " ~
 		"INNER JOIN [sys].[foreign_keys] AS sfk ON sfk.[object_id] = sfc.[constraint_object_id] " ~
-		"WHERE sfc.[parent_object_id] = " ~ to!string(t.sqlId) ~ " ORDER BY sfc.[constraint_column_id]");
+		"WHERE sfc.[parent_object_id] = " ~ to!string(t.sqlId) ~ " ORDER BY sfk.[name]");
 
 	ForeignKey[] fkl;
 	while (fkrdr.next())
