@@ -211,5 +211,17 @@ private SDLNode[] parseFile(string path) {
 }
 
 private void displayUsage() {
-
+	writeln("Usage: coalesce [options]");
+	writeln();
+	writeln("Options:");
+	writeln("  -h, --help                 Display this help information.");
+	writeln("  -rd, --root-directory <dir> Specifies the root directory of the project.");
+	writeln("  -pf, --project-file <file>  Specifies the path to the project file (default: .coalescence.sdl).");
+	writeln("  --db-mssql                 Generate from a Microsoft SQL Server database.");
+	writeln("  --db-mysql                 Generate from a MySQL or MariaDB database.");
+	writeln("  --db-postgresql            Generate from a PostgreSQL database.");
+	writeln("  --db-server <host>         The hostname or IP address of the database server.");
+	writeln("  --db-name <name>           The name of the database to read from (required for MySQL/PostgreSQL).");
+	writeln("  --db-user <user>           The username for database authentication.");
+	writeln("  --db-password <pass>       The password for database authentication.");
 }
