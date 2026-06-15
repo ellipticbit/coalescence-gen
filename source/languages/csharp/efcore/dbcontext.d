@@ -32,7 +32,7 @@ public void generateEFContext(CSharpProjectOptions opts, Schema[] schemata) {
 	sb.tabs(tabLevel).appendLine("using Microsoft.EntityFrameworkCore.Metadata;");
 	sb.tabs(tabLevel).appendLine("using EllipticBit.Services.Database;");
 	sb.appendLine();
-	sb.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.5.0.0\")]");
+	sb.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"2.0.0.0\")]");
 	if (opts.enableEFExtensions) {
 		sb.tabs(tabLevel).appendLine(i"public $(opts.enableEFContextMocking ? string.init : "sealed ")partial class $(opts.contextName.cleanName()) : EfCoreDatabaseService<$(opts.contextName.cleanName())>");
 	}

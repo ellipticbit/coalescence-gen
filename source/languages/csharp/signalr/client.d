@@ -23,7 +23,7 @@ public void generateWebsocketClient(StringBuilder builder, WebsocketService s, u
 	foreach(ns; s.namespaces) {
 		if (ns.server.length != 0) {
 			builder.appendLine();
-			builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.5.0.0\")]");
+			builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"2.0.0.0\")]");
 			builder.tabs(tabLevel).appendLine(i"$(s.isPublic ? "public" : "internal") interface I$(cleanName(s.name))$(cleanName(ns.name))Server");
 			builder.tabs(tabLevel++).appendLine("{");
 			foreach(m; ns.server) {
@@ -32,7 +32,7 @@ public void generateWebsocketClient(StringBuilder builder, WebsocketService s, u
 			builder.tabs(--tabLevel).appendLine("}");
 			builder.appendLine();
 
-			builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.5.0.0\")]");
+			builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"2.0.0.0\")]");
 			builder.tabs(tabLevel).appendLine("[System.Diagnostics.DebuggerNonUserCode()]");
 			builder.tabs(tabLevel).appendLine(i"$(s.isPublic ? "public" : "internal") class $(cleanName(s.name))$(cleanName(ns.name))Server : I$(cleanName(s.name))$(cleanName(ns.name))Server");
 			builder.tabs(tabLevel++).appendLine("{");
@@ -54,7 +54,7 @@ public void generateWebsocketClient(StringBuilder builder, WebsocketService s, u
 
 		if (ns.client.length != 0) {
 			builder.appendLine();
-			builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.5.0.0\")]");
+			builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"2.0.0.0\")]");
 			builder.tabs(tabLevel).appendLine(i"$(s.isPublic ? "public" : "internal") interface I$(cleanName(s.name))$(cleanName(ns.name))Client");
 			builder.tabs(tabLevel++).appendLine("{");
 			foreach(m; ns.client) {
@@ -65,7 +65,7 @@ public void generateWebsocketClient(StringBuilder builder, WebsocketService s, u
 	}
 
 	builder.appendLine();
-	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.5.0.0\")]");
+	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"2.0.0.0\")]");
 	builder.tabs(tabLevel).appendLine(i"$(s.isPublic ? "public" : "internal") static class $(cleanName(s.name))ClientExtensions");
 	builder.tabs(tabLevel++).appendLine("{");
 	builder.tabs(tabLevel).append(i"public static void Register$(cleanName(s.name))ClientServices<");

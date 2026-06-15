@@ -12,7 +12,7 @@ import std.string;
 
 import sdlite;
 
-public const string appver = "1.5.3";
+public const string appver = "2.0.0";
 
 public __gshared int errorCount = 0;
 public __gshared int warnCount = 0;

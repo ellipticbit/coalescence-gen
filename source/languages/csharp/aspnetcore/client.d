@@ -24,7 +24,7 @@ public void generateHttpClient(StringBuilder builder, HttpService s, ushort tabL
 	builder.appendLine();
 	foreach(m; s.methods) {
 		if (m.query.length == 0 || m.queryAsParams) continue;
-		builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.5.0.0\")]");
+		builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"2.0.0.0\")]");
 		builder.tabs(tabLevel).appendLine("[System.Diagnostics.DebuggerNonUserCode()]");
 		builder.tabs(tabLevel).appendLine(i"public class $(m.name)Query : ICoalescenceParameters");
 		builder.tabs(tabLevel++).appendLine("{");
@@ -61,7 +61,7 @@ public void generateHttpClient(StringBuilder builder, HttpService s, ushort tabL
 	builder.appendLine();
 	foreach(m; s.methods) {
 		if (m.header.length == 0) continue;
-		builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.5.0.0\")]");
+		builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"2.0.0.0\")]");
 		builder.tabs(tabLevel).appendLine("[System.Diagnostics.DebuggerNonUserCode()]");
 		builder.tabs(tabLevel).appendLine(i"public class $(m.name)Header : ICoalescenceParameters");
 		builder.tabs(tabLevel++).appendLine("{");
@@ -95,7 +95,7 @@ public void generateHttpClient(StringBuilder builder, HttpService s, ushort tabL
 	}
 
 	builder.appendLine();
-	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.5.0.0\")]");
+	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"2.0.0.0\")]");
 	builder.tabs(tabLevel).appendLine(i"$(s.isPublic ? "public" : "internal") interface I$(s.name)");
 	builder.tabs(tabLevel++).appendLine("{");
 	foreach(m; s.methods) {
@@ -103,7 +103,7 @@ public void generateHttpClient(StringBuilder builder, HttpService s, ushort tabL
 	}
 	builder.tabs(--tabLevel).appendLine("}");
 	builder.appendLine();
-	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.5.0.0\")]");
+	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"2.0.0.0\")]");
 	builder.tabs(tabLevel).appendLine(i"$(s.isPublic ? "public" : "internal") sealed partial class $(s.name) : I$(s.name)");
 	builder.tabs(tabLevel++).appendLine("{");
 	builder.tabs(tabLevel).appendLine("private readonly ICoalescenceRequestFactory requests;");
