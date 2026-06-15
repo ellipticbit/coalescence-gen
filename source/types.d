@@ -376,5 +376,11 @@ public TypeComplex getTypeComplexFromSqlDbType(SqlDbType dbType, bool isNullable
 	if (dbType == SqlDbType.UniqueIdentifier) return new TypeComplex(name, "guid" ~ (isNullable ? "?" : string.init), Location(string.init,-1,-1,-1));
 	if (dbType == SqlDbType.Timestamp) return new TypeComplex(name, "[uint8]" ~ (isNullable ? "?" : string.init), Location(string.init,-1,-1,-1));
 	if (dbType == SqlDbType.Variant) return new TypeComplex(name, "stream" ~ (isNullable ? "?" : string.init), Location(string.init,-1,-1,-1));
+	if (dbType == SqlDbType.Json || dbType == SqlDbType.Jsonb) return new TypeComplex(name, "string" ~ (isNullable ? "?" : string.init), Location(string.init,-1,-1,-1));
+	if (dbType == SqlDbType.Interval) return new TypeComplex(name, "timespan" ~ (isNullable ? "?" : string.init), Location(string.init,-1,-1,-1));
+	if (dbType == SqlDbType.Inet || dbType == SqlDbType.Cidr || dbType == SqlDbType.MacAddr) return new TypeComplex(name, "string" ~ (isNullable ? "?" : string.init), Location(string.init,-1,-1,-1));
+	if (dbType == SqlDbType.Year) return new TypeComplex(name, "int16" ~ (isNullable ? "?" : string.init), Location(string.init,-1,-1,-1));
+	if (dbType == SqlDbType.Enum || dbType == SqlDbType.Set) return new TypeComplex(name, "string" ~ (isNullable ? "?" : string.init), Location(string.init,-1,-1,-1));
+	if (dbType == SqlDbType.Array) return new TypeComplex(name, "string" ~ (isNullable ? "?" : string.init), Location(string.init,-1,-1,-1));
 	return null;
 }

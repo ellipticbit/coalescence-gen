@@ -5,10 +5,11 @@ import coalescence.analyser;
 import coalescence.utility;
 
 import coalescence.database.mssql.schemareader;
+import coalescence.database.mysql.schemareader;
+import coalescence.database.postgresql.schemareader;
 
 import sdlite;
-import ddbc;
-import ddbc.drivers.odbcddbc;
+import phobos.database.sql;
 
 import std.algorithm.iteration;
 import std.algorithm.searching;
@@ -39,6 +40,8 @@ int main(string[] args)
 	string projectPath = string.init;
 	string rootDir = getcwd();
 	bool dbmssql = false;
+	bool dbmysql = false;
+	bool dbpostgresql = false;
 	string dbserver = string.init;
 	string dbname = string.init;
 	string dbuser = string.init;
@@ -49,6 +52,8 @@ int main(string[] args)
 		if (args[i].toUpper() == "--root-directory".toUpper() || args[i].toUpper() == "-rd".toUpper()) rootDir = args[++i];
 		if (args[i].toUpper() == "--project-file".toUpper() || args[i].toUpper() == "-pf".toUpper()) projectPath = args[++i];
 		if (args[i].toUpper() == "--db-mssql".toUpper()) dbmssql = true;
+		if (args[i].toUpper() == "--db-mysql".toUpper()) dbmysql = true;
+		if (args[i].toUpper() == "--db-postgresql".toUpper()) dbpostgresql = true;
 		if (args[i].toUpper() == "--db-server".toUpper()) dbserver = args[++i];
 		if (args[i].toUpper() == "--db-name".toUpper()) dbname = args[++i];
 		if (args[i].toUpper() == "--db-user".toUpper()) dbuser = args[++i];
@@ -90,17 +95,33 @@ int main(string[] args)
 	// Load schema from database if connection info is present.
 	Schema[] dbSchema;
 	if (dbserver != string.init && dbuser != string.init && dbpassword != string.init)  {
+		string connectionStr = string.init;
 		if (dbmssql) {
-			string connectionStr = "Driver={ODBC Driver 18 for SQL Server};Server=" ~ dbserver ~ ";UID=" ~ dbuser ~ ";PWD=" ~ dbpassword ~ ";Encrypt=Mandatory;TrustServerCertificate=Yes";
+			connectionStr = "Driver={ODBC Driver 18 for SQL Server};Server=" ~ dbserver ~ ";UID=" ~ dbuser ~ ";PWD=" ~ dbpassword ~ ";Encrypt=Mandatory;TrustServerCertificate=Yes";
 			if (dbname != string.init) connectionStr ~= ";Database=" ~ dbname;
+		} else if (dbmysql) {
+			connectionStr = "Driver={MySQL ODBC 8.0 Unicode Driver};Server=" ~ dbserver ~ ";User=" ~ dbuser ~ ";Password=" ~ dbpassword ~ ";";
+			if (dbname != string.init) connectionStr ~= "Database=" ~ dbname ~ ";";
+		} else if (dbpostgresql) {
+			connectionStr = "Driver={PostgreSQL Unicode};Server=" ~ dbserver ~ ";Uid=" ~ dbuser ~ ";Pwd=" ~ dbpassword ~ ";";
+			if (dbname != string.init) connectionStr ~= "Database=" ~ dbname ~ ";";
+		}
 
-			Connection connection = null;
+		if (connectionStr != string.init) {
+			if ((dbmysql || dbpostgresql) && dbname == string.init) {
+				writeln("ERROR: The --db-name parameter is required for MySQL and PostgreSQL.");
+				return 4;
+			}
+
+			SqlConnection connection = null;
 			int crc = 0;
 			while (connection is null && crc < 3) {
 				try {
 					writeln("Connecting to: " ~ dbserver ~ " - Attempt: " ~ to!string(++crc));
-					connection = new ODBCConnection(connectionStr);
+					connection = new SqlConnection(connectionStr);
+					connection.open();
 				} catch (Exception ex) {
+					connection = null;
 				}
 			}
 
@@ -113,9 +134,15 @@ int main(string[] args)
 				if (connection !is null) {
 					connection.close();
 				}
-			} 
+			}
 
-			dbSchema = readMssqlSchemata(connection);
+			if (dbmssql) {
+				dbSchema = readMssqlSchemata(connection);
+			} else if (dbmysql) {
+				dbSchema = readMysqlSchemata(connection, dbname);
+			} else if (dbpostgresql) {
+				dbSchema = readPostgresSchemata(connection);
+			}
 		}
 	}
 

@@ -23,6 +23,12 @@ public string getTypeFromSqlType(SqlDbType type, bool isNullable)
 	if (type == SqlDbType.UniqueIdentifier) return text(i"Guid$(isNullable ? "?" : "")");
 	if (type == SqlDbType.Timestamp) return "byte[]";
 	if (type == SqlDbType.Variant) return "object";
+	if (type == SqlDbType.Json || type == SqlDbType.Jsonb) return "System.Text.Json.JsonDocument";
+	if (type == SqlDbType.Interval) return text(i"TimeSpan$(isNullable ? "?" : "")");
+	if (type == SqlDbType.Inet || type == SqlDbType.Cidr || type == SqlDbType.MacAddr) return "string";
+	if (type == SqlDbType.Year) return text(i"short$(isNullable ? "?" : "")");
+	if (type == SqlDbType.Enum || type == SqlDbType.Set) return "string";
+	if (type == SqlDbType.Array) return "string";
 	return string.init;
 }
 
@@ -44,6 +50,9 @@ public string getValueTypeFromSqlType(SqlDbType type)
 	if (type == SqlDbType.UniqueIdentifier) return "DatabaseValueType.Guid";
 	if (type == SqlDbType.Timestamp) return "DatabaseValueType.ByteArray";
 	if (type == SqlDbType.Variant) return "DatabaseValueType.Object";
+	if (type == SqlDbType.Json || type == SqlDbType.Jsonb || type == SqlDbType.Inet || type == SqlDbType.Cidr || type == SqlDbType.MacAddr || type == SqlDbType.Enum || type == SqlDbType.Set || type == SqlDbType.Array) return "DatabaseValueType.String";
+	if (type == SqlDbType.Interval) return "DatabaseValueType.TimeSpan";
+	if (type == SqlDbType.Year) return "DatabaseValueType.Short";
 	return string.init;
 }
 

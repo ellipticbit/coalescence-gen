@@ -53,6 +53,17 @@ public enum SqlDbType {
 	VarChar,
 	Variant,
 	Xml,
+	// Cross-dialect extensions (MySQL/PostgreSQL)
+	Json,
+	Jsonb,
+	Interval,
+	Inet,
+	Cidr,
+	MacAddr,
+	Array,
+	Year,
+	Enum,
+	Set,
 }
 
 public bool isVariableLengthType(SqlDbType type)
@@ -62,7 +73,7 @@ public bool isVariableLengthType(SqlDbType type)
 
 public bool isScalarType(SqlDbType type)
 {
-	return !(type == SqlDbType.Binary || type == SqlDbType.VarBinary || type == SqlDbType.Char || type == SqlDbType.VarChar || type == SqlDbType.NChar || type == SqlDbType.NVarChar || type == SqlDbType.Image || type == SqlDbType.Text || type == SqlDbType.NText || type == SqlDbType.Timestamp || type == SqlDbType.Variant);
+	return !(type == SqlDbType.Binary || type == SqlDbType.VarBinary || type == SqlDbType.Char || type == SqlDbType.VarChar || type == SqlDbType.NChar || type == SqlDbType.NVarChar || type == SqlDbType.Image || type == SqlDbType.Text || type == SqlDbType.NText || type == SqlDbType.Timestamp || type == SqlDbType.Variant || type == SqlDbType.Json || type == SqlDbType.Jsonb || type == SqlDbType.Inet || type == SqlDbType.Cidr || type == SqlDbType.MacAddr || type == SqlDbType.Array || type == SqlDbType.Enum || type == SqlDbType.Set);
 }
 
 public abstract class LanguageExtensionBase
