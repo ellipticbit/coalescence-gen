@@ -100,13 +100,14 @@ public Schema[] readMysqlSchemata(SqlConnection conn, string dbname)
 
 	//Read stored procedures and functions
 	{
-		auto cmd = new SqlCommand(conn, i"SELECT ROUTINE_NAME FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_SCHEMA = $(dbname) ORDER BY ROUTINE_NAME");
+		auto cmd = new SqlCommand(conn, i"SELECT ROUTINE_NAME, ROUTINE_TYPE FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_SCHEMA = $(dbname) ORDER BY ROUTINE_NAME");
 		scope(exit) cmd.dispose();
 		auto rdr = cmd.executeDataReader();
 		scope(exit) rdr.close();
 		while (rdr.read())
 		{
 			auto np = new Procedure(s, nextId++, rdr.getString(0));
+			np.isFunction = (rdr.getString(1).toUpper() == "FUNCTION");
 			if ((np.name in s.procedures) is null) {
 				s.procedures[np.name] = np;
 			} else {

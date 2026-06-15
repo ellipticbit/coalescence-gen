@@ -1,0 +1,7 @@
+/plan The file dbcontext.d has been upgraded to use D's Interpolated Expression Syntax. Using the dbcontext.d file as an example, we would like to upgrade the remaining files in languages/csharp to use IES as well.
+
+/plan I have added a new Dependency to dub.sdl named "phobos-database-sql". This dependency is a replacement for the DDBC dependency that is used to access SQL databases. Please replace the DDBC usage in the mssql folder. Then once that is complete add similar schema readers for MySQL (and it's variants like MariaDB) and PostgreSQL in the database folder. Note that if a DB supports a database type not in the MSSQL T-SQL types, you can added them in types.d and the appropriate conversion to C# in language.d. This will likely be the case with Postgres.
+
+We need to clean up a couple of items from the last session. First, we need to resolve the T-SQL specific code generation items in dbcontext.d by keeping the T-SQL specific code when the database being used is a SQL Server database, this rule would also apply to any special cases for MySQL and PostgreSQL. Second we need to resolve the problem with Postgres typed array's. This will require editing the C# code generation when using Postgres as a database source. Assume standard EFCore using the npgsql driver library.
+
+Now we need to implement Stored Procedure method generation, similar to the SQL Server method generation, for PostgreSQL and MySQL. Assume npgsql for PostgreSQL and MariaDB/MySQL Connector for MySQL.

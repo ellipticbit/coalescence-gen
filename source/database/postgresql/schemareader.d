@@ -150,7 +150,7 @@ public Schema[] readPostgresSchemata(SqlConnection conn)
 private DataMember[] readColumns(DataObject t, SqlConnection conn)
 {
 	int oid = t.sqlId;
-	auto cmd = new SqlCommand(conn, i"SELECT a.attname, a.attnum, CASE WHEN ty.typtype = 'd' THEN bt.typname ELSE ty.typname END AS typname, a.attnotnull, a.atttypmod, COALESCE(pg_catalog.pg_get_expr(ad.adbin, ad.adrelid), '') AS adsrc, (ad.adbin IS NOT NULL) AS hasdefault, a.attidentity, a.attgenerated, CASE WHEN ty.typtype = 'd' THEN bt.typcategory ELSE ty.typcategory END AS typcat FROM pg_catalog.pg_attribute a INNER JOIN pg_catalog.pg_type ty ON ty.oid = a.atttypid LEFT JOIN pg_catalog.pg_type bt ON bt.oid = ty.typbasetype LEFT JOIN pg_catalog.pg_attrdef ad ON ad.adrelid = a.attrelid AND ad.adnum = a.attnum WHERE a.attrelid = $(oid) AND a.attnum > 0 AND NOT a.attisdropped ORDER BY a.attnum");
+	auto cmd = new SqlCommand(conn, i"SELECT a.attname, a.attnum, CASE WHEN ty.typtype = 'd' THEN bt.typname ELSE ty.typname END AS typname, a.attnotnull, a.atttypmod, COALESCE(pg_catalog.pg_get_expr(ad.adbin, ad.adrelid), '') AS adsrc, (ad.adbin IS NOT NULL) AS hasdefault, a.attidentity, a.attgenerated, CASE WHEN ty.typtype = 'd' THEN bt.typcategory ELSE ty.typcategory END AS typcat, et.typname AS elemtypname FROM pg_catalog.pg_attribute a INNER JOIN pg_catalog.pg_type ty ON ty.oid = a.atttypid LEFT JOIN pg_catalog.pg_type bt ON bt.oid = ty.typbasetype LEFT JOIN pg_catalog.pg_type et ON et.oid = (CASE WHEN ty.typtype = 'd' THEN bt.typelem ELSE ty.typelem END) LEFT JOIN pg_catalog.pg_attrdef ad ON ad.adrelid = a.attrelid AND ad.adnum = a.attnum WHERE a.attrelid = $(oid) AND a.attnum > 0 AND NOT a.attisdropped ORDER BY a.attnum");
 	scope(exit) cmd.dispose();
 	auto crdr = cmd.executeDataReader();
 	scope(exit) crdr.close();
@@ -167,6 +167,7 @@ private DataMember[] readColumns(DataObject t, SqlConnection conn)
 		string identity = crdr.isNull(7) ? string.init : crdr.getString(7);
 		string generated = crdr.isNull(8) ? string.init : crdr.getString(8);
 		string typcat = crdr.isNull(9) ? string.init : crdr.getString(9);
+		string elemtypname = crdr.isNull(10) ? string.init : crdr.getString(10);
 
 		SqlDbType sqlType = (typcat == "A") ? SqlDbType.Array : parsePostgresDbType(typname);
 
@@ -178,7 +179,7 @@ private DataMember[] readColumns(DataObject t, SqlConnection conn)
 		bool isIdentity = identity == "a" || identity == "d" || adsrc.canFind("nextval(");
 		bool isComputed = generated == "s";
 
-		cl ~= new DataMember(t,
+		auto dm = new DataMember(t,
 			attnum,
 			crdr.getString(0),
 			sqlType,
@@ -191,6 +192,9 @@ private DataMember[] readColumns(DataObject t, SqlConnection conn)
 			isIdentity,
 			isComputed
 		);
+		if (sqlType == SqlDbType.Array)
+			dm.arrayElementType = parsePostgresDbType(elemtypname);
+		cl ~= dm;
 	}
 	return cl;
 }
@@ -305,6 +309,7 @@ private void readRoutines(Schema s, string[int] oidTypeName, SqlConnection conn)
 
 		if ((pname in s.procedures) !is null) continue; // overloaded; keep first
 		auto np = new Procedure(s, poid, pname);
+		np.isFunction = (prokind != "p");
 		s.procedures[np.name] = np;
 
 		int[] typeOids = allargtypes.length != 0 ? parseIntArray(allargtypes) : parseIntVector(argtypes);

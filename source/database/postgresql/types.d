@@ -66,3 +66,48 @@ public ParameterDirection parsePostgresParameterDirection(string mode)
 		default: return ParameterDirection.Input;    // 'i' IN / 'v' VARIADIC
 	}
 }
+
+// Maps a cross-dialect SqlDbType onto the NpgsqlTypes.NpgsqlDbType member name
+// used when binding parameters in generated Npgsql code.
+public string getNpgsqlDbType(SqlDbType type)
+{
+	switch (type)
+	{
+		case SqlDbType.Bit: return "Boolean";
+		case SqlDbType.TinyInt: return "Smallint";
+		case SqlDbType.SmallInt: return "Smallint";
+		case SqlDbType.Year: return "Smallint";
+		case SqlDbType.Int: return "Integer";
+		case SqlDbType.BigInt: return "Bigint";
+		case SqlDbType.Real: return "Real";
+		case SqlDbType.Float: return "Double";
+		case SqlDbType.Decimal: return "Numeric";
+		case SqlDbType.Money: return "Money";
+		case SqlDbType.SmallMoney: return "Money";
+		case SqlDbType.Char: return "Char";
+		case SqlDbType.NChar: return "Char";
+		case SqlDbType.VarChar: return "Varchar";
+		case SqlDbType.NVarChar: return "Varchar";
+		case SqlDbType.Text: return "Text";
+		case SqlDbType.NText: return "Text";
+		case SqlDbType.Binary: return "Bytea";
+		case SqlDbType.VarBinary: return "Bytea";
+		case SqlDbType.Image: return "Bytea";
+		case SqlDbType.Date: return "Date";
+		case SqlDbType.Time: return "Time";
+		case SqlDbType.DateTime: return "Timestamp";
+		case SqlDbType.DateTime2: return "Timestamp";
+		case SqlDbType.SmallDateTime: return "Timestamp";
+		case SqlDbType.Timestamp: return "Timestamp";
+		case SqlDbType.DateTimeOffset: return "TimestampTz";
+		case SqlDbType.UniqueIdentifier: return "Uuid";
+		case SqlDbType.Json: return "Json";
+		case SqlDbType.Jsonb: return "Jsonb";
+		case SqlDbType.Xml: return "Xml";
+		case SqlDbType.Interval: return "Interval";
+		case SqlDbType.Inet: return "Inet";
+		case SqlDbType.Cidr: return "Cidr";
+		case SqlDbType.MacAddr: return "MacAddr";
+		default: return "Unknown";
+	}
+}

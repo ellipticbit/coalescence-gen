@@ -32,6 +32,19 @@ public string getTypeFromSqlType(SqlDbType type, bool isNullable)
 	return string.init;
 }
 
+// Resolves the C# type for a database column, accounting for array columns
+// (e.g. PostgreSQL/Npgsql native arrays) which map to a CLR array of the
+// element type rather than a scalar.
+public string getTypeFromSqlMember(DataMember mm)
+{
+	if (mm.sqlType == SqlDbType.Array) {
+		string elem = getTypeFromSqlType(mm.arrayElementType, false);
+		if (elem.length == 0) elem = "string";
+		return text(i"$(elem)[]");
+	}
+	return getTypeFromSqlType(mm.sqlType, mm.isNullable);
+}
+
 public string getValueTypeFromSqlType(SqlDbType type)
 {
 	if (type == SqlDbType.Bit) return "DatabaseValueType.Bool";

@@ -14,6 +14,18 @@ import sdlite;
 
 public const string appver = "2.0.0";
 
+public enum DatabaseProvider {
+	None,
+	SqlServer,
+	MySql,
+	PostgreSql,
+}
+
+// The database engine the schema was read from. Drives provider-specific code
+// generation (e.g. T-SQL column types and stored-procedure wrappers for SQL
+// Server, native array types for PostgreSQL/Npgsql).
+public __gshared DatabaseProvider databaseProvider = DatabaseProvider.None;
+
 public __gshared int errorCount = 0;
 public __gshared int warnCount = 0;
 

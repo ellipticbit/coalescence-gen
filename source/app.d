@@ -137,10 +137,13 @@ int main(string[] args)
 			}
 
 			if (dbmssql) {
+				databaseProvider = DatabaseProvider.SqlServer;
 				dbSchema = readMssqlSchemata(connection);
 			} else if (dbmysql) {
+				databaseProvider = DatabaseProvider.MySql;
 				dbSchema = readMysqlSchemata(connection, dbname);
 			} else if (dbpostgresql) {
+				databaseProvider = DatabaseProvider.PostgreSql;
 				dbSchema = readPostgresSchemata(connection);
 			}
 		}

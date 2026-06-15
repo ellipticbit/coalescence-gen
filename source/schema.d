@@ -493,6 +493,8 @@ public final class DataMember
 	public int sqlId;
 	public string sqlName;
 	public SqlDbType sqlType;
+	// Element type for SqlDbType.Array columns (e.g. PostgreSQL `integer[]`).
+	public SqlDbType arrayElementType = SqlDbType.None;
 
 	private bool isUserKey;
 	public bool isNullable;
@@ -671,6 +673,10 @@ public class Procedure
 	public int sqlId;
 	public string name;
 	public string sqlName;
+	// True when the routine is a database function (called via SELECT) rather
+	// than a procedure (called via CALL / CommandType.StoredProcedure). Used to
+	// pick the correct invocation style during code generation.
+	public bool isFunction = false;
 
 	public Parameter[] parameters;
 

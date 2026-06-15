@@ -66,3 +66,45 @@ public ParameterDirection parseMysqlParameterDirection(string mode)
 		default: return ParameterDirection.Input;
 	}
 }
+
+// Maps a cross-dialect SqlDbType onto the MySqlConnector.MySqlDbType member
+// name used when binding parameters in generated MySqlConnector code.
+public string getMySqlDbType(SqlDbType type)
+{
+	switch (type)
+	{
+		case SqlDbType.Bit: return "Bit";
+		case SqlDbType.TinyInt: return "Byte";
+		case SqlDbType.SmallInt: return "Int16";
+		case SqlDbType.Int: return "Int32";
+		case SqlDbType.BigInt: return "Int64";
+		case SqlDbType.Real: return "Float";
+		case SqlDbType.Float: return "Double";
+		case SqlDbType.Decimal: return "Decimal";
+		case SqlDbType.Money: return "Decimal";
+		case SqlDbType.SmallMoney: return "Decimal";
+		case SqlDbType.Char: return "String";
+		case SqlDbType.NChar: return "String";
+		case SqlDbType.VarChar: return "VarChar";
+		case SqlDbType.NVarChar: return "VarChar";
+		case SqlDbType.Text: return "Text";
+		case SqlDbType.NText: return "Text";
+		case SqlDbType.Binary: return "Binary";
+		case SqlDbType.VarBinary: return "VarBinary";
+		case SqlDbType.Image: return "Blob";
+		case SqlDbType.Date: return "Date";
+		case SqlDbType.DateTime: return "DateTime";
+		case SqlDbType.DateTime2: return "DateTime";
+		case SqlDbType.SmallDateTime: return "DateTime";
+		case SqlDbType.DateTimeOffset: return "DateTime";
+		case SqlDbType.Time: return "Time";
+		case SqlDbType.Timestamp: return "Timestamp";
+		case SqlDbType.Year: return "Year";
+		case SqlDbType.UniqueIdentifier: return "Guid";
+		case SqlDbType.Json: return "JSON";
+		case SqlDbType.Jsonb: return "JSON";
+		case SqlDbType.Enum: return "Enum";
+		case SqlDbType.Set: return "Set";
+		default: return "VarChar";
+	}
+}

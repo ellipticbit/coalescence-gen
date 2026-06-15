@@ -294,7 +294,7 @@ public void generateDataTable(Table table, StringBuilder builder, CSharpProjectO
 		builder.tabs(tabLevel++).appendLine(i"void IDatabaseMergeable<$(table.name)>.ApplyConflictResolutions(DataConflictResolution[] resolutions) {");
 		builder.tabs(tabLevel++).appendLine("foreach(var r in resolutions) {");
 		foreach (c; table.members.filter!(a => a.sqlType != SqlDbType.Timestamp && !a.isIdentity && !a.isComputed)) {
-			builder.tabs(tabLevel).appendLine(i"if (r.Name.Equals(\"$(c.name)\", StringComparison.OrdinalIgnoreCase)) this.$(c.name) = ($(getTypeFromSqlType(c.sqlType, c.isNullable)))r.Resolved;");
+			builder.tabs(tabLevel).appendLine(i"if (r.Name.Equals(\"$(c.name)\", StringComparison.OrdinalIgnoreCase)) this.$(c.name) = ($(getTypeFromSqlMember(c)))r.Resolved;");
 		}
 		builder.tabs(--tabLevel).appendLine("}");
 		builder.tabs(--tabLevel).appendLine("}");
@@ -387,12 +387,12 @@ private void generateDataSqlMember(DataMember mm, StringBuilder builder, CSharpP
 	builder.appendLine();
 	builder.generateBindingMetadata(mm, opts, tabLevel, false);
 	if (opts.changeTracking) {
-		builder.tabs(tabLevel).appendLine(i"private readonly TrackingValue<$(getTypeFromSqlType(mm.sqlType, mm.isNullable))> $(getFieldName(mm.name));");
+		builder.tabs(tabLevel).appendLine(i"private readonly TrackingValue<$(getTypeFromSqlMember(mm))> $(getFieldName(mm.name));");
 	} else {
-		builder.tabs(tabLevel).appendLine(i"private $(getTypeFromSqlType(mm.sqlType, mm.isNullable)) $(getFieldName(mm.name))$((mm.hasDefault && mm.sqlType == SqlDbType.Bit) ? " = " ~ getMssqlDefaultValue(mm) : string.init);");
+		builder.tabs(tabLevel).appendLine(i"private $(getTypeFromSqlMember(mm)) $(getFieldName(mm.name))$((mm.hasDefault && mm.sqlType == SqlDbType.Bit) ? " = " ~ getMssqlDefaultValue(mm) : string.init);");
 	}
 	builder.generateBindingMetadata(mm, opts, tabLevel, true);
-	builder.tabs(tabLevel).appendLine(i"public $(getTypeFromSqlType(mm.sqlType, mm.isNullable)) $(mm.name) { get => $(getFieldName(mm.name))$(opts.changeTracking ? ".Value" : string.init); $(mm.isReadOnly ? "private " : string.init)set => $(generateSetter(getFieldName(mm.name), opts, false)); }");
+	builder.tabs(tabLevel).appendLine(i"public $(getTypeFromSqlMember(mm)) $(mm.name) { get => $(getFieldName(mm.name))$(opts.changeTracking ? ".Value" : string.init); $(mm.isReadOnly ? "private " : string.init)set => $(generateSetter(getFieldName(mm.name), opts, false)); }");
 }
 
 private void generateBindingMetadata(StringBuilder builder, DataMember mm, CSharpProjectOptions opts, ushort tabLevel, bool isProperty) {
