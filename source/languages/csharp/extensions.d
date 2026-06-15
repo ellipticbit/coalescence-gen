@@ -1,7 +1,6 @@
 module coalescence.languages.csharp.extensions;
 
 import coalescence.schema;
-import coalescence.stringbuilder;
 import coalescence.utility;
 import coalescence.globals;
 
@@ -15,7 +14,29 @@ import std.typecons;
 import std.stdio;
 import std.string;
 
+import phobos.text.stringbuilder;
+
 import sdlite;
+
+public @safe StringBuilder tabs(StringBuilder builder, uint count, bool useSpaces = false, int tabSpaces = 4)
+{
+	if(useSpaces) {
+		char[] tabs = new char[count * tabSpaces];
+		for(uint i = 0; i < (count * tabSpaces); i++) {
+			tabs[i] = ' ';
+		}
+		builder.append(to!string(tabs));
+	}
+	else {
+		char[] tabs = new char[count];
+		for(uint i = 0; i < count; i++) {
+			tabs[i] = '\t';
+		}
+		builder.append(to!string(tabs));
+	}
+
+	return builder;
+}
 
 public enum CSharpSerializers {
 	SystemTextJson,
@@ -97,6 +118,10 @@ public final class CSharpProjectOptions {
 	}
 
 	public void writeFile(StringBuilder builder, string schemaName, string fileName = string.init) {
+		writeFile(builder.toString(), schemaName, fileName);
+	}
+
+	public void writeFile(string fileData, string schemaName, string fileName = string.init) {
 		if (outputMode == CSharpOutputMode.FilePerObject && fileName != string.init) {
 			string outDir = buildNormalizedPath(outputPath, schemaName);
 			if(!exists(outDir)) {
@@ -106,7 +131,7 @@ public final class CSharpProjectOptions {
 			string op = setExtension(buildNormalizedPath(outDir, fileName.uppercaseFirst()), ".cs");
 			writeln("Output:\t" ~ op);
 			auto fsfile = File(op, "w");
-			fsfile.write(builder);
+			fsfile.write(fileData);
 			fsfile.close();
 		} else {
 			string outDir = buildNormalizedPath(outputPath);
@@ -117,7 +142,7 @@ public final class CSharpProjectOptions {
 			string op = setExtension(buildNormalizedPath(outDir, schemaName.uppercaseFirst()), ".cs");
 			writeln("Output:\t" ~ op);
 			auto fsfile = File(op, "w");
-			fsfile.write(builder);
+			fsfile.write(fileData);
 			fsfile.close();
 		}
 	}

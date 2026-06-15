@@ -3,7 +3,7 @@ module coalescence.languages.csharp.generator;
 import coalescence.globals;
 import coalescence.types;
 import coalescence.schema;
-import coalescence.stringbuilder;
+import phobos.text.stringbuilder;
 import coalescence.utility;
 
 import coalescence.languages.csharp.enums;
@@ -16,6 +16,7 @@ import coalescence.languages.csharp.signalr.client;
 import coalescence.languages.csharp.efcore.dbcontext;
 
 import std.algorithm.searching;
+import std.conv;
 import std.path;
 import std.stdio;
 import std.uni;
@@ -83,7 +84,7 @@ public void generateCSharp(Project prj, CSharpProjectOptions opts)
 private void generateSchemaServer(Schema ns, StringBuilder schemaBuilder, Project prj, CSharpProjectOptions opts)
 {
 	if (opts.outputMode != CSharpOutputMode.FilePerObject) {
-		schemaBuilder.appendLine("namespace {0}", ns.getCSharpFqn(opts));
+		schemaBuilder.appendLine(i"namespace $(ns.getCSharpFqn(opts))");
 		schemaBuilder.appendLine("{");
 		foreach(e; ns.enums.values) {
 			generateEnum(e, schemaBuilder, opts, 1);
@@ -112,7 +113,7 @@ private void generateSchemaServer(Schema ns, StringBuilder schemaBuilder, Projec
 	} else {
 		foreach(e; ns.enums.values) {
 			auto builder = new StringBuilder(4_096);
-			builder.appendLine("namespace {0}", ns.getCSharpFqn(opts));
+			builder.appendLine(i"namespace $(ns.getCSharpFqn(opts))");
 			builder.appendLine("{");
 			generateEnum(e, builder, opts, 1);
 			builder.appendLine("}");
@@ -122,7 +123,7 @@ private void generateSchemaServer(Schema ns, StringBuilder schemaBuilder, Projec
 		foreach(d; ns.tables.values) {
 			auto builder = new StringBuilder(16_384);
 			builder.generateUsingsServerData(opts);
-			builder.appendLine("namespace {0}", ns.getCSharpFqn(opts));
+			builder.appendLine(i"namespace $(ns.getCSharpFqn(opts))");
 			builder.appendLine("{");
 			generateDataTable(d, builder, opts, prj, false, 1);
 			builder.appendLine("}");
@@ -132,7 +133,7 @@ private void generateSchemaServer(Schema ns, StringBuilder schemaBuilder, Projec
 		foreach(d; ns.views.values) {
 			auto builder = new StringBuilder(16_384);
 			builder.generateUsingsServerData(opts);
-			builder.appendLine("namespace {0}", ns.getCSharpFqn(opts));
+			builder.appendLine(i"namespace $(ns.getCSharpFqn(opts))");
 			builder.appendLine("{");
 			generateDataView(d, builder, opts, false, 1);
 			builder.appendLine("}");
@@ -142,7 +143,7 @@ private void generateSchemaServer(Schema ns, StringBuilder schemaBuilder, Projec
 		foreach(d; ns.udts.values) {
 			auto builder = new StringBuilder(16_384);
 			builder.generateUsingsServerData(opts);
-			builder.appendLine("namespace {0}", ns.getCSharpFqn(opts));
+			builder.appendLine(i"namespace $(ns.getCSharpFqn(opts))");
 			builder.appendLine("{");
 			generateDataUdt(d, builder, opts, false, 1);
 			builder.appendLine("}");
@@ -153,7 +154,7 @@ private void generateSchemaServer(Schema ns, StringBuilder schemaBuilder, Projec
 			foreach(d; ns.network.values) {
 				auto builder = new StringBuilder(16_384);
 				builder.generateUsingsServerData(opts);
-				builder.appendLine("namespace {0}", ns.getCSharpFqn(opts));
+				builder.appendLine(i"namespace $(ns.getCSharpFqn(opts))");
 				builder.appendLine("{");
 				generateDataNetwork(d, builder, opts, false, 1);
 				builder.appendLine("}");
@@ -163,7 +164,7 @@ private void generateSchemaServer(Schema ns, StringBuilder schemaBuilder, Projec
 			foreach(s; ns.services.values) {
 				auto builder = new StringBuilder(32_768);
 				builder.generateUsingsServerHttp();
-				builder.appendLine("namespace {0}", ns.getCSharpFqn(opts));
+				builder.appendLine(i"namespace $(ns.getCSharpFqn(opts))");
 				builder.appendLine("{");
 				generateHttpServer(builder, s, 1);
 				builder.appendLine("}");
@@ -173,7 +174,7 @@ private void generateSchemaServer(Schema ns, StringBuilder schemaBuilder, Projec
 			foreach(s; ns.sockets.values) {
 				auto builder = new StringBuilder(32_768);
 				builder.generateUsingsServerSocket();
-				builder.appendLine("namespace {0}", ns.getCSharpFqn(opts));
+				builder.appendLine(i"namespace $(ns.getCSharpFqn(opts))");
 				builder.appendLine("{");
 				generateWebsocketServer(builder, s, 1);
 				builder.appendLine("}");
@@ -187,7 +188,7 @@ private void generateSchemaServer(Schema ns, StringBuilder schemaBuilder, Projec
 private void generateSchemaClient(Schema ns, StringBuilder schemaBuilder, Project prj, CSharpProjectOptions opts)
 {
 	if (opts.outputMode != CSharpOutputMode.FilePerObject) {
-		schemaBuilder.appendLine("namespace {0}", ns.getCSharpFqn(opts));
+		schemaBuilder.appendLine(i"namespace $(ns.getCSharpFqn(opts))");
 		schemaBuilder.appendLine("{");
 		foreach(e; ns.enums.values) {
 			generateEnum(e, schemaBuilder, opts, 1);
@@ -216,7 +217,7 @@ private void generateSchemaClient(Schema ns, StringBuilder schemaBuilder, Projec
 	} else {
 		foreach(e; ns.enums.values) {
 			auto builder = new StringBuilder(4_096);
-			builder.appendLine("namespace {0}", ns.getCSharpFqn(opts));
+			builder.appendLine(i"namespace $(ns.getCSharpFqn(opts))");
 			builder.appendLine("{");
 			generateEnum(e, builder, opts, 1);
 			builder.appendLine("}");
@@ -226,7 +227,7 @@ private void generateSchemaClient(Schema ns, StringBuilder schemaBuilder, Projec
 		foreach(d; ns.tables.values) {
 			auto builder = new StringBuilder(16_384);
 			builder.generateUsingsClientData(opts);
-			builder.appendLine("namespace {0}", ns.getCSharpFqn(opts));
+			builder.appendLine(i"namespace $(ns.getCSharpFqn(opts))");
 			builder.appendLine("{");
 			generateDataTable(d, builder, opts, prj, true, 1);
 			builder.appendLine("}");
@@ -236,7 +237,7 @@ private void generateSchemaClient(Schema ns, StringBuilder schemaBuilder, Projec
 		foreach(d; ns.views.values) {
 			auto builder = new StringBuilder(16_384);
 			builder.generateUsingsClientData(opts);
-			builder.appendLine("namespace {0}", ns.getCSharpFqn(opts));
+			builder.appendLine(i"namespace $(ns.getCSharpFqn(opts))");
 			builder.appendLine("{");
 			generateDataView(d, builder, opts, true, 1);
 			builder.appendLine("}");
@@ -246,7 +247,7 @@ private void generateSchemaClient(Schema ns, StringBuilder schemaBuilder, Projec
 		foreach(d; ns.udts.values) {
 			auto builder = new StringBuilder(16_384);
 			builder.generateUsingsClientData(opts);
-			builder.appendLine("namespace {0}", ns.getCSharpFqn(opts));
+			builder.appendLine(i"namespace $(ns.getCSharpFqn(opts))");
 			builder.appendLine("{");
 			generateDataUdt(d, builder, opts, true, 1);
 			builder.appendLine("}");
@@ -257,7 +258,7 @@ private void generateSchemaClient(Schema ns, StringBuilder schemaBuilder, Projec
 			foreach(d; ns.network.values) {
 				auto builder = new StringBuilder(16_384);
 				builder.generateUsingsClientData(opts);
-				builder.appendLine("namespace {0}", ns.getCSharpFqn(opts));
+				builder.appendLine(i"namespace $(ns.getCSharpFqn(opts))");
 				builder.appendLine("{");
 				generateDataNetwork(d, builder, opts, true, 1);
 				builder.appendLine("}");
@@ -267,7 +268,7 @@ private void generateSchemaClient(Schema ns, StringBuilder schemaBuilder, Projec
 			foreach(s; ns.services.values) {
 				auto builder = new StringBuilder(32_768);
 				builder.generateUsingsClientHttp();
-				builder.appendLine("namespace {0}", ns.getCSharpFqn(opts));
+				builder.appendLine(i"namespace $(ns.getCSharpFqn(opts))");
 				builder.appendLine("{");
 				generateHttpClient(builder, s, 1);
 				builder.appendLine("}");
@@ -277,7 +278,7 @@ private void generateSchemaClient(Schema ns, StringBuilder schemaBuilder, Projec
 			foreach(s; ns.sockets.values) {
 				auto builder = new StringBuilder(32_768);
 				builder.generateUsingsClientSocket();
-				builder.appendLine("namespace {0}", ns.getCSharpFqn(opts));
+				builder.appendLine(i"namespace $(ns.getCSharpFqn(opts))");
 				builder.appendLine("{");
 				generateWebsocketClient(builder, s, 1);
 				builder.appendLine("}");
@@ -481,16 +482,16 @@ public void generateAuthorization(StringBuilder builder, immutable(AspNetCoreAut
 	} else if (authenticate && auth !is null) {
 		if (auth.requireAllRoles) {
 			foreach(r; auth.roles) {
-				builder.tabs(tabLevel).appendLine("[Authorize(Roles = \"{0}\")]", r);
+				builder.tabs(tabLevel).appendLine(i"[Authorize(Roles = \"$(r)\")]");
 			}
 		} else if (auth.roles.length > 0) {
-			builder.tabs(tabLevel).appendLine("[Authorize(Roles = \"{0}\")]", auth.roles.join(","));
+			builder.tabs(tabLevel).appendLine(i"[Authorize(Roles = \"$(auth.roles.join(","))\")]");
 		}
 		if (auth.schemes.length > 0) {
-			builder.tabs(tabLevel).appendLine("[Authorize(AuthenticationSchemes = \"{0}\")]", auth.schemes.join(","));
+			builder.tabs(tabLevel).appendLine(i"[Authorize(AuthenticationSchemes = \"$(auth.schemes.join(","))\")]");
 		}
 		if (auth.policy != string.init) {
-			builder.tabs(tabLevel).appendLine("[Authorize(Policy = \"{0}\")]", auth.policy);
+			builder.tabs(tabLevel).appendLine(i"[Authorize(Policy = \"$(auth.policy)\")]");
 		}
 	}
 }
@@ -499,24 +500,24 @@ public string generateType(TypeComplex type, bool base64external = false, bool f
 {
 	if (typeid(type.type) == typeid(TypePrimitive)) {
 		TypePrimitive p = cast(TypePrimitive)type.type;
-		if(p.primitive == TypePrimitives.Boolean) return "bool" ~ (type.nullable || forceOptional ? "?" : string.init);
-		else if(p.primitive == TypePrimitives.UInt8) return "byte" ~ (type.nullable || forceOptional ? "?" : string.init);
-		else if(p.primitive == TypePrimitives.Int8) return "sbyte" ~ (type.nullable || forceOptional ? "?" : string.init);
-		else if(p.primitive == TypePrimitives.UInt16) return "ushort" ~ (type.nullable || forceOptional ? "?" : string.init);
-		else if(p.primitive == TypePrimitives.Int16) return "short" ~ (type.nullable || forceOptional ? "?" : string.init);
-		else if(p.primitive == TypePrimitives.UInt32) return "uint" ~ (type.nullable || forceOptional ? "?" : string.init);
-		else if(p.primitive == TypePrimitives.Int32) return "int" ~ (type.nullable || forceOptional ? "?" : string.init);
-		else if(p.primitive == TypePrimitives.UInt64) return "ulong" ~ (type.nullable || forceOptional ? "?" : string.init);
-		else if(p.primitive == TypePrimitives.Int64) return "long" ~ (type.nullable || forceOptional ? "?" : string.init);
-		else if(p.primitive == TypePrimitives.Float) return "float" ~ (type.nullable || forceOptional ? "?" : string.init);
-		else if(p.primitive == TypePrimitives.Double) return "double" ~ (type.nullable || forceOptional ? "?" : string.init);
-		else if(p.primitive == TypePrimitives.Fixed) return "decimal" ~ (type.nullable || forceOptional ? "?" : string.init);
+		if(p.primitive == TypePrimitives.Boolean) return text(i"bool$(type.nullable || forceOptional ? "?" : string.init)");
+		else if(p.primitive == TypePrimitives.UInt8) return text(i"byte$(type.nullable || forceOptional ? "?" : string.init)");
+		else if(p.primitive == TypePrimitives.Int8) return text(i"sbyte$(type.nullable || forceOptional ? "?" : string.init)");
+		else if(p.primitive == TypePrimitives.UInt16) return text(i"ushort$(type.nullable || forceOptional ? "?" : string.init)");
+		else if(p.primitive == TypePrimitives.Int16) return text(i"short$(type.nullable || forceOptional ? "?" : string.init)");
+		else if(p.primitive == TypePrimitives.UInt32) return text(i"uint$(type.nullable || forceOptional ? "?" : string.init)");
+		else if(p.primitive == TypePrimitives.Int32) return text(i"int$(type.nullable || forceOptional ? "?" : string.init)");
+		else if(p.primitive == TypePrimitives.UInt64) return text(i"ulong$(type.nullable || forceOptional ? "?" : string.init)");
+		else if(p.primitive == TypePrimitives.Int64) return text(i"long$(type.nullable || forceOptional ? "?" : string.init)");
+		else if(p.primitive == TypePrimitives.Float) return text(i"float$(type.nullable || forceOptional ? "?" : string.init)");
+		else if(p.primitive == TypePrimitives.Double) return text(i"double$(type.nullable || forceOptional ? "?" : string.init)");
+		else if(p.primitive == TypePrimitives.Fixed) return text(i"decimal$(type.nullable || forceOptional ? "?" : string.init)");
 		else if(p.primitive == TypePrimitives.String || p.primitive == TypePrimitives.Base64String) return "string";
 		else if(p.primitive == TypePrimitives.Base64ByteArray) return base64external ? "byte[]" : "string";
-		else if(p.primitive == TypePrimitives.DateTime) return "DateTime" ~ (type.nullable || forceOptional ? "?" : string.init);
-		else if(p.primitive == TypePrimitives.DateTimeTz) return "DateTimeOffset" ~ (type.nullable || forceOptional ? "?" : string.init);
-		else if(p.primitive == TypePrimitives.TimeSpan) return "TimeSpan" ~ (type.nullable || forceOptional ? "?" : string.init);
-		else if(p.primitive == TypePrimitives.Guid) return "Guid" ~ (type.nullable || forceOptional ? "?" : string.init);
+		else if(p.primitive == TypePrimitives.DateTime) return text(i"DateTime$(type.nullable || forceOptional ? "?" : string.init)");
+		else if(p.primitive == TypePrimitives.DateTimeTz) return text(i"DateTimeOffset$(type.nullable || forceOptional ? "?" : string.init)");
+		else if(p.primitive == TypePrimitives.TimeSpan) return text(i"TimeSpan$(type.nullable || forceOptional ? "?" : string.init)");
+		else if(p.primitive == TypePrimitives.Guid) return text(i"Guid$(type.nullable || forceOptional ? "?" : string.init)");
 	}
 
 	else if(typeid(type.type) == typeid(TypeVoid)) {
@@ -537,24 +538,24 @@ public string generateType(TypeComplex type, bool base64external = false, bool f
 
 	else if(typeid(type.type) == typeid(TypeCollection)) {
 		TypeCollection t = cast(TypeCollection)(type.type);
-		if (isTracking) return "ObservableCollection<" ~ generateType(t.collectionType, base64external, forceOptional) ~ ">";
-		return "List<" ~ generateType(t.collectionType, base64external, forceOptional) ~ ">";
+		if (isTracking) return text(i"ObservableCollection<$(generateType(t.collectionType, base64external, forceOptional))>");
+		return text(i"List<$(generateType(t.collectionType, base64external, forceOptional))>");
 	}
 
 	else if(typeid(type.type) == typeid(TypeDictionary)) {
 		TypeDictionary t = cast(TypeDictionary)(type.type);
-		return "Dictionary<" ~ generateType(t.keyType, base64external, forceOptional) ~ ", " ~ generateType(t.valueType, base64external, forceOptional) ~ ">";
+		return text(i"Dictionary<$(generateType(t.keyType, base64external, forceOptional)), $(generateType(t.valueType, base64external, forceOptional))>");
 	}
 
 	else if(typeid(type.type) == typeid(TypeEnum)) {
 		TypeEnum t = cast(TypeEnum)(type.type);
-		return t.definition.parent.name.uppercaseFirst() ~ "." ~ t.definition.name ~ (type.nullable ? "?" : "");
+		return text(i"$(t.definition.parent.name.uppercaseFirst()).$(t.definition.name)$(type.nullable ? "?" : "")");
 		//return t.definition.getCSharpFqn() ~ (type.nullable ? "?" : "");
 	}
 
 	else if(typeid(type.type) == typeid(TypeModel)) {
 		TypeModel t = cast(TypeModel)(type.type);
-		return t.definition.parent.name.uppercaseFirst() ~ "." ~ t.definition.name;
+		return text(i"$(t.definition.parent.name.uppercaseFirst()).$(t.definition.name)");
 		//return t.definition.getCSharpFqn();
 	}
 
@@ -564,22 +565,22 @@ public string generateType(TypeComplex type, bool base64external = false, bool f
 public string getStringConversion(TypeComplex type, string name) {
 	if (typeid(type.type) == typeid(TypePrimitive)) {
 		TypePrimitive p = cast(TypePrimitive)type.type;
-		if(p.primitive == TypePrimitives.Boolean) return StringBuilder.format("Convert.ToBoolean({0}{1})", name, type.nullable ? "?? " ~ getDefaultValue(type) : string.init);
-		if(p.primitive == TypePrimitives.UInt8) return StringBuilder.format("Convert.ToByte({0}{1})", name, type.nullable ? "?? " ~ getDefaultValue(type) : string.init);
-		if(p.primitive == TypePrimitives.Int8) return StringBuilder.format("Convert.ToSByte({0}{1})", name, type.nullable ? "?? " ~ getDefaultValue(type) : string.init);
-		if(p.primitive == TypePrimitives.UInt16) return StringBuilder.format("Convert.ToUInt16({0}{1})", name, type.nullable ? "?? " ~ getDefaultValue(type) : string.init);
-		if(p.primitive == TypePrimitives.Int16) return StringBuilder.format("Convert.ToInt16({0}{1})", name, type.nullable ? "?? " ~ getDefaultValue(type) : string.init);
-		if(p.primitive == TypePrimitives.UInt32) return StringBuilder.format("Convert.ToUInt32({0}{1})", name, type.nullable ? "?? " ~ getDefaultValue(type) : string.init);
-		if(p.primitive == TypePrimitives.Int32) return StringBuilder.format("Convert.ToInt32({0}{1})", name, type.nullable ? "?? " ~ getDefaultValue(type) : string.init);
-		if(p.primitive == TypePrimitives.UInt64) return StringBuilder.format("Convert.ToUInt64({0}{1})", name, type.nullable ? "?? " ~ getDefaultValue(type) : string.init);
-		if(p.primitive == TypePrimitives.Int64) return StringBuilder.format("Convert.ToInt64({0}{1})", name, type.nullable ? "?? " ~ getDefaultValue(type) : string.init);
-		if(p.primitive == TypePrimitives.Float) return StringBuilder.format("Convert.ToFloat({0}{1})", name, type.nullable ? "?? " ~ getDefaultValue(type) : string.init);
-		if(p.primitive == TypePrimitives.Double) return StringBuilder.format("Convert.ToDouble({0}{1})", name, type.nullable ? "?? " ~ getDefaultValue(type) : string.init);
-		if(p.primitive == TypePrimitives.Fixed) return StringBuilder.format("Convert.ToDecimal({0}{1})", name, type.nullable ? "?? " ~ getDefaultValue(type) : string.init);
-		if(p.primitive == TypePrimitives.DateTime) return StringBuilder.format("DateTime.Parse({0}{1}, DateTimeFormatInfo.InvariantInfo)", name, type.nullable ? "?? " ~ getDefaultValue(type) : string.init);
-		if(p.primitive == TypePrimitives.DateTimeTz) return StringBuilder.format("DateTimeOffset.Parse({0}{1}, DateTimeFormatInfo.InvariantInfo)", name, type.nullable ? "?? " ~ getDefaultValue(type) : string.init);
-		if(p.primitive == TypePrimitives.TimeSpan) return StringBuilder.format("TimeSpan.Parse({0}{1}, DateTimeFormatInfo.InvariantInfo)", name, type.nullable ? "?? " ~ getDefaultValue(type) : string.init);
-		if(p.primitive == TypePrimitives.Guid) return StringBuilder.format("Guid.Parse({0}{1})", name, type.nullable ? "?? " ~ getDefaultValue(type) : string.init);
+		if(p.primitive == TypePrimitives.Boolean) return text(i"Convert.ToBoolean($(name)$(type.nullable ? "?? " ~ getDefaultValue(type) : string.init))");
+		if(p.primitive == TypePrimitives.UInt8) return text(i"Convert.ToByte($(name)$(type.nullable ? "?? " ~ getDefaultValue(type) : string.init))");
+		if(p.primitive == TypePrimitives.Int8) return text(i"Convert.ToSByte($(name)$(type.nullable ? "?? " ~ getDefaultValue(type) : string.init))");
+		if(p.primitive == TypePrimitives.UInt16) return text(i"Convert.ToUInt16($(name)$(type.nullable ? "?? " ~ getDefaultValue(type) : string.init))");
+		if(p.primitive == TypePrimitives.Int16) return text(i"Convert.ToInt16($(name)$(type.nullable ? "?? " ~ getDefaultValue(type) : string.init))");
+		if(p.primitive == TypePrimitives.UInt32) return text(i"Convert.ToUInt32($(name)$(type.nullable ? "?? " ~ getDefaultValue(type) : string.init))");
+		if(p.primitive == TypePrimitives.Int32) return text(i"Convert.ToInt32($(name)$(type.nullable ? "?? " ~ getDefaultValue(type) : string.init))");
+		if(p.primitive == TypePrimitives.UInt64) return text(i"Convert.ToUInt64($(name)$(type.nullable ? "?? " ~ getDefaultValue(type) : string.init))");
+		if(p.primitive == TypePrimitives.Int64) return text(i"Convert.ToInt64($(name)$(type.nullable ? "?? " ~ getDefaultValue(type) : string.init))");
+		if(p.primitive == TypePrimitives.Float) return text(i"Convert.ToFloat($(name)$(type.nullable ? "?? " ~ getDefaultValue(type) : string.init))");
+		if(p.primitive == TypePrimitives.Double) return text(i"Convert.ToDouble($(name)$(type.nullable ? "?? " ~ getDefaultValue(type) : string.init))");
+		if(p.primitive == TypePrimitives.Fixed) return text(i"Convert.ToDecimal($(name)$(type.nullable ? "?? " ~ getDefaultValue(type) : string.init))");
+		if(p.primitive == TypePrimitives.DateTime) return text(i"DateTime.Parse($(name)$(type.nullable ? "?? " ~ getDefaultValue(type) : string.init), DateTimeFormatInfo.InvariantInfo)");
+		if(p.primitive == TypePrimitives.DateTimeTz) return text(i"DateTimeOffset.Parse($(name)$(type.nullable ? "?? " ~ getDefaultValue(type) : string.init), DateTimeFormatInfo.InvariantInfo)");
+		if(p.primitive == TypePrimitives.TimeSpan) return text(i"TimeSpan.Parse($(name)$(type.nullable ? "?? " ~ getDefaultValue(type) : string.init), DateTimeFormatInfo.InvariantInfo)");
+		if(p.primitive == TypePrimitives.Guid) return text(i"Guid.Parse($(name)$(type.nullable ? "?? " ~ getDefaultValue(type) : string.init))");
 	}
 
 	return name;
@@ -611,7 +612,7 @@ public string getDefaultValue(TypeComplex type) {
 		}
 		if (type.defaultValue != string.init) {
 			if (p.primitive == TypePrimitives.String || p.primitive == TypePrimitives.Base64String) {
-				return "\"" ~ type.defaultValue ~ "\"";
+				return text(i"\"$(type.defaultValue)\"");
 			} else {
 				return type.defaultValue;
 			}
@@ -620,10 +621,10 @@ public string getDefaultValue(TypeComplex type) {
 		TypeEnum te = cast(TypeEnum)type.type;
 		auto idx = te.definition.values.countUntil!(a => a.isDefault)();
 		if (idx == -1) {
-			writeParseError("Unable able to locate the default value for enumeration: " ~ te.definition.name, type.sourceLocation);
+			writeParseError(text(i"Unable able to locate the default value for enumeration: $(te.definition.name)"), type.sourceLocation);
 			return string.init;
 		}
-		return getCSharpFullName(te.definition) ~ "." ~ te.definition.values[idx].name;
+		return text(i"$(getCSharpFullName(te.definition)).$(te.definition.values[idx].name)");
 	} else if (typeid(type.type) == typeid(TypeVoid)) {
 		return string.init;
 	} else if (typeid(type.type) == typeid(TypeByteArray) || typeid(type.type) == typeid(TypeModel) || typeid(type.type) == typeid(TypeStream) || typeid(type.type) == typeid(TypeContent)) {
@@ -634,7 +635,7 @@ public string getDefaultValue(TypeComplex type) {
 		}
 	} else if (typeid(type.type) == typeid(TypeCollection) || typeid(type.type) == typeid(TypeDictionary)) {
 		if (type.defaultInit || type.defaultNull) {
-			return "default(" ~ generateType(type) ~ ")";
+			return text(i"default($(generateType(type)))");
 		} else {
 			return string.init;
 		}
@@ -644,21 +645,21 @@ public string getDefaultValue(TypeComplex type) {
 }
 
 public string getCSharpFqn(Schema n, CSharpProjectOptions opts) {
-	return opts.namespace ~ "." ~ n.name.uppercaseFirst();
+	return text(i"$(opts.namespace).$(n.name.uppercaseFirst())");
 }
 
 public string getCSharpFqn(Enumeration e, CSharpProjectOptions opts) {
-	return e.parent.getCSharpFqn(opts) ~ "." ~ e.name.uppercaseFirst();
+	return text(i"$(e.parent.getCSharpFqn(opts)).$(e.name.uppercaseFirst())");
 }
 
 public string getCSharpFqn(DataObject m, CSharpProjectOptions opts) {
-	return m.parent.getCSharpFqn(opts) ~ "." ~ m.name.uppercaseFirst();
+	return text(i"$(m.parent.getCSharpFqn(opts)).$(m.name.uppercaseFirst())");
 }
 
 public string getCSharpFullName(Enumeration e) {
-	return e.parent.name.uppercaseFirst() ~ "." ~ e.name.uppercaseFirst();
+	return text(i"$(e.parent.name.uppercaseFirst()).$(e.name.uppercaseFirst())");
 }
 
 public string getCSharpFullName(DataObject m) {
-	return m.parent.name.uppercaseFirst() ~ "." ~ m.name.uppercaseFirst();
+	return text(i"$(m.parent.name.uppercaseFirst()).$(m.name.uppercaseFirst())");
 }

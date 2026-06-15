@@ -3,7 +3,7 @@ module coalescence.languages.csharp.signalr.server;
 import coalescence.types;
 import coalescence.schema;
 import coalescence.globals;
-import coalescence.stringbuilder;
+import phobos.text.stringbuilder;
 import coalescence.utility;
 
 import coalescence.languages.csharp.generator;
@@ -20,7 +20,7 @@ public void generateWebsocketServer(StringBuilder builder, WebsocketService s, u
 {
 	builder.appendLine();
 	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.5.0.0\")]");
-	builder.tabs(tabLevel).appendLine("{1} interface I{0}Server", s.name, s.isPublic ? "public" : "internal");
+	builder.tabs(tabLevel).appendLine(i"$(s.isPublic ? "public" : "internal") interface I$(s.name)Server");
 	builder.tabs(tabLevel++).appendLine("{");
 	foreach(ns; s.namespaces) {
 		foreach(m; ns.server) {
@@ -32,14 +32,14 @@ public void generateWebsocketServer(StringBuilder builder, WebsocketService s, u
     if (s.hasClient()) {
 		builder.appendLine();
 		builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.5.0.0\")]");
-        builder.tabs(tabLevel).appendLine("{1} interface I{0}Client", s.name, s.isPublic ? "public" : "internal");
+        builder.tabs(tabLevel).appendLine(i"$(s.isPublic ? "public" : "internal") interface I$(s.name)Client");
         builder.tabs(tabLevel++).appendLine("{");
 		foreach(ns; s.namespaces) {
 			foreach(m; ns.client) {
 				if (ns.name !is null && ns.name != string.init) {
-					builder.tabs(tabLevel).appendLine("[HubMethodName(\"{0}.{1}\")]", cleanName(ns.name), cleanName(m.socketName));
+					builder.tabs(tabLevel).appendLine(i"[HubMethodName(\"$(cleanName(ns.name)).$(cleanName(m.socketName))\")]");
 				} else {
-					builder.tabs(tabLevel).appendLine("[HubMethodName(\"{0}\")]", cleanName(m.socketName));
+					builder.tabs(tabLevel).appendLine(i"[HubMethodName(\"$(cleanName(m.socketName))\")]");
 				}
 				generateInterfaceMethod(builder, m, ns.name, tabLevel);
 			}
@@ -54,9 +54,9 @@ public void generateWebsocketServer(StringBuilder builder, WebsocketService s, u
 	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.5.0.0\")]");
 	builder.tabs(tabLevel).appendLine("[System.Diagnostics.DebuggerNonUserCode()]");
     if (s.hasClient()) {
-        builder.tabs(tabLevel).appendLine("{1} abstract class {0}HubBase : Hub<I{0}Client>, I{0}Server", s.name, s.isPublic ? "public" : "internal");
+        builder.tabs(tabLevel).appendLine(i"$(s.isPublic ? "public" : "internal") abstract class $(s.name)HubBase : Hub<I$(s.name)Client>, I$(s.name)Server");
     } else {
-        builder.tabs(tabLevel).appendLine("{1} abstract class {0}HubBase : Hub, I{0}Server", s.name, s.isPublic ? "public" : "internal");
+        builder.tabs(tabLevel).appendLine(i"$(s.isPublic ? "public" : "internal") abstract class $(s.name)HubBase : Hub, I$(s.name)Server");
     }
 	builder.tabs(tabLevel++).appendLine("{");
 	foreach(ns; s.namespaces) {
@@ -71,17 +71,17 @@ private void generateInterfaceMethod(StringBuilder builder, WebsocketServiceMeth
 	builder.tabs(tabLevel).append("Task");
 	if(sm.returns.length == 1) {
 		if (sm.returns[0].type.mode != TypeMode.Void) {
-			builder.append("<{0}>", generateType(sm.returns[0], false));
+			builder.append(i"<$(generateType(sm.returns[0], false))>");
 		}
 	} else if (sm.returns.length > 1) {
 		builder.append("<(");
 		foreach (smp; sm.returns) {
-			builder.append("{0} {1}, ", smp.name, generateType(smp, false));
+			builder.append(i"$(smp.name) $(generateType(smp, false)), ");
 		}
-		builder.removeRight(2);
+		builder.remove(builder.length-2, 2);
 		builder.append(")>");
 	}
-    builder.append(" {0}{1}(", cleanName(namespace), cleanName(sm.name));
+    builder.append(i" $(cleanName(namespace))$(cleanName(sm.name))(");
     generateMethodParameters(builder, sm.parameters);
     builder.appendLine(");");
 }
@@ -91,25 +91,25 @@ private void generateMethod(StringBuilder builder, WebsocketServiceMethod sm, st
 	generateAuthorization(builder, ext !is null ? ext.getAuthorization() : null, sm.authenticate, sm.parent.authenticate, tabLevel);
 
 	if (namespace !is null && namespace != string.init) {
-		builder.tabs(tabLevel).appendLine("[HubMethodName(\"{0}.{1}\")]", cleanName(namespace), cleanName(sm.socketName));
+		builder.tabs(tabLevel).appendLine(i"[HubMethodName(\"$(cleanName(namespace)).$(cleanName(sm.socketName))\")]");
 	} else {
-		builder.tabs(tabLevel).appendLine("[HubMethodName(\"{0}\")]", cleanName(sm.socketName));
+		builder.tabs(tabLevel).appendLine(i"[HubMethodName(\"$(cleanName(sm.socketName))\")]");
 	}
     builder.tabs(tabLevel).append("public abstract ");
 	builder.append("Task");
 	if(sm.returns.length == 1) {
 		if (sm.returns[0].type.mode != TypeMode.Void) {
-			builder.append("<{0}>", generateType(sm.returns[0], false));
+			builder.append(i"<$(generateType(sm.returns[0], false))>");
 		}
 	} else if (sm.returns.length > 1) {
 		builder.append("<(");
 		foreach (smp; sm.returns) {
-			builder.append("{0} {1}, ", smp.name, generateType(smp, false));
+			builder.append(i"$(smp.name) $(generateType(smp, false)), ");
 		}
-		builder.removeRight(2);
+		builder.remove(builder.length-2, 2);
 		builder.append(")>");
 	}
-    builder.append(" {0}{1}(", cleanName(namespace), cleanName(sm.name));
+    builder.append(i" $(cleanName(namespace))$(cleanName(sm.name))(");
     generateMethodParameters(builder, sm.parameters);
     builder.appendLine(");");
 }
@@ -119,9 +119,9 @@ private void generateMethodParameters(StringBuilder builder, TypeComplex[] smpl)
     bool hasParams = false;
     foreach (smp; smpl) {
         if (smp.type is null) continue;
-        builder.append("{0} {1}, ", generateType(smp, false), cleanName(smp.name));
+        builder.append(i"$(generateType(smp, false)) $(cleanName(smp.name)), ");
         hasParams = true;
     }
 
-    if (hasParams) builder.removeRight(2);
+    if (hasParams) builder.remove(builder.length-2, 2);
 }

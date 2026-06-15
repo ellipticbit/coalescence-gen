@@ -3,22 +3,24 @@ module coalescence.languages.csharp.language;
 import coalescence.schema;
 import coalescence.types;
 
+import std.conv : text;
+
 public string getTypeFromSqlType(SqlDbType type, bool isNullable)
 {
-	if (type == SqlDbType.Bit) return "bool" ~ (isNullable ? "?" : "");
-	if (type == SqlDbType.TinyInt) return "byte" ~ (isNullable ? "?" : "");
-	if (type == SqlDbType.SmallInt) return "short" ~ (isNullable ? "?" : "");
-	if (type == SqlDbType.Int) return "int" ~ (isNullable ? "?" : "");
-	if (type == SqlDbType.BigInt) return "long" ~ (isNullable ? "?" : "");
+	if (type == SqlDbType.Bit) return text(i"bool$(isNullable ? "?" : "")");
+	if (type == SqlDbType.TinyInt) return text(i"byte$(isNullable ? "?" : "")");
+	if (type == SqlDbType.SmallInt) return text(i"short$(isNullable ? "?" : "")");
+	if (type == SqlDbType.Int) return text(i"int$(isNullable ? "?" : "")");
+	if (type == SqlDbType.BigInt) return text(i"long$(isNullable ? "?" : "")");
 	if (type == SqlDbType.Binary || type == SqlDbType.VarBinary || type == SqlDbType.Image) return "byte[]";
 	if (type == SqlDbType.Char || type == SqlDbType.VarChar || type == SqlDbType.NChar || type == SqlDbType.NVarChar || type == SqlDbType.Text || type == SqlDbType.NText) return "string";
-	if (type == SqlDbType.Time) return "TimeSpan" ~ (isNullable ? "?" : "");
-	if (type == SqlDbType.Date || type == SqlDbType.SmallDateTime || type == SqlDbType.DateTime || type == SqlDbType.DateTime2) return "DateTime" ~ (isNullable ? "?" : "");
-	if (type == SqlDbType.DateTimeOffset) return "DateTimeOffset" ~ (isNullable ? "?" : "");
-	if (type == SqlDbType.Money || type == SqlDbType.SmallMoney || type == SqlDbType.Decimal) return "decimal" ~ (isNullable ? "?" : "");
-	if (type == SqlDbType.Float) return "double" ~ (isNullable ? "?" : "");
-	if (type == SqlDbType.Real) return "float" ~ (isNullable ? "?" : "");
-	if (type == SqlDbType.UniqueIdentifier) return "Guid" ~ (isNullable ? "?" : "");
+	if (type == SqlDbType.Time) return text(i"TimeSpan$(isNullable ? "?" : "")");
+	if (type == SqlDbType.Date || type == SqlDbType.SmallDateTime || type == SqlDbType.DateTime || type == SqlDbType.DateTime2) return text(i"DateTime$(isNullable ? "?" : "")");
+	if (type == SqlDbType.DateTimeOffset) return text(i"DateTimeOffset$(isNullable ? "?" : "")");
+	if (type == SqlDbType.Money || type == SqlDbType.SmallMoney || type == SqlDbType.Decimal) return text(i"decimal$(isNullable ? "?" : "")");
+	if (type == SqlDbType.Float) return text(i"double$(isNullable ? "?" : "")");
+	if (type == SqlDbType.Real) return text(i"float$(isNullable ? "?" : "")");
+	if (type == SqlDbType.UniqueIdentifier) return text(i"Guid$(isNullable ? "?" : "")");
 	if (type == SqlDbType.Timestamp) return "byte[]";
 	if (type == SqlDbType.Variant) return "object";
 	return string.init;

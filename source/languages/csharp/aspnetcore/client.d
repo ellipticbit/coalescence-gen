@@ -3,7 +3,7 @@ module coalescence.languages.csharp.aspnetcore.client;
 import coalescence.types;
 import coalescence.schema;
 import coalescence.globals;
-import coalescence.stringbuilder;
+import phobos.text.stringbuilder;
 import coalescence.utility;
 
 import coalescence.languages.csharp.generator;
@@ -26,20 +26,20 @@ public void generateHttpClient(StringBuilder builder, HttpService s, ushort tabL
 		if (m.query.length == 0 || m.queryAsParams) continue;
 		builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.5.0.0\")]");
 		builder.tabs(tabLevel).appendLine("[System.Diagnostics.DebuggerNonUserCode()]");
-		builder.tabs(tabLevel).appendLine("public class {0}Query : ICoalescenceParameters", m.name);
+		builder.tabs(tabLevel).appendLine(i"public class $(m.name)Query : ICoalescenceParameters");
 		builder.tabs(tabLevel++).appendLine("{");
 		foreach(smp; m.query) {
-			builder.tabs(tabLevel).appendLine("public {1} {0} { get; }", smp.name, generateType(smp, false, false));
+			builder.tabs(tabLevel).appendLine(i"public $(generateType(smp, false, false)) $(smp.name) { get; }");
 		}
 		builder.appendLine();
-		builder.tabs(tabLevel++).append("public {0}Query(", m.name);
+		builder.tabs(tabLevel++).append(i"public $(m.name)Query(");
 		foreach(smp; m.query) {
-			builder.append("{1} {0}, ", smp.name, generateType(smp, false, false));
+			builder.append(i"$(generateType(smp, false, false)) $(smp.name), ");
 		}
-		builder.removeRight(2);
+		builder.remove(builder.length-2, 2);
 		builder.appendLine(") {");
 		foreach(smp; m.query) {
-			builder.tabs(tabLevel).appendLine("this.{0} = {0};", smp.name);
+			builder.tabs(tabLevel).appendLine(i"this.$(smp.name) = $(smp.name);");
 		}
 		builder.tabs(--tabLevel).appendLine("}");
 		builder.appendLine();
@@ -47,9 +47,9 @@ public void generateHttpClient(StringBuilder builder, HttpService s, ushort tabL
 		builder.tabs(tabLevel).appendLine("var rl = new Dictionary<string, IEnumerable<string>>();");
 		foreach(smp; m.query) {
 			if (smp.type.mode == TypeMode.Collection) {
-				builder.tabs(tabLevel).appendLine("rl.Add(\"{0}\", {0}.Select(a => Convert.ToString(a)));", smp.name);
+				builder.tabs(tabLevel).appendLine(i"rl.Add(\"$(smp.name)\", $(smp.name).Select(a => Convert.ToString(a)));");
 			} else if (smp.type.mode == TypeMode.Primitive) {
-				builder.tabs(tabLevel).appendLine("rl.Add(\"{0}\", new[] { Convert.ToString({0}) });", smp.name);
+				builder.tabs(tabLevel).appendLine(i"rl.Add(\"$(smp.name)\", new[] { Convert.ToString($(smp.name)) });");
 			}
 		}
 		builder.tabs(tabLevel).appendLine("return rl;");
@@ -63,20 +63,20 @@ public void generateHttpClient(StringBuilder builder, HttpService s, ushort tabL
 		if (m.header.length == 0) continue;
 		builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.5.0.0\")]");
 		builder.tabs(tabLevel).appendLine("[System.Diagnostics.DebuggerNonUserCode()]");
-		builder.tabs(tabLevel).appendLine("public class {0}Header : ICoalescenceParameters", m.name);
+		builder.tabs(tabLevel).appendLine(i"public class $(m.name)Header : ICoalescenceParameters");
 		builder.tabs(tabLevel++).appendLine("{");
 		foreach(smp; m.header) {
-			builder.tabs(tabLevel).appendLine("public {1} {0} { get; }", smp.name, generateType(smp, false, true));
+			builder.tabs(tabLevel).appendLine(i"public $(generateType(smp, false, true)) $(smp.name) { get; }");
 		}
 		builder.appendLine();
-		builder.tabs(tabLevel++).append("public {0}Header(", m.name);
+		builder.tabs(tabLevel++).append(i"public $(m.name)Header(");
 		foreach(smp; m.header) {
-			builder.append("{1} {0}, ", smp.name, generateType(smp, false, true));
+			builder.append(i"$(generateType(smp, false, true)) $(smp.name), ");
 		}
-		builder.removeRight(2);
+		builder.remove(builder.length-2, 2);
 		builder.appendLine(") {");
 		foreach(smp; m.header) {
-			builder.tabs(tabLevel).appendLine("this.{0} = {0};", smp.name);
+			builder.tabs(tabLevel).appendLine(i"this.$(smp.name) = $(smp.name);");
 		}
 		builder.tabs(--tabLevel).appendLine("}");
 		builder.appendLine();
@@ -84,9 +84,9 @@ public void generateHttpClient(StringBuilder builder, HttpService s, ushort tabL
 		builder.tabs(tabLevel).appendLine("var rl = new Dictionary<string, IEnumerable<string>>();");
 		foreach(smp; m.header) {
 			if (smp.type.mode == TypeMode.Collection) {
-				builder.tabs(tabLevel).appendLine("rl.Add(\"{0}\", {0}.Select(a => Convert.ToString(a)));", smp.name);
+				builder.tabs(tabLevel).appendLine(i"rl.Add(\"$(smp.name)\", $(smp.name).Select(a => Convert.ToString(a)));");
 			} else if (smp.type.mode == TypeMode.Primitive) {
-				builder.tabs(tabLevel).appendLine("rl.Add(\"{0}\", new[] { Convert.ToString({0}) });", smp.name);
+				builder.tabs(tabLevel).appendLine(i"rl.Add(\"$(smp.name)\", new[] { Convert.ToString($(smp.name)) });");
 			}
 		}
 		builder.tabs(tabLevel).appendLine("return rl;");
@@ -96,7 +96,7 @@ public void generateHttpClient(StringBuilder builder, HttpService s, ushort tabL
 
 	builder.appendLine();
 	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.5.0.0\")]");
-	builder.tabs(tabLevel).appendLine("{1} interface I{0}", s.name, s.isPublic ? "public" : "internal");
+	builder.tabs(tabLevel).appendLine(i"$(s.isPublic ? "public" : "internal") interface I$(s.name)");
 	builder.tabs(tabLevel++).appendLine("{");
 	foreach(m; s.methods) {
 		generateClientInterfaceMethod(builder, m, cast(ushort)(tabLevel));
@@ -104,12 +104,12 @@ public void generateHttpClient(StringBuilder builder, HttpService s, ushort tabL
 	builder.tabs(--tabLevel).appendLine("}");
 	builder.appendLine();
 	builder.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.5.0.0\")]");
-	builder.tabs(tabLevel).appendLine("{1} sealed partial class {0} : I{0}", s.name, s.isPublic ? "public" : "internal");
+	builder.tabs(tabLevel).appendLine(i"$(s.isPublic ? "public" : "internal") sealed partial class $(s.name) : I$(s.name)");
 	builder.tabs(tabLevel++).appendLine("{");
 	builder.tabs(tabLevel).appendLine("private readonly ICoalescenceRequestFactory requests;");
-	if (s.scheme != string.init) builder.tabs(tabLevel).appendLine("private readonly string defaultAuthenticationScheme = \"{0}\";", s.scheme);
+	if (s.scheme != string.init) builder.tabs(tabLevel).appendLine(i"private readonly string defaultAuthenticationScheme = \"$(s.scheme)\";");
 	builder.appendLine();
-	builder.tabs(tabLevel).appendLine("public {0}(ICoalescenceRequestFactory requests)", s.name);
+	builder.tabs(tabLevel).appendLine(i"public $(s.name)(ICoalescenceRequestFactory requests)");
 	builder.tabs(tabLevel++).appendLine("{");
 	builder.tabs(tabLevel).appendLine("this.requests = requests;");
 	builder.tabs(--tabLevel).appendLine("}");
@@ -129,13 +129,13 @@ private void generateClientInterfaceMethod(StringBuilder builder, HttpServiceMet
 	if(!isSync) {
 		builder.tabs(tabLevel).append("Task");
 		if(sm.returns.length == 1) {
-			builder.append("<{0}>", generateType(sm.returns[0]));
+			builder.append(i"<$(generateType(sm.returns[0]))>");
 		} else if (sm.returns.length > 1) {
 			builder.append("<(");
 			foreach (rp; sm.returns) {
-				builder.append("{0} {1}, ", generateType(rp), cleanName(rp.name));
+				builder.append(i"$(generateType(rp)) $(cleanName(rp.name)), ");
 			}
-			builder.removeRight(2);
+			builder.remove(builder.length-2, 2);
 			builder.append(")>");
 		}
 	}
@@ -145,13 +145,13 @@ private void generateClientInterfaceMethod(StringBuilder builder, HttpServiceMet
 		} else if (sm.returns.length > 1) {
 			builder.tabs(tabLevel).append("(");
 			foreach (rp; sm.returns) {
-				builder.append("{0} {1}, ", generateType(rp), cleanName(rp.name));
+				builder.append(i"$(generateType(rp)) $(cleanName(rp.name)), ");
 			}
-			builder.removeRight(2);
+			builder.remove(builder.length-2, 2);
 			builder.append(")");
 		}
 	}
-	builder.append(" {0}(", cleanName(sm.name));
+	builder.append(i" $(cleanName(sm.name))(");
 	generateClientMethodParams(builder, sm);
 	builder.appendLine(");");
 }
@@ -165,37 +165,37 @@ private void generateClientMethod(StringBuilder builder, HttpService s, HttpServ
 	if(!isSync) {
 		builder.tabs(tabLevel).append("public async Task");
 		if (sm.returns.length == 1) {
-			builder.append("<{0}>", generateType(sm.returns[0]));
+			builder.append(i"<$(generateType(sm.returns[0]))>");
 		} else if (sm.returns.length > 1) {
 			builder.append("<(");
 			foreach (rp; sm.returns) {
-				builder.append("{0} {1}, ", generateType(rp), cleanName(rp.name));
+				builder.append(i"$(generateType(rp)) $(cleanName(rp.name)), ");
 			}
-			builder.removeRight(2);
+			builder.remove(builder.length-2, 2);
 			builder.append(")>");
 		}
 	}
 	else {
 		builder.tabs(tabLevel).append("public");
 		if (sm.returns.length == 1) {
-			builder.append(" {0}", generateType(sm.returns[0], false));
+			builder.append(i" $(generateType(sm.returns[0], false))");
 		} else if (sm.returns.length > 1) {
 			builder.append(" (");
 			foreach (rp; sm.returns) {
-				builder.append("{0} {1}, ", generateType(rp), cleanName(rp.name));
+				builder.append(i"$(generateType(rp)) $(cleanName(rp.name)), ");
 			}
-			builder.removeRight(2);
+			builder.remove(builder.length-2, 2);
 			builder.append(")");
 		}
 	}
-	builder.append(" {0}(", cleanName(sm.name));
+	builder.append(i" $(cleanName(sm.name))(");
 	generateClientMethodParams(builder, sm);
 	builder.appendLine(")");
 	builder.tabs(tabLevel++).appendLine("{");
-	builder.tabs(tabLevel++).appendLine("await using var response = await requests.CreateRequest({0}).{1}()", getRequestParameters(sm), to!string(sm.verb).capitalize());
+	builder.tabs(tabLevel++).appendLine(i"await using var response = await requests.CreateRequest($(getRequestParameters(sm))).$(to!string(sm.verb).capitalize())()");
 
 	if (s.route.length > 0) {
-		builder.tabs(tabLevel).appendLine(".Path(\"{0}\")", s.route.join("\", \""));
+		builder.tabs(tabLevel).appendLine(i".Path(\"$(s.route.join("\", \""))\")");
 	}
 
 	if (sm.routeParts.length > 0) {
@@ -203,13 +203,13 @@ private void generateClientMethod(StringBuilder builder, HttpService s, HttpServ
 			foreach(pp; sm.routeParts) {
 				auto ptc = sm.getRouteType(pp);
 				if (ptc is null) {
-					builder.tabs(tabLevel).appendLine(".Path(\"{0}\")", pp);
+					builder.tabs(tabLevel).appendLine(i".Path(\"$(pp)\")");
 				} else {
-					builder.tabs(tabLevel).appendLine(".Path({0})", pp);
+					builder.tabs(tabLevel).appendLine(i".Path($(pp))");
 				}
 			}
 		} else {
-			builder.tabs(tabLevel).appendLine(".Path(\"{0}\")", sm.routeParts.join("\", \""));
+			builder.tabs(tabLevel).appendLine(i".Path(\"$(sm.routeParts.join("\", \""))\")");
 		}
 	}
 
@@ -218,7 +218,7 @@ private void generateClientMethod(StringBuilder builder, HttpService s, HttpServ
 			builder.tabs(tabLevel).appendLine(".Query(query)");
 		} else {
 			foreach (smp; sm.query) {
-				builder.tabs(tabLevel).appendLine(".Query(\"{0}\", {0})", smp.name);
+				builder.tabs(tabLevel).appendLine(i".Query(\"$(smp.name)\", $(smp.name))");
 			}
 		}
 	}
@@ -227,61 +227,61 @@ private void generateClientMethod(StringBuilder builder, HttpService s, HttpServ
 		builder.tabs(tabLevel).appendLine(".Header(headers)");
 	}
 	if (sm.requestEncoding != string.init) {
-		builder.tabs(tabLevel).appendLine(".RequestContentEncoding(\"{0}\")", sm.requestEncoding);
+		builder.tabs(tabLevel).appendLine(i".RequestContentEncoding(\"$(sm.requestEncoding)\")");
 	}
 	if (sm.responseEncoding != string.init) {
-		builder.tabs(tabLevel).appendLine(".ResponseContentEncoding(\"{0}\")", sm.responseEncoding);
+		builder.tabs(tabLevel).appendLine(i".ResponseContentEncoding(\"$(sm.responseEncoding)\")");
 	}
 
 	if (sm.authenticate && sm.scheme != string.init) {
-		builder.tabs(tabLevel).appendLine(".Authentication(\"{0}\")", sm.scheme);
+		builder.tabs(tabLevel).appendLine(i".Authentication(\"$(sm.scheme)\")");
 	} else if (sm.authenticate) {
 		builder.tabs(tabLevel).appendLine(".Authentication()");
 	}
 
-	if (sm.timeout > 0) builder.tabs(tabLevel).append(".Timeout(TimeSpan.FromSeconds({0}))", to!string(sm.timeout));
+	if (sm.timeout > 0) builder.tabs(tabLevel).append(i".Timeout(TimeSpan.FromSeconds($(to!string(sm.timeout))))");
 
 	if (!sm.retry) builder.tabs(tabLevel).append(".NoRetry()");
 
 	if (sm.content.length == 1) {
 		TypeComplex tc = sm.content[0];
 		if (typeid(tc.type) == typeid(TypeByteArray)) {
-			builder.tabs(tabLevel).appendLine(".ByteArray({0})", tc.name);
+			builder.tabs(tabLevel).appendLine(i".ByteArray($(tc.name))");
 		}
 		else if (typeid(tc.type) == typeid(TypeStream)) {
-			builder.tabs(tabLevel).appendLine(".Stream({0})", tc.name);
+			builder.tabs(tabLevel).appendLine(i".Stream($(tc.name))");
 		}
 		else if (typeid(tc.type) == typeid(TypeContent)) {
-			builder.tabs(tabLevel).appendLine(".Content({0})", tc.name);
+			builder.tabs(tabLevel).appendLine(i".Content($(tc.name))");
 		}
 		else if (typeid(tc.type) == typeid(TypePrimitive) && (cast(TypePrimitive)tc.type).primitive == TypePrimitives.String) {
-			builder.tabs(tabLevel).appendLine(".Text({0})", tc.name);
+			builder.tabs(tabLevel).appendLine(i".Text($(tc.name))");
 		}
 		else if (typeid(tc.type) == typeid(TypeFormUrlEncoded)) {
-			builder.tabs(tabLevel).appendLine(".FormUrlEncoded({0})", tc.name);
+			builder.tabs(tabLevel).appendLine(i".FormUrlEncoded($(tc.name))");
 		}
 		else {
-			builder.tabs(tabLevel).appendLine(".Serialized({0})", tc.name);
+			builder.tabs(tabLevel).appendLine(i".Serialized($(tc.name))");
 		}
 	} else if (sm.content.length > 1) {
-		builder.tabs(tabLevel++).appendLine(".Multipart{0}()", sm.bodyForm ? "Form" : string.init);
-		if (sm.bodySubtype != string.init) builder.tabs(tabLevel).appendLine(".Subtype(\"{0}\")", sm.bodySubtype);
-		if (sm.bodySubtype != string.init) builder.tabs(tabLevel).appendLine(".Boundary(\"{0}\")", sm.bodyBoundary);
+		builder.tabs(tabLevel++).appendLine(i".Multipart$(sm.bodyForm ? "Form" : string.init)()");
+		if (sm.bodySubtype != string.init) builder.tabs(tabLevel).appendLine(i".Subtype(\"$(sm.bodySubtype)\")");
+		if (sm.bodySubtype != string.init) builder.tabs(tabLevel).appendLine(i".Boundary(\"$(sm.bodyBoundary)\")");
 		foreach (tc; sm.content) {
 			if (typeid(tc.type) == typeid(TypeByteArray) || typeid(tc.type) == typeid(TypeStream)) {
-				builder.tabs(tabLevel).appendLine(".File({0})", tc.name);
+				builder.tabs(tabLevel).appendLine(i".File($(tc.name))");
 			}
 			else if (typeid(tc.type) == typeid(TypeContent)) {
-				builder.tabs(tabLevel).appendLine(".Content({0})", tc.name);
+				builder.tabs(tabLevel).appendLine(i".Content($(tc.name))");
 			}
 			else if (typeid(tc.type) == typeid(TypePrimitive) && (cast(TypePrimitive)tc.type).primitive == TypePrimitives.String) {
-				builder.tabs(tabLevel).appendLine(".Text({0})", tc.name);
+				builder.tabs(tabLevel).appendLine(i".Text($(tc.name))");
 			}
 			else if (typeid(tc.type) == typeid(TypeFormUrlEncoded)) {
-				builder.tabs(tabLevel).appendLine(".FormUrlEncoded({0})", tc.name);
+				builder.tabs(tabLevel).appendLine(i".FormUrlEncoded($(tc.name))");
 			}
 			else {
-				builder.tabs(tabLevel).appendLine(".Serialized({0})", tc.name);
+				builder.tabs(tabLevel).appendLine(i".Serialized($(tc.name))");
 			}
 		}
 		builder.tabs(tabLevel).appendLine(".Compile()");
@@ -312,7 +312,7 @@ private void generateClientMethod(StringBuilder builder, HttpService s, HttpServ
 				builder.tabs(tabLevel--).appendLine(".AsFormUrlEncoded();");
 			}
 			else {
-				builder.tabs(tabLevel--).appendLine(".AsDeserialized<{0}>();", generateType(tc));
+				builder.tabs(tabLevel--).appendLine(i".AsDeserialized<$(generateType(tc))>();");
 			}
 		} else {
 			//TODO: Multipart returns not implemented in client library.
@@ -327,61 +327,61 @@ private void generateClientMethodParams(StringBuilder builder, HttpServiceMethod
 	// Generate required parameters
 	foreach (smp; sm.route) {
 		if (smp.hasDefault()) continue;
-		builder.append("{0} {1}, ", generateType(smp, true, false), cleanName(smp.name));
+		builder.append(i"$(generateType(smp, true, false)) $(cleanName(smp.name)), ");
 	}
 
 	foreach (smp; sm.content) {
 		if (smp.hasDefault()) continue;
-		builder.append("{0} {1}, ", generateType(smp, false, false), cleanName(smp.name));
+		builder.append(i"$(generateType(smp, false, false)) $(cleanName(smp.name)), ");
 	}
 
 	if (sm.query.length != 0 && sm.queryAsParams) {
 		foreach (smp; sm.query) {
 			if (smp.hasDefault()) continue;
-			builder.append("{0} {1}, ", generateType(smp, true, false), cleanName(smp.name));
+			builder.append(i"$(generateType(smp, true, false)) $(cleanName(smp.name)), ");
 		}
 	}
 
 	// Generate optional parameters
 	foreach (smp; sm.route) {
 		if (!smp.hasDefault()) continue;
-		builder.append("{0} {1} = {2}, ", generateType(smp, true, false), cleanName(smp.name), getDefaultValue(smp));
+		builder.append(i"$(generateType(smp, true, false)) $(cleanName(smp.name)) = $(getDefaultValue(smp)), ");
 	}
 
 	if (sm.query.length != 0) {
 		if (!sm.queryAsParams) {
-			builder.append("{0}Query query = null, ", sm.name);
+			builder.append(i"$(sm.name)Query query = null, ");
 		} else {
 			foreach (smp; sm.query) {
 				if (!smp.hasDefault()) continue;
-				builder.append("{0} {1} = {2}, ", generateType(smp, true, false), cleanName(smp.name), getDefaultValue(smp));
+				builder.append(i"$(generateType(smp, true, false)) $(cleanName(smp.name)) = $(getDefaultValue(smp)), ");
 			}
 		}
 	}
 
 	if (sm.header.length != 0) {
-		builder.append("{0}Header headers = null, ", sm.name);
+		builder.append(i"$(sm.name)Header headers = null, ");
 	}
 
 	foreach (smp; sm.content) {
 		if (!smp.hasDefault()) continue;
-		builder.append("{0} {1} = {2}, ", generateType(smp, false, false), cleanName(smp.name), getDefaultValue(smp));
+		builder.append(i"$(generateType(smp, false, false)) $(cleanName(smp.name)) = $(getDefaultValue(smp)), ");
 	}
 
 	if (sm.multitenant || sm.parent.multitenant) {
 		builder.append("string _tenantId = null  ");
 	}
 
-	if ((sm.route.length + sm.query.length + sm.header.length + sm.content.length) > 0 || sm.multitenant || sm.parent.multitenant) builder.removeRight(2);
+	if ((sm.route.length + sm.query.length + sm.header.length + sm.content.length) > 0 || sm.multitenant || sm.parent.multitenant) builder.remove(builder.length-2, 2);
 }
 
 public string getRequestParameters(HttpServiceMethod sm) {
 	string params = string.init;
 
 	if (sm.parent.requestName !is null && sm.parent.requestName != string.init) {
-		params ~= "\"" ~ sm.parent.requestName ~ "\"";
+		params ~= text(i"\"$(sm.parent.requestName)\"");
 	} else if (sm.parent.requestParameterId !is null && sm.parent.requestParameterId != string.init) {
-		params ~= sm.parent.requestParameterId ~ ".ToString()";
+		params ~= text(i"$(sm.parent.requestParameterId).ToString()");
 	}
 
 	if ((sm.multitenant || sm.parent.multitenant) && params == string.init) {

@@ -8,7 +8,7 @@ import std.path;
 import std.stdio;
 import std.string;
 
-import coalescence.stringbuilder;
+import phobos.text.stringbuilder;
 import coalescence.schema;
 import coalescence.utility;
 import coalescence.database.mssql.types;
@@ -21,7 +21,7 @@ public void generateEFContext(CSharpProjectOptions opts, Schema[] schemata) {
 	auto sb = new StringBuilder(8_388_608);
 	int tabLevel = 1;
 
-	sb.appendLine("namespace {0}", opts.namespace);
+	sb.appendLine(i"namespace $(opts.namespace)");
 	sb.appendLine("{");
 	sb.tabs(tabLevel).appendLine("using System;");
 	sb.tabs(tabLevel).appendLine("using System.Collections.Generic;");
@@ -34,37 +34,37 @@ public void generateEFContext(CSharpProjectOptions opts, Schema[] schemata) {
 	sb.appendLine();
 	sb.tabs(tabLevel).appendLine("[System.CodeDom.Compiler.GeneratedCode(\"EllipticBit.Coalescence.Generator\", \"1.5.0.0\")]");
 	if (opts.enableEFExtensions) {
-		sb.tabs(tabLevel).appendLine("public {1}partial class {0} : EfCoreDatabaseService<{0}>", opts.contextName.cleanName(), opts.enableEFContextMocking ? string.init : "sealed ");
+		sb.tabs(tabLevel).appendLine(i"public $(opts.enableEFContextMocking ? string.init : "sealed ")partial class $(opts.contextName.cleanName()) : EfCoreDatabaseService<$(opts.contextName.cleanName())>");
 	}
 	else {
-		sb.tabs(tabLevel).appendLine("public {1}partial class {0} : DbContext", opts.contextName.cleanName(), opts.enableEFContextMocking ? string.init : "sealed ");
+		sb.tabs(tabLevel).appendLine(i"public $(opts.enableEFContextMocking ? string.init : "sealed ")partial class $(opts.contextName.cleanName()) : DbContext");
 	}
 	sb.tabs(tabLevel++).appendLine("{");
 	foreach (s; schemata.filter!(a => a.hasDatabaseItems)) {
 		foreach (t; s.getTables())
-			sb.tabs(tabLevel).appendLine("{2} DbSet<{1}.{0}> {1}_{0} { get; set; }", t.name, s.name.uppercaseFirst(), opts.enableEFContextMocking ? "public virtual" : "internal");
+			sb.tabs(tabLevel).appendLine(i"$(opts.enableEFContextMocking ? "public virtual" : "internal") DbSet<$(s.name.uppercaseFirst()).$(t.name)> $(s.name.uppercaseFirst())_$(t.name) { get; set; }");
 		foreach (t; s.getViews())
-			sb.tabs(tabLevel).appendLine("{2} DbSet<{1}.{0}> {1}_{0} { get; set; }", t.name, s.name.uppercaseFirst(), opts.enableEFContextMocking ? "public virtual" : "internal");
+			sb.tabs(tabLevel).appendLine(i"$(opts.enableEFContextMocking ? "public virtual" : "internal") DbSet<$(s.name.uppercaseFirst()).$(t.name)> $(s.name.uppercaseFirst())_$(t.name) { get; set; }");
 	}
 	sb.appendLine();
 	foreach (s; schemata.filter!(a => a.hasDatabaseItems))
-		sb.tabs(tabLevel).appendLine("public {0}Schema {0} { get; }", s.name.uppercaseFirst());
+		sb.tabs(tabLevel).appendLine(i"public $(s.name.uppercaseFirst())Schema $(s.name.uppercaseFirst()) { get; }");
 	foreach (s; schemata.filter!(a => a.hasDatabaseItems))
 		generateSchemaModel(opts, sb, s, tabLevel);
 	sb.appendLine();
-	sb.tabs(tabLevel).appendLine("public {0}(DbContextOptions<{0}> options) : base(options)", opts.contextName.cleanName());
+	sb.tabs(tabLevel).appendLine(i"public $(opts.contextName.cleanName())(DbContextOptions<$(opts.contextName.cleanName())> options) : base(options)");
 	sb.tabs(tabLevel++).appendLine("{");
 	foreach (s; schemata.filter!(a => a.hasDatabaseItems))
-		sb.tabs(tabLevel).appendLine("this.{0} = new {0}Schema(this);", s.name.uppercaseFirst());
+		sb.tabs(tabLevel).appendLine(i"this.$(s.name.uppercaseFirst()) = new $(s.name.uppercaseFirst())Schema(this);");
 	sb.tabs(--tabLevel).appendLine("}");
 	sb.appendLine();
 	sb.tabs(tabLevel).appendLine("protected override void OnModelCreating(ModelBuilder modelBuilder)");
 	sb.tabs(tabLevel++).appendLine("{");
 	foreach (s; schemata.filter!(a => a.hasDatabaseItems)) {
 		foreach (t; s.getTables()) {
-			sb.tabs(tabLevel).appendLine("modelBuilder.Entity<{1}.{0}>(entity =>", t.name, s.name.uppercaseFirst());
+			sb.tabs(tabLevel).appendLine(i"modelBuilder.Entity<$(s.name.uppercaseFirst()).$(t.name)>(entity =>");
 			sb.tabs(tabLevel++).appendLine("{");
-			sb.tabs(tabLevel).appendLine("entity.ToTable(\"{0}\", \"{1}\"{2});", t.name, s.name, t.hasTrigger ? ", tb => tb.HasTrigger(\"" ~ t.name ~ "_Trigger\")" : string.init);
+			sb.tabs(tabLevel).appendLine(i"entity.ToTable(\"$(t.name)\", \"$(s.name)\"$((t.hasTrigger ? ", tb => tb.HasTrigger(\"" ~ t.name ~ "_Trigger\")" : string.init)));");
 			generateIndexModel(opts, sb, t, tabLevel + 1);
 			foreach (c; t.members)
 				generatePropertyModel(opts, sb, c, tabLevel + 1);
@@ -72,9 +72,9 @@ public void generateEFContext(CSharpProjectOptions opts, Schema[] schemata) {
 			sb.tabs(--tabLevel).appendLine("});");
 		}
 		foreach (t; s.getViews()) {
-			sb.tabs(tabLevel).appendLine("modelBuilder.Entity<{1}.{0}>(entity =>", t.name, s.name.uppercaseFirst());
+			sb.tabs(tabLevel).appendLine(i"modelBuilder.Entity<$(s.name.uppercaseFirst()).$(t.name)>(entity =>");
 			sb.tabs(tabLevel++).appendLine("{");
-			sb.tabs(tabLevel).appendLine("entity.HasNoKey().ToView(\"{0}\", \"{1}\");", t.name, s.name);
+			sb.tabs(tabLevel).appendLine(i"entity.HasNoKey().ToView(\"$(t.name)\", \"$(s.name)\");");
 			foreach (c; t.members)
 				generatePropertyModel(opts, sb, c, tabLevel + 1);
 			sb.tabs(--tabLevel).appendLine("});");
@@ -85,22 +85,22 @@ public void generateEFContext(CSharpProjectOptions opts, Schema[] schemata) {
 	sb.tabs(--tabLevel).appendLine("}");
 	sb.appendLine("}");
 
-	opts.writeFile(sb, opts.contextName.cleanName());
+	opts.writeFile(sb.toString(), opts.contextName.cleanName());
 }
 
 private void generateSchemaModel(CSharpProjectOptions opts, StringBuilder sb, Schema s, int tabLevel) {
 	sb.appendLine();
-	sb.tabs(tabLevel).appendLine("public class {0}Schema", s.name.uppercaseFirst());
+	sb.tabs(tabLevel).appendLine(i"public class $(s.name.uppercaseFirst())Schema");
 	sb.tabs(tabLevel++).appendLine("{");
-	sb.tabs(tabLevel).appendLine("private readonly {0} _parent;", opts.contextName.cleanName());
+	sb.tabs(tabLevel).appendLine(i"private readonly $(opts.contextName.cleanName()) _parent;");
 	sb.appendLine();
 	foreach (t; s.tables)
-		sb.tabs(tabLevel).appendLine("public DbSet<{0}.{1}> {1} => _parent.{0}_{1};", s.name.uppercaseFirst(), t.name);
+		sb.tabs(tabLevel).appendLine(i"public DbSet<$(s.name.uppercaseFirst()).$(t.name)> $(t.name) => _parent.$(s.name.uppercaseFirst())_$(t.name);");
 	foreach (t; s.views) {
-		sb.tabs(tabLevel).appendLine("public DbSet<{0}.{1}> {1} => _parent.{0}_{1};", s.name.uppercaseFirst(), t.name);
+		sb.tabs(tabLevel).appendLine(i"public DbSet<$(s.name.uppercaseFirst()).$(t.name)> $(t.name) => _parent.$(s.name.uppercaseFirst())_$(t.name);");
 	}
 	sb.appendLine();
-	sb.tabs(tabLevel).appendLine("internal {0}Schema({1} parent)", s.name.uppercaseFirst(), opts.contextName.cleanName());
+	sb.tabs(tabLevel).appendLine(i"internal $(s.name.uppercaseFirst())Schema($(opts.contextName.cleanName()) parent)");
 	sb.tabs(tabLevel++).appendLine("{");
 	sb.tabs(tabLevel).appendLine("this._parent = parent;");
 	sb.tabs(--tabLevel).appendLine("}");
@@ -120,24 +120,24 @@ private void generateIndexModel(CSharpProjectOptions opts, StringBuilder sb, Tab
 		sb.appendLine();
 		sb.tabs(tabLevel - 1).append("entity.HasKey(e => new { ");
 		for (int i = 0; i < pk.columns.length; i++) {
-			sb.append("e.{0}", pk.columns[i].name);
+			sb.append(i"e.$(pk.columns[i].name)");
 			if (i < pk.columns.length - 1)
 				sb.append(", ");
 		}
 		sb.appendLine(" })");
-		sb.tabs(tabLevel).appendLine(".HasName(\"{0}\");", pk.name);
+		sb.tabs(tabLevel).appendLine(i".HasName(\"$(pk.name)\");");
 	}
 
 	foreach (ix; t.indexes.filter!(a => !a.isPrimaryKey)) {
 		sb.appendLine();
 		sb.tabs(tabLevel - 1).append("entity.HasIndex(e => new { ");
 		for (int i = 0; i < ix.columns.length; i++) {
-			sb.append("e.{0}", ix.columns[i].name);
+			sb.append(i"e.$(ix.columns[i].name)");
 			if (i < ix.columns.length - 1)
 				sb.append(", ");
 		}
 		sb.appendLine(" })");
-		sb.tabs(tabLevel).append(".HasDatabaseName(\"{0}\")", ix.name);
+		sb.tabs(tabLevel).append(".HasDatabaseName(\"$(ix.name)\")");
 		if (ix.isUnique) {
 			sb.appendLine();
 			sb.tabs(tabLevel).append(".IsUnique()");
@@ -152,54 +152,54 @@ private void generateForeignKeyModel(StringBuilder sb, Table t, int tabLevel) {
 		string fkTgtId = fk.targetId();
 		sb.appendLine();
 		if (fk.direction == ForeignKeyDirection.OneToOne) {
-			sb.tabs(tabLevel - 1).appendLine("entity.HasOne(d => d.{0})", fkSrcId);
-			sb.tabs(tabLevel).appendLine(".WithOne(p => p.{0})", fkTgtId);
-			sb.tabs(tabLevel).append(".HasForeignKey<{0}.{1}>(d => new { ", t.parent.name.uppercaseFirst(), t.name);
+			sb.tabs(tabLevel - 1).appendLine(i"entity.HasOne(d => d.$(fkSrcId))");
+			sb.tabs(tabLevel).appendLine(i".WithOne(p => p.$(fkTgtId))");
+			sb.tabs(tabLevel).append(i".HasForeignKey<$(t.parent.name.uppercaseFirst()).$(t.name)>(d => new { ");
 		}
 		if (fk.direction == ForeignKeyDirection.OneToMany) {
-			sb.tabs(tabLevel - 1).appendLine("entity.HasOne(d => d.{0})", fkSrcId);
-			sb.tabs(tabLevel).appendLine(".WithMany(p => p.{0})", fkTgtId);
+			sb.tabs(tabLevel - 1).appendLine(i"entity.HasOne(d => d.$(fkSrcId))");
+			sb.tabs(tabLevel).appendLine(i".WithMany(p => p.$(fkTgtId))");
 			sb.tabs(tabLevel).append(".HasForeignKey(d => new { ");
 		}
 		if (fk.direction == ForeignKeyDirection.ManyToMany) {
-			sb.tabs(tabLevel - 1).appendLine("entity.HasMany(d => d.{0})", fkSrcId);
-			sb.tabs(tabLevel).appendLine(".WithMany(p => p.{0})", fkTgtId);
+			sb.tabs(tabLevel - 1).appendLine(i"entity.HasMany(d => d.$(fkSrcId))");
+			sb.tabs(tabLevel).appendLine(i".WithMany(p => p.$(fkTgtId))");
 			sb.tabs(tabLevel).append(".HasForeignKey(d => new { ");
 		}
 
 		for (int i = 0; i < fk.source.length; i++) {
-			sb.append("d.{0}", fk.source[i].name);
+			sb.append(i"d.$(fk.source[i].name)");
 			if (i < fk.source.length - 1)
 				sb.append(", ");
 		}
 		sb.appendLine(" })");
-		sb.tabs(tabLevel).appendLine(".OnDelete(DeleteBehavior.{0})", (fk.onDelete == ForeignKeyAction.Cascade ? "Cascade" : fk.onDelete == ForeignKeyAction.NoAction ? "Restrict" : "SetNull"));
-		sb.tabs(tabLevel).appendLine(".HasConstraintName(\"{0}\");", fk.name);
+		sb.tabs(tabLevel).appendLine(i".OnDelete(DeleteBehavior.$((fk.onDelete == ForeignKeyAction.Cascade ? "Cascade" : fk.onDelete == ForeignKeyAction.NoAction ? "Restrict" : "SetNull")))");
+		sb.tabs(tabLevel).appendLine(i".HasConstraintName(\"$(fk.name)\");");
 	}
 }
 
 private void generatePropertyModel(CSharpProjectOptions opts, StringBuilder sb, DataMember c, int tabLevel) {
 	sb.appendLine();
-	sb.tabs(tabLevel - 1).append("entity.Property(e => e.{0})", c.name);
+	sb.tabs(tabLevel - 1).append(i"entity.Property(e => e.$(c.name))");
 	sb.appendLine();
-	sb.tabs(tabLevel).append(".HasField(\"{0}\")", getFieldName(c.name));
+	sb.tabs(tabLevel).append(i".HasField(\"$(getFieldName(c.name))\")");
 	sb.appendLine();
-	sb.tabs(tabLevel).append(".HasColumnName(\"{0}\")", c.name);
+	sb.tabs(tabLevel).append(i".HasColumnName(\"$(c.name)\")");
 	sb.appendLine();
-	sb.tabs(tabLevel).append(".HasColumnType(\"{0}\")", getMssqlTypeFromColumn(c));
+	sb.tabs(tabLevel).append(i".HasColumnType(\"$(getMssqlTypeFromColumn(c))\")");
 	if (c.precision != 0) {
 		sb.appendLine();
 		if (c.scale != 0) {
-			sb.tabs(tabLevel).append(".HasPrecision({0}, {1})", to!string(c.precision), to!string(c.scale));
+			sb.tabs(tabLevel).append(i".HasPrecision($(c.precision), $(c.scale))");
 		}
 		else {
-			sb.tabs(tabLevel).append(".HasPrecision({0})", to!string(c.precision));
+			sb.tabs(tabLevel).append(i".HasPrecision($(c.precision))");
 		}
 	}
 
 	if (isVariableLengthType(c.sqlType) && c.maxLength > 0) {
 		sb.appendLine();
-		sb.tabs(tabLevel).append(".HasMaxLength({0})", to!string(c.maxLength));
+		sb.tabs(tabLevel).append(i".HasMaxLength($(c.maxLength))");
 	}
 
 	if (c.sqlType == SqlDbType.Timestamp) {
@@ -221,7 +221,7 @@ private void generatePropertyModel(CSharpProjectOptions opts, StringBuilder sb, 
 		if (!c.isKey) {
 			sb.appendLine();
 			if (c.sqlType == SqlDbType.Bit) {
-				sb.tabs(tabLevel).append(".HasDefaultValue({0})", getMssqlDefaultValue(c));
+				sb.tabs(tabLevel).append(i".HasDefaultValue($(getMssqlDefaultValue(c)))");
 			} else {
 				sb.tabs(tabLevel).append(".HasDefaultValue()");
 			}
@@ -244,35 +244,35 @@ private void generateStoredProcedure(StringBuilder sb, Procedure p, int tabLevel
 								a.direction == ParameterDirection.InputOutput ||
 								a.direction == ParameterDirection.Output) &&
 								a.type != SqlDbType.Udt)) {
-		sb.tabs(tabLevel).appendLine("public class {0}Result", p.name);
+		sb.tabs(tabLevel).appendLine(i"public class $(p.name)Result");
 		sb.tabs(tabLevel++).appendLine("{");
 		foreach (pp; p.parameters.filter!(a => (a.direction == ParameterDirection.ReturnValue ||
 													a.direction == ParameterDirection.InputOutput ||
 													a.direction == ParameterDirection.Output) &&
 													a.type != SqlDbType.Udt)) {
-			sb.tabs(tabLevel).appendLine("public {0} {1} { get; internal set; }", getTypeFromSqlType(pp.type, pp.isNullable), pp.name);
+			sb.tabs(tabLevel).appendLine(i"public $(getTypeFromSqlType(pp.type, pp.isNullable)) $(pp.name) { get; internal set; }");
 		}
 		sb.tabs(--tabLevel).appendLine("}");
 		sb.appendLine();
-		sb.tabs(tabLevel).append("public async Task<{0}Result> {0}(", p.name);
+		sb.tabs(tabLevel).append(i"public async Task<$(p.name)Result> $(p.name)(");
 	} else {
-		sb.tabs(tabLevel).append("public async Task<SqlDataReader> {0}(", p.name);
+		sb.tabs(tabLevel).append(i"public async Task<SqlDataReader> $(p.name)(");
 	}
 	bool hasParam = false;
 	foreach (pp; p.parameters.filter!(a => a.direction == ParameterDirection.Input)) {
 		hasParam = true;
 		if (pp.type != SqlDbType.Udt) {
-			sb.append("{0} {1}, ", getTypeFromSqlType(pp.type, false), pp.name);
+			sb.append(i"$(getTypeFromSqlType(pp.type, false)) $(pp.name), ");
 		} else {
-			sb.append("IEnumerable<{0}.{1}Udt> {2}, ", pp.udtType.parent.name, pp.udtType.name, pp.name);
+			sb.append(i"IEnumerable<$(pp.udtType.parent.name).($(pp.udtType.name))Udt> $(pp.name), ");
 		}
 	}
 	foreach (pp; p.parameters.filter!(a => a.direction == ParameterDirection.InputOutput && a.type != SqlDbType.Udt)) {
 		hasParam = true;
-		sb.append("{0} {1} = null, ", getTypeFromSqlType(pp.type, true), pp.name);
+		sb.append(i"$(getTypeFromSqlType(pp.type, true)) $(pp.name) = null, ");
 	}
 	if (hasParam) {
-		sb.removeRight(2);
+		sb.remove(sb.length-3, 2);
 	}
 	if (p.parameters.any!(a => (a.direction == ParameterDirection.ReturnValue ||
 								a.direction == ParameterDirection.InputOutput ||
@@ -290,33 +290,33 @@ private void generateStoredProcedure(StringBuilder sb, Procedure p, int tabLevel
 	sb.tabs(tabLevel).appendLine("var dbc = new SqlConnection(_parent.Database.GetConnectionString());");
 	sb.tabs(tabLevel).appendLine("var cmd = dbc.CreateCommand();");
 	sb.tabs(tabLevel).appendLine("await dbc.OpenAsync();");
-	sb.tabs(tabLevel).appendLine("cmd.CommandText = \"[{0}].[{1}]\";", p.parent.sqlName, p.sqlName);
+	sb.tabs(tabLevel).appendLine(i"cmd.CommandText = \"[$(p.parent.sqlName)].[$(p.sqlName)]\";");
 	sb.tabs(tabLevel).appendLine("cmd.CommandType = CommandType.StoredProcedure;");
 	foreach (pp; p.parameters) {
 		if (pp.type != SqlDbType.Udt) {
 			auto direction = pp.direction == ParameterDirection.Input ? "Input" :
 				pp.direction == ParameterDirection.InputOutput ? "InputOutput" :
 				"ReturnValue";
-			sb.tabs(tabLevel).appendLine("var p{0} = new SqlParameter(\"@{0}\", SqlDbType.{1}) { Value = (object){0} ?? DBNull.Value, Direction = ParameterDirection.{2} };", pp.name, to!string(pp.type), direction);
-			sb.tabs(tabLevel).appendLine("cmd.Parameters.Add(p{0});", pp.name);
+			sb.tabs(tabLevel).appendLine(i"var p$(pp.name) = new SqlParameter(\"@$(pp.name)\", SqlDbType.$(to!string(pp.type))) { Value = (object)$(pp.name) ?? DBNull.Value, Direction = ParameterDirection.$(direction) };");
+			sb.tabs(tabLevel).appendLine(i"cmd.Parameters.Add(p$(pp.name));");
 		} else if (pp.type == SqlDbType.Udt) {
-			sb.tabs(tabLevel).appendLine("var dt{0} = new DataTable();", pp.name);
+			sb.tabs(tabLevel).appendLine(i"var dt$(pp.name) = new DataTable();");
 			foreach (c; pp.udtType.members)
-				sb.appendLine("dt{0}.Columns.Add(\"{1}\", typeof({2}));", pp.name, c.name, getTypeFromSqlType(c.sqlType, c.isNullable));
-			sb.tabs(tabLevel).appendLine("foreach(var t in {0})", pp.name);
+				sb.appendLine(i"dt$(pp.name).Columns.Add(\"$(c.name)\", typeof($(getTypeFromSqlType(c.sqlType, c.isNullable))));");
+			sb.tabs(tabLevel).appendLine(i"foreach(var t in $(pp.name))");
 			sb.tabs(tabLevel++).appendLine("{");
-			sb.tabs(tabLevel).append("dt{0}.Columns.Add(", pp.name);
+			sb.tabs(tabLevel).append(i"dt$(pp.name).Columns.Add(");
 			for (int i = 0; i < pp.udtType.members.length; i++) {
 				auto c = pp.udtType.members[i];
-				sb.append("t.{0}", c.name);
+				sb.append(i"t.$(c.name)");
 				if (i < pp.udtType.members.length - 1)
 					sb.append(", ");
 			}
 			sb.appendLine(");");
 			sb.tabs(--tabLevel).appendLine("}");
-			sb.tabs(tabLevel).appendLine("var p{0} = cmd.Parameters.AddWithValue(\"@{0}\", dt{0});", pp.name);
-			sb.tabs(tabLevel).appendLine("p{0}.SqlDbType = SqlDbType.Structured;", pp.name);
-			sb.tabs(tabLevel).appendLine("p{0}.TypeName = \"[{1}].[{2}]\";", pp.name, pp.udtType.parent.name, pp.udtType.name);
+			sb.tabs(tabLevel).appendLine(i"var p$(pp.name) = cmd.Parameters.AddWithValue(\"@$(pp.name)\", dt$(pp.name));");
+			sb.tabs(tabLevel).appendLine(i"p$(pp.name).SqlDbType = SqlDbType.Structured;");
+			sb.tabs(tabLevel).appendLine(i"p$(pp.name).TypeName = \"[$(pp.udtType.parent.name)].[$(pp.udtType.name)]\";");
 		}
 	}
 	if (p.parameters.any!(a => (a.direction == ParameterDirection.ReturnValue ||
@@ -324,12 +324,12 @@ private void generateStoredProcedure(StringBuilder sb, Procedure p, int tabLevel
 								a.direction == ParameterDirection.Output) &&
 								a.type != SqlDbType.Udt)) {
 		sb.tabs(tabLevel).appendLine("await cmd.ExecuteNonQueryAsync();");
-		sb.tabs(tabLevel).appendLine("var rv = new {0}Result();", p.name);
+		sb.tabs(tabLevel).appendLine(i"var rv = new $(p.name)Result();");
 		foreach (pp; p.parameters.filter!(a => (a.direction == ParameterDirection.ReturnValue ||
 													a.direction == ParameterDirection.InputOutput ||
 													a.direction == ParameterDirection.Output) &&
 													a.type != SqlDbType.Udt)) {
-			sb.tabs(tabLevel).appendLine("rv.{0} = p{0}.Value != DBNull.Value ? ({1})p{0}.Value : null;", pp.name, getTypeFromSqlType(pp.type, pp.isNullable));
+			sb.tabs(tabLevel).appendLine(i"rv.$(pp.name) = p$(pp.name).Value != DBNull.Value ? ($(getTypeFromSqlType(pp.type, pp.isNullable)))p$(pp.name).Value : null;");
 		}
 		sb.tabs(tabLevel).appendLine("return rv;");
 	} else {
