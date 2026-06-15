@@ -297,7 +297,7 @@ private void generateStoredProcedure(StringBuilder sb, Procedure p, int tabLevel
 		sb.append(i"$(getTypeFromSqlType(pp.type, true)) $(pp.name) = null, ");
 	}
 	if (hasParam) {
-		sb.remove(sb.length-3, 2);
+		sb.remove(sb.length-2, 2);
 	}
 	if (p.parameters.any!(a => (a.direction == ParameterDirection.ReturnValue ||
 								a.direction == ParameterDirection.InputOutput ||
