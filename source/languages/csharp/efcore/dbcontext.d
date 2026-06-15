@@ -157,7 +157,7 @@ private void generateIndexModel(CSharpProjectOptions opts, StringBuilder sb, Tab
 				sb.append(", ");
 		}
 		sb.appendLine(" })");
-		sb.tabs(tabLevel).append(".HasDatabaseName(\"$(ix.name)\")");
+		sb.tabs(tabLevel).append(i".HasDatabaseName(\"$(ix.name)\")");
 		if (ix.isUnique) {
 			sb.appendLine();
 			sb.tabs(tabLevel).append(".IsUnique()");
